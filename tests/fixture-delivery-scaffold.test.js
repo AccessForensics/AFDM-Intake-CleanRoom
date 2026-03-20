@@ -35,7 +35,7 @@ test("delivery scaffold files exist", () => {
   }
 });
 
-test("first three Appendix D fixtures are implemented and the remaining fixtures stay scaffolded", () => {
+test("first five Appendix D fixtures are implemented and the remaining fixtures stay scaffolded", () => {
   const data = readJson("fixtures/intake/appendix-d-fixtures.json");
 
   const implementedIds = data.fixtures
@@ -45,12 +45,14 @@ test("first three Appendix D fixtures are implemented and the remaining fixtures
   assert.deepEqual(implementedIds, [
     "fixture_1_desktop_only_eligible",
     "fixture_2_desktop_and_mobile_eligible",
-    "fixture_3_desktop_eligible_mobile_constrained"
+    "fixture_3_desktop_eligible_mobile_constrained",
+    "fixture_4_mobile_only_eligible",
+    "fixture_5_mobile_eligible_desktop_constrained"
   ]);
 
   const scaffoldedIds = data.fixtures
     .filter((fixture) => fixture.status === "not_implemented_yet")
     .map((fixture) => fixture.fixture_id);
 
-  assert.equal(scaffoldedIds.length, 10);
+  assert.equal(scaffoldedIds.length, 8);
 });

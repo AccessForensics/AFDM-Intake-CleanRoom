@@ -30,14 +30,16 @@
       "appendix_d_reference": "D.4",
       "purpose": "proves Mobile-only determination path",
       "expected_state": "Template 4",
-      "status": "not_implemented_yet"
+      "status": "implemented",
+      "fixture_path": "fixtures/intake/appendix-d/d4_mobile_only_eligible.json"
     },
     {
       "fixture_id": "fixture_5_mobile_eligible_desktop_constrained",
       "appendix_d_reference": "D.5",
       "purpose": "proves Template 5 guardrail",
       "expected_state": "Template 5",
-      "status": "not_implemented_yet"
+      "status": "implemented",
+      "fixture_path": "fixtures/intake/appendix-d/d5_mobile_eligible_desktop_constrained.json"
     },
     {
       "fixture_id": "fixture_6_not_eligible_generic",

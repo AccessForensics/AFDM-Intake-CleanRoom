@@ -1,0 +1,48 @@
+{
+  "fixture_id": "fixture_4_mobile_only_eligible",
+  "matter_id": "AF-2026-D4",
+  "matter_scope": "mobile_only",
+  "scope_anchor_reference": "Complaint PDF dated 2026-03-19, pp. 9-10",
+  "created_context_basis": "materials_cabined_mobile_only",
+  "generated_at_local": "2026-03-19T12:30:00-04:00",
+  "generated_at_epoch_ms": 1710865800000,
+  "complaint_anchors": [
+    {
+      "anchorType": "pagebulletrange",
+      "pageBulletRange": "9:1-2",
+      "anchorText": "- Missing skip link`n- Focus indicator absent"
+    }
+  ],
+  "expected_sequence": [
+    { "run_unit_id": "RU-001", "context_id": "mobile_baseline" },
+    { "run_unit_id": "RU-002", "context_id": "mobile_baseline" }
+  ],
+  "run_execution_plan": [
+    {
+      "run_id": "RUN-001",
+      "run_unit_index": 0,
+      "context_id": "mobile_baseline",
+      "outcome_label": "Observed as asserted",
+      "constraint_class": "",
+      "mechanical_note": "",
+      "run_start_local": "2026-03-19T12:30:00-04:00",
+      "run_start_epoch_ms": 15000,
+      "run_end_local": "2026-03-19T12:30:01-04:00",
+      "run_end_epoch_ms": 16000
+    },
+    {
+      "run_id": "RUN-002",
+      "run_unit_index": 1,
+      "context_id": "mobile_baseline",
+      "outcome_label": "Not observed as asserted",
+      "constraint_class": "",
+      "mechanical_note": "",
+      "run_start_local": "2026-03-19T12:30:02-04:00",
+      "run_start_epoch_ms": 17000,
+      "run_end_local": "2026-03-19T12:30:03-04:00",
+      "run_end_epoch_ms": 18000
+    }
+  ],
+  "expected_determination_template": "DETERMINATION: ELIGIBLE FOR MOBILE TECHNICAL RECORD BUILD",
+  "expected_stop_basis": "sufficiency_reached"
+}
