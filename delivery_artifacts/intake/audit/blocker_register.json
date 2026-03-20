@@ -1,0 +1,36 @@
+{
+    "generated_from":  "completion_audit_snapshot",
+    "blocker_count":  5,
+    "blockers":  [
+                     {
+                         "blocker_id":  "BLOCK-TESTS",
+                         "category":  "tests",
+                         "description":  "Current Node test suite is not passing.",
+                         "blocks_completion":  true
+                     },
+                     {
+                         "blocker_id":  "BLOCK-LIM-001",
+                         "category":  "appendix_f",
+                         "description":  "Appendix F contains completion-blocking limitation LIM-001.",
+                         "blocks_completion":  true
+                     },
+                     {
+                         "blocker_id":  "BLOCK-LIM-002",
+                         "category":  "appendix_f",
+                         "description":  "Appendix F contains completion-blocking limitation LIM-002.",
+                         "blocks_completion":  true
+                     },
+                     {
+                         "blocker_id":  "BLOCK-LIM-003",
+                         "category":  "appendix_f",
+                         "description":  "Appendix F contains completion-blocking limitation LIM-003.",
+                         "blocks_completion":  true
+                     },
+                     {
+                         "blocker_id":  "BLOCK-TRACEABILITY",
+                         "category":  "traceability",
+                         "description":  "Doctrine-to-code traceability matrix is still partial.",
+                         "blocks_completion":  true
+                     }
+                 ]
+}
