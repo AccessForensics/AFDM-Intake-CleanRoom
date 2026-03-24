@@ -16,8 +16,14 @@ function normalizeCandidateText(text) {
     .trim();
 }
 
+function normalizeAnchorDelimiters(anchorText) {
+  return String(anchorText || "")
+    .replace(/\r\n/g, "\n")
+    .replace(/`n(?=\s*(?:[-*]|\d+[.)]))/g, "\n");
+}
+
 function splitAnchorTextIntoCandidates(anchorText) {
-  const raw = String(anchorText || "").replace(/\r\n/g, "\n");
+  const raw = normalizeAnchorDelimiters(anchorText);
 
   const linePieces = raw
     .split("\n")

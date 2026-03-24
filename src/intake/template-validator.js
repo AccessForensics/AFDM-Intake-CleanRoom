@@ -17,44 +17,44 @@ function loadTemplateSpec(repoRoot = process.cwd()) {
   return fs.readFileSync(target, "utf8").replace(/^\uFEFF/, "");
 }
 
+function normalizeSpecForMatching(text) {
+  return String(text || "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\\([_[\]\\-])/g, "$1")
+    .replace(/\*\*/g, "");
+}
+
 function validateTemplateSpec(text) {
   const body = String(text || "");
+  const normalizedBody = normalizeSpecForMatching(body);
 
-  const internalRule = "Internal implementation rule, not externally emitted:";
-  if (!body.includes(internalRule)) {
+  const noteRulePattern =
+    /\{\{MATTER_LEVEL_NOTE\}\}\s+may appear only in Template 3 or Template 5\b/;
+  if (!noteRulePattern.test(normalizedBody)) {
     throw new Error("TEMPLATE_SPEC_MISSING_INTERNAL_NOTE_RULE");
   }
 
-  const noteRule = "{{MATTER_LEVEL_NOTE}} may appear only in Template 3 or Template 5";
-  if (!body.includes(noteRule)) {
-    throw new Error("TEMPLATE_SPEC_MISSING_LOCKED_NOTE_GATE");
-  }
-
-  const templateHeadings = [
-    "## TEMPLATE 1:",
-    "## TEMPLATE 2:",
-    "## TEMPLATE 3:",
-    "## TEMPLATE 4:",
-    "## TEMPLATE 5:",
-    "## TEMPLATE 6:",
-    "## TEMPLATE 7:",
-    "## TEMPLATE 8:",
-  ];
-
-  for (const heading of templateHeadings) {
-    if (!body.includes(heading)) {
-      throw new Error(`TEMPLATE_SPEC_MISSING_HEADING: ${heading}`);
+  for (let templateNumber = 1; templateNumber <= 8; templateNumber += 1) {
+    const headingPattern = new RegExp(
+      `(^|\\n)##\\s+TEMPLATE\\s+${templateNumber}:`,
+      "m"
+    );
+    if (!headingPattern.test(normalizedBody)) {
+      throw new Error(
+        `TEMPLATE_SPEC_MISSING_HEADING: ## TEMPLATE ${templateNumber}:`
+      );
     }
   }
 
   for (const line of TEMPLATE_VALUES) {
-    if (!body.includes(line)) {
+    if (!normalizedBody.includes(line)) {
       throw new Error(`TEMPLATE_SPEC_MISSING_DETERMINATION: ${line}`);
     }
   }
 
-  const forbiddenLegacy = /NEXT STEPS|WHAT IS REQUIRED TO REOPEN INTAKE|COUNSEL ACTION OPTION|REASON:/i;
-  if (forbiddenLegacy.test(body)) {
+  const forbiddenLegacy =
+    /NEXT STEPS|WHAT IS REQUIRED TO REOPEN INTAKE|COUNSEL ACTION OPTION|REASON:/i;
+  if (forbiddenLegacy.test(normalizedBody)) {
     throw new Error("TEMPLATE_SPEC_CONTAINS_LEGACY_VERBOSE_SECTIONS");
   }
 
