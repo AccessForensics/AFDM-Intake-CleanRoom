@@ -36,6 +36,8 @@ function resolveAnchorReference(anchor, normalizedType) {
 
 function normalizeAnchorText(value) {
   const text = String(value || "")
+    .replace(/`n/g, "\n")
+    .replace(/\\n/g, "\n")
     .replace(/\r\n/g, "\n")
     .replace(/\u2022/g, "-")
     .trim();
