@@ -64,9 +64,11 @@ test("D.12 state persistence failure fixture produces isolation failure classifi
 
   const result = classifyIsolationFailure(fixture.classification_input);
 
+  assert.equal(result.stateIsolationRecord.matter_id, fixture.expected_matter_id);
   assert.equal(result.stateIsolationRecord.state_isolation_id, fixture.expected_state_isolation_id);
   assert.equal(result.stateIsolationRecord.fresh_browser_context, false);
   assert.equal(result.stateIsolationRecord.storage_state_persisted, true);
+  assert.equal(result.runOutcomeUpdate.matter_id, fixture.expected_matter_id);
   assert.equal(result.runOutcomeUpdate.outcome_label, fixture.expected_outcome_label);
 });
 
