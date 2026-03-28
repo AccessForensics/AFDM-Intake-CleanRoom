@@ -1,10 +1,12 @@
 {
   "fixture_id": "fixture_12_state_persistence_failure",
   "classification_input": {
+    "matter_id": "AF-2026-0012",
     "isolation_index": 1,
     "run_id": "RUN-001",
     "missing_bounded_path_or_trigger": "Missing bounded path to re-establish clean-state isolation."
   },
+  "expected_matter_id": "AF-2026-0012",
   "expected_state_isolation_id": "SIR-001",
   "expected_outcome_label": "Insufficiently specified for bounded execution"
 }

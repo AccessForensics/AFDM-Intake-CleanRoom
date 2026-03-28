@@ -19,6 +19,14 @@ function pad3(value) {
   return String(value).padStart(3, "0");
 }
 
+function assertNonEmptyString(value, fieldName) {
+  const safe = String(value || "").trim();
+  if (!safe) {
+    throw new Error(`${fieldName}_REQUIRED`);
+  }
+  return safe;
+}
+
 function assertMappedConstraintClass(value) {
   const safe = String(value || "").trim();
   if (!CONSTRAINT_VALUES.includes(safe)) {
@@ -33,15 +41,14 @@ function createStateIsolationRecord(input) {
     throw new Error("ISOLATION_INDEX_POSITIVE_INTEGER_REQUIRED");
   }
 
-  const run_id = String(input.run_id || "").trim();
-  if (!run_id) {
-    throw new Error("RUN_ID_REQUIRED");
-  }
+  const matter_id = assertNonEmptyString(input.matter_id, "MATTER_ID");
+  const run_id = assertNonEmptyString(input.run_id, "RUN_ID");
 
   const fresh_browser_context = input.fresh_browser_context === true;
   const storage_state_persisted = input.storage_state_persisted === true;
 
   return Object.freeze({
+    matter_id,
     state_isolation_id: `SIR-${pad3(isolation_index)}`,
     run_id,
     fresh_browser_context,
@@ -50,15 +57,14 @@ function createStateIsolationRecord(input) {
 }
 
 function classifyIsolationFailure(input) {
-  const run_id = String(input.run_id || "").trim();
-  if (!run_id) {
-    throw new Error("RUN_ID_REQUIRED");
-  }
+  const matter_id = assertNonEmptyString(input.matter_id, "MATTER_ID");
+  const run_id = assertNonEmptyString(input.run_id, "RUN_ID");
 
   const mappedConstraintClass = String(input.mapped_constraint_class || "").trim();
   const missingBoundedPathOrTrigger = String(input.missing_bounded_path_or_trigger || "").trim();
 
   const stateIsolationRecord = createStateIsolationRecord({
+    matter_id,
     isolation_index: input.isolation_index,
     run_id,
     fresh_browser_context: false,
@@ -69,6 +75,7 @@ function classifyIsolationFailure(input) {
     return Object.freeze({
       stateIsolationRecord,
       runOutcomeUpdate: Object.freeze({
+        matter_id,
         run_id,
         outcome_label: OUTCOME_LABEL.CONSTRAINED,
         constraint_class: assertMappedConstraintClass(mappedConstraintClass),
@@ -84,6 +91,7 @@ function classifyIsolationFailure(input) {
   return Object.freeze({
     stateIsolationRecord,
     runOutcomeUpdate: Object.freeze({
+      matter_id,
       run_id,
       outcome_label: OUTCOME_LABEL.INSUFFICIENT,
       constraint_class: "",

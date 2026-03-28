@@ -74,6 +74,7 @@ test("createMechanicalNoteRuleRecord rejects wrong note_basis for constrained ru
 
 test("createStateIsolationRecord records explicit failure metadata", () => {
   const record = createStateIsolationRecord({
+    matter_id: "AF-2026-0001",
     isolation_index: 1,
     run_id: "RUN-010",
     fresh_browser_context: false,
@@ -81,6 +82,7 @@ test("createStateIsolationRecord records explicit failure metadata", () => {
   });
 
   assert.deepEqual(record, {
+    matter_id: "AF-2026-0001",
     state_isolation_id: "SIR-001",
     run_id: "RUN-010",
     fresh_browser_context: false,
@@ -90,24 +92,30 @@ test("createStateIsolationRecord records explicit failure metadata", () => {
 
 test("classifyIsolationFailure maps locked blocker to constrained outcome", () => {
   const result = classifyIsolationFailure({
+    matter_id: "AF-2026-0002",
     isolation_index: 2,
     run_id: "RUN-011",
     mapped_constraint_class: CONSTRAINT_CLASS.BOTMITIGATION,
   });
 
+  assert.equal(result.stateIsolationRecord.matter_id, "AF-2026-0002");
   assert.equal(result.stateIsolationRecord.fresh_browser_context, false);
   assert.equal(result.stateIsolationRecord.storage_state_persisted, true);
+  assert.equal(result.runOutcomeUpdate.matter_id, "AF-2026-0002");
   assert.equal(result.runOutcomeUpdate.outcome_label, "Constrained");
   assert.equal(result.runOutcomeUpdate.constraint_class, "BOTMITIGATION");
 });
 
 test("classifyIsolationFailure maps unmapped blocker to insufficiently specified outcome", () => {
   const result = classifyIsolationFailure({
+    matter_id: "AF-2026-0003",
     isolation_index: 3,
     run_id: "RUN-012",
     missing_bounded_path_or_trigger: "Missing bounded path to re-establish clean-state isolation.",
   });
 
+  assert.equal(result.stateIsolationRecord.matter_id, "AF-2026-0003");
+  assert.equal(result.runOutcomeUpdate.matter_id, "AF-2026-0003");
   assert.equal(result.runOutcomeUpdate.outcome_label, "Insufficiently specified for bounded execution");
   assert.equal(result.runOutcomeUpdate.constraint_class, "");
   assert.equal(
@@ -119,6 +127,7 @@ test("classifyIsolationFailure maps unmapped blocker to insufficiently specified
 test("classifyIsolationFailure rejects invalid mapped constraint class", () => {
   assert.throws(
     () => classifyIsolationFailure({
+      matter_id: "AF-2026-0004",
       isolation_index: 4,
       run_id: "RUN-013",
       mapped_constraint_class: "OTHER",
