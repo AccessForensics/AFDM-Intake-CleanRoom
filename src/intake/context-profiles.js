@@ -44,7 +44,7 @@ const CONTEXT_PROFILES = Object.freeze({
     context_id: CONTEXT_ID.REFLOW_SUPPLEMENTAL,
     viewport_width: 1280,
     viewport_height: null,
-    orientation: "landscape",
+    orientation: "portrait",
     zoom: 400,
     device_scale_factor: 1,
     is_mobile: false,
