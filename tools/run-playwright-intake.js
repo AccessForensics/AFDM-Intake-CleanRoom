@@ -21,8 +21,8 @@ const {
 } = require("../src/intake/determination-router.js");
 
 const {
-  runLawsuit2Probe
-} = require("../src/intake/probes/lawsuit2.js");
+  resolveProbe
+} = require("../src/intake/probes/index.js");
 
 function usage() {
   console.error("Usage: node tools/run-playwright-intake.js <payload-json-path> <output-dir>");
@@ -139,7 +139,18 @@ async function saveArtifacts(page, prefix) {
 
       let probeResult;
       try {
-        probeResult = await runLawsuit2Probe(page, runUnit.assertedconditiontext, BASE_URL);
+        const resolved = resolveProbe(runUnit.assertedconditiontext);
+
+        if (!resolved) {
+          probeResult = {
+            outcome_label: OUTCOME_LABEL.INSUFFICIENT,
+            constraint_class: "",
+            mechanical_note: "No Playwright probe was implemented for this asserted condition.",
+            evidence: {}
+          };
+        } else {
+          probeResult = await resolved.run(page, runUnit.assertedconditiontext, BASE_URL);
+        }
       } catch (error) {
         probeResult = {
           outcome_label: OUTCOME_LABEL.CONSTRAINED,
