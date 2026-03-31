@@ -104,3 +104,6 @@ build/
 
 # Local shadow-run scratch and generated lawsuit trial output
 shadow_runs/
+
+# Local intake matter work
+intake_work/

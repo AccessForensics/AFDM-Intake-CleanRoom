@@ -1,0 +1,32 @@
+[
+  {
+    "matter_id": "AF-TEST-0001",
+    "run_unit_id": "RU-F3-001",
+    "family_id": "family_3_form_labels",
+    "asserted_condition_text": "Search fields lack a label.",
+    "target_url": "https://example.com/search",
+    "target_page_hint": "search page",
+    "target_element_hint": "search field",
+    "baseline_scope": "both"
+  },
+  {
+    "matter_id": "AF-TEST-0002",
+    "run_unit_id": "RU-F3-002",
+    "family_id": "family_3_form_labels",
+    "asserted_condition_text": "Input fields do not have a label element for the quantity selector.",
+    "target_url": "https://example.com/cart",
+    "target_page_hint": "cart page",
+    "target_element_hint": "quantity selector",
+    "baseline_scope": "both"
+  },
+  {
+    "matter_id": "AF-TEST-0003",
+    "run_unit_id": "RU-F3-003",
+    "family_id": "family_3_form_labels",
+    "asserted_condition_text": "The form control is missing an accessible name.",
+    "target_url": "https://example.com/newsletter",
+    "target_page_hint": "newsletter",
+    "target_element_hint": "email signup field",
+    "baseline_scope": "both"
+  }
+]
