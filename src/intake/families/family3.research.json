@@ -1,0 +1,59 @@
+{
+  "family_id": "family_3_form_labels",
+  "family_name": "Form Labels and Accessible Names",
+  "summary": "Complaint patterns involving missing labels, missing programmatic association, or missing accessible names for interactive form controls.",
+  "core_phrase_patterns": [
+    "search fields lack a label",
+    "input fields do not have a label element",
+    "lacks a programmatically associated label",
+    "unable to announce the function or purpose of the input field",
+    "missing accessible name",
+    "form control lacks an accessible name",
+    "edit field lacks a label",
+    "field lacks an accessible name",
+    "textbox lacks a label"
+  ],
+  "copy_paste_patterns": [
+    "located products to search fields to select quantity"
+  ],
+  "target_control_hints": [
+    "search",
+    "quantity",
+    "qty",
+    "newsletter",
+    "email",
+    "signup",
+    "sign up",
+    "contact",
+    "checkout",
+    "coupon",
+    "promo code",
+    "address",
+    "payment",
+    "cart"
+  ],
+  "bounded_probe_rules": {
+    "max_controls_per_scope": 25,
+    "max_raw_controls": 200,
+    "allow_page_scan_when_hint_missing": true,
+    "require_target_url": true
+  },
+  "known_variants": [
+    {
+      "variant_id": "search_field",
+      "hint_terms": ["search"]
+    },
+    {
+      "variant_id": "quantity_selector",
+      "hint_terms": ["quantity", "qty", "cart"]
+    },
+    {
+      "variant_id": "newsletter_or_email",
+      "hint_terms": ["newsletter", "email", "signup", "sign up"]
+    },
+    {
+      "variant_id": "checkout_or_contact",
+      "hint_terms": ["checkout", "address", "payment", "contact"]
+    }
+  ]
+}
