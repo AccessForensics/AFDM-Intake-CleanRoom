@@ -24,6 +24,12 @@ const {
   resolveProbe
 } = require("../src/intake/probes/index.js");
 
+const {
+  assertAllowedUrl,
+  buildFamily3ProbeInputFromPayload,
+  validateProbeResult
+} = require("../src/intake/probes/probe-contract.js");
+
 function usage() {
   console.error("Usage: node tools/run-playwright-intake.js <payload-json-path> <output-dir>");
   process.exit(1);
@@ -45,7 +51,10 @@ const artifactsDir = path.join(outDir, "artifacts");
 fs.mkdirSync(artifactsDir, { recursive: true });
 
 const payload = JSON.parse(fs.readFileSync(payloadPath, "utf8"));
-const BASE_URL = payload.source_case && payload.source_case.site;
+const BASE_URL = assertAllowedUrl(
+  payload && payload.source_case && payload.source_case.site,
+  "PAYLOAD_SOURCE_CASE_SITE"
+);
 
 if (!BASE_URL) {
   throw new Error("PAYLOAD_SOURCE_CASE_SITE_REQUIRED");
@@ -142,22 +151,29 @@ async function saveArtifacts(page, prefix) {
         const resolved = resolveProbe(runUnit.assertedconditiontext);
 
         if (!resolved) {
-          probeResult = {
+          probeResult = validateProbeResult({
             outcome_label: OUTCOME_LABEL.INSUFFICIENT,
             constraint_class: "",
             mechanical_note: "No Playwright probe was implemented for this asserted condition.",
             evidence: {}
-          };
+          });
+        } else if (resolved.family === "family3") {
+          const family3Request = buildFamily3ProbeInputFromPayload(payload, runUnit, BASE_URL);
+          probeResult = validateProbeResult(
+            await resolved.run(page, family3Request, BASE_URL)
+          );
         } else {
-          probeResult = await resolved.run(page, runUnit.assertedconditiontext, BASE_URL);
+          probeResult = validateProbeResult(
+            await resolved.run(page, runUnit.assertedconditiontext, BASE_URL)
+          );
         }
       } catch (error) {
-        probeResult = {
+        probeResult = validateProbeResult({
           outcome_label: OUTCOME_LABEL.CONSTRAINED,
           constraint_class: CONSTRAINT_CLASS.HARDCRASH,
           mechanical_note: "Playwright execution failed during bounded step execution.",
           evidence: { error: String((error && error.stack) || error) }
-        };
+        });
       }
 
       const artifactPaths = await saveArtifacts(page, prefix);

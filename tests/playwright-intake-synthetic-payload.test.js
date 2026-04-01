@@ -20,17 +20,20 @@ function toFileUrl(filePath) {
   return "file:///" + filePath.replace(/\\/g, "/");
 }
 
-function makePayload(matterId, assertedConditionText, siteUrl) {
+function makePayload(matterId, assertedConditionText, siteUrl, runUnitOverrides) {
   return {
     matter_id: matterId,
     matter_scope: "dual",
     source_case: { site: siteUrl },
     run_units: [
-      {
+      Object.assign({
         rununitid: "RU-001",
         complaintgroupanchorid: "CGA-001",
-        assertedconditiontext: assertedConditionText
-      }
+        assertedconditiontext: assertedConditionText,
+        target_url: siteUrl,
+        target_page_hint: "",
+        target_element_hint: ""
+      }, runUnitOverrides || {})
     ],
     sequencing_plan: [
       {
@@ -41,7 +44,7 @@ function makePayload(matterId, assertedConditionText, siteUrl) {
   };
 }
 
-function runSyntheticPayload(assertedConditionText, html) {
+function runSyntheticPayload(assertedConditionText, html, runUnitOverrides) {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "afdm-intake-"));
   const htmlPath = path.join(tempRoot, "site.html");
   const payloadPath = path.join(tempRoot, "payload.json");
@@ -52,7 +55,8 @@ function runSyntheticPayload(assertedConditionText, html) {
   const payload = makePayload(
     "AF-TEST-SYNTHETIC-0001",
     assertedConditionText,
-    toFileUrl(htmlPath)
+    toFileUrl(htmlPath),
+    runUnitOverrides
   );
 
   writeJson(payloadPath, payload);
@@ -139,6 +143,77 @@ test("generic runner routes unsupported allegation to fail-closed insufficient o
     "No Playwright probe was implemented for this asserted condition."
   );
 
+  assert.equal(typeof result.determination.determination_template, "string");
+  assert.ok(result.determination.determination_template.length > 0);
+});
+
+test("generic runner routes supported family3 allegation through registry and records observed outcome", (t) => {
+  const html = `
+    <!doctype html>
+    <html lang="en">
+      <body>
+        <main>
+          <form action="/search">
+            <input id="site-search" name="q" type="text" placeholder="Search products">
+          </form>
+        </main>
+      </body>
+    </html>
+  `;
+
+  const result = runSyntheticPayload(
+    "Search fields lack a label.",
+    html,
+    {
+      target_page_hint: "search page",
+      target_element_hint: "search field"
+    }
+  );
+
+  t.after(() => {
+    fs.rmSync(result.tempRoot, { recursive: true, force: true });
+  });
+
+  assert.equal(result.summary.executed_steps, 1);
+  assert.equal(result.observations.length, 1);
+  assert.equal(result.runRecords.length, 1);
+  assert.equal(result.observations[0].operator_outcome_label, OUTCOME_LABEL.OBSERVED);
+  assert.equal(typeof result.determination.determination_template, "string");
+  assert.ok(result.determination.determination_template.length > 0);
+});
+
+test("generic runner routes supported family3 allegation through registry and records not observed outcome", (t) => {
+  const html = `
+    <!doctype html>
+    <html lang="en">
+      <body>
+        <main>
+          <form action="/search">
+            <label for="site-search">Search</label>
+            <input id="site-search" name="q" type="text" placeholder="Search products">
+          </form>
+        </main>
+      </body>
+    </html>
+  `;
+
+  const result = runSyntheticPayload(
+    "Search fields lack a label.",
+    html,
+    {
+      target_page_hint: "search page",
+      target_element_hint: "search field"
+    }
+  );
+
+  t.after(() => {
+    fs.rmSync(result.tempRoot, { recursive: true, force: true });
+  });
+
+  assert.equal(result.summary.executed_steps, 1);
+  assert.equal(result.observations.length, 1);
+  assert.equal(result.runRecords.length, 1);
+  assert.equal(result.observations[0].operator_outcome_label, OUTCOME_LABEL.NOT_OBSERVED);
   assert.equal(typeof result.determination.determination_template, "string");
   assert.ok(result.determination.determination_template.length > 0);
 });

@@ -2,6 +2,7 @@
 
 const { OUTCOME_LABEL, CONSTRAINT_CLASS } = require("../run-record.js");
 const { classifyFamily3, normalizeText } = require("./family3.matcher.js");
+const { normalizeFamily3ProbeInput } = require("../probes/probe-contract.js");
 
 function safeTrim(value) {
   return String(value || "").trim();
@@ -122,8 +123,6 @@ function buildFailure(control) {
 function evaluateFamily3Snapshot(snapshot, runUnit, options) {
   const scoped = scopeControls(snapshot, runUnit, options);
 
-  // WHY: If no candidate controls exist on the alleged page surface,
-  // the bounded outcome is insufficiently specified, not a false not-observed record.
   if (scoped.status === "no_controls") {
     return buildResult(
       OUTCOME_LABEL.INSUFFICIENT,
@@ -136,8 +135,6 @@ function evaluateFamily3Snapshot(snapshot, runUnit, options) {
     );
   }
 
-  // WHY: If the allegation cannot be bounded to a target control or region,
-  // the probe must fail closed to insufficient rather than silently over-scan the page.
   if (scoped.status === "unbounded") {
     return buildResult(
       OUTCOME_LABEL.INSUFFICIENT,
@@ -234,8 +231,6 @@ async function captureFamily3Snapshot(page, options) {
           ? safeText(el.getAttribute("type")) || "text"
           : el.tagName.toLowerCase();
 
-        // WHY: Accessible-name sources are captured so the control can be checked
-        // for bounded programmatic labeling signals during later review.
         const accessibleNameParts = uniqueInner(
           labels.concat(labelledByTexts).concat([ariaLabel, title])
         );
@@ -264,7 +259,12 @@ async function captureFamily3Snapshot(page, options) {
   }, { maxRawControls });
 }
 
-async function runFamily3Probe(page, runUnit, options) {
+async function runFamily3Probe(page, inputOrRunUnit, options) {
+  const runUnit = normalizeFamily3ProbeInput(
+    inputOrRunUnit,
+    options && options.base_url
+  );
+
   const classification = classifyFamily3(runUnit && runUnit.asserted_condition_text);
 
   if (!classification.matched) {
@@ -291,8 +291,6 @@ async function runFamily3Probe(page, runUnit, options) {
   }
 
   try {
-    // WHY: Page navigation must occur before condition evaluation so the snapshot
-    // reflects the point-in-time site surface actually under review.
     await safeGoto(page, runUnit.target_url);
 
     const challengeDetector =
@@ -313,8 +311,6 @@ async function runFamily3Probe(page, runUnit, options) {
       );
     }
 
-    // WHY: Snapshotting before evaluation preserves the point-in-time DOM state
-    // used to generate the mechanical record for later adversarial review.
     const snapshot = await captureFamily3Snapshot(page, options);
     return evaluateFamily3Snapshot(snapshot, runUnit, options);
   } catch (error) {
