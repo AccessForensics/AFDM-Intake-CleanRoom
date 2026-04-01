@@ -1,0 +1,15 @@
+{
+  "family_id": "family_1_structural_integrity",
+  "family_name": "Structural Integrity and Navigation",
+  "summary": "Complaint patterns involving headings, skip links, linked-image purpose, new-window warnings, linked-image alternative text, and menu state announcements.",
+  "core_phrase_patterns": [
+    "heading hierarchy was not properly defined",
+    "heading levels were missing",
+    "skip to content link was not implemented",
+    "interactive images used as links did not describe the content of the link target",
+    "links opened new windows without prior warning",
+    "product images lacked alternative text",
+    "navigation sub-menus with drop-down lists did not announce collapsed state",
+    "navigation sub-menus with drop-down lists did not announce expanded state"
+  ]
+}

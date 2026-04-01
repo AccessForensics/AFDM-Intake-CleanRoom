@@ -51,8 +51,8 @@ function assertAllowedUrl(value, fieldName) {
   return parsed.toString();
 }
 
-function normalizeFamily3ProbeInput(input, fallbackUrl) {
-  const normalizedFallbackUrl = assertAllowedUrl(fallbackUrl, "BASE_URL");
+function normalizeProbeRequest(input, fallbackBaseUrl) {
+  const normalizedFallbackUrl = assertAllowedUrl(fallbackBaseUrl, "BASE_URL");
 
   if (input && typeof input === "object" && !Array.isArray(input)) {
     return Object.freeze({
@@ -100,7 +100,35 @@ function normalizeFamily3ProbeInput(input, fallbackUrl) {
   });
 }
 
-function buildFamily3ProbeInputFromPayload(payload, runUnit, baseUrl) {
+function normalizeProbeInput(inputOrText, legacyBaseUrlOrOptions, maybeOptions) {
+  const options =
+    legacyBaseUrlOrOptions &&
+    typeof legacyBaseUrlOrOptions === "object" &&
+    !Array.isArray(legacyBaseUrlOrOptions) &&
+    maybeOptions === undefined
+      ? legacyBaseUrlOrOptions
+      : maybeOptions && typeof maybeOptions === "object" && !Array.isArray(maybeOptions)
+        ? maybeOptions
+        : {};
+
+  const fallbackBaseUrl =
+    typeof legacyBaseUrlOrOptions === "string"
+      ? legacyBaseUrlOrOptions
+      : pickFirstNonEmpty(options.base_url, options.baseUrl, options.target_url);
+
+  const normalizedOptions = Object.freeze(
+    Object.assign({}, options, {
+      base_url: assertAllowedUrl(fallbackBaseUrl, "BASE_URL")
+    })
+  );
+
+  return Object.freeze({
+    request: normalizeProbeRequest(inputOrText, normalizedOptions.base_url),
+    options: normalizedOptions
+  });
+}
+
+function buildProbeInputFromPayload(payload, runUnit, baseUrl) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     throw new Error("PAYLOAD_OBJECT_REQUIRED");
   }
@@ -109,7 +137,7 @@ function buildFamily3ProbeInputFromPayload(payload, runUnit, baseUrl) {
     throw new Error("RUN_UNIT_OBJECT_REQUIRED");
   }
 
-  return normalizeFamily3ProbeInput(
+  return normalizeProbeRequest(
     {
       matter_id: payload.matter_id,
       matter_scope: payload.matter_scope,
@@ -180,7 +208,10 @@ function validateProbeResult(result) {
 
 module.exports = Object.freeze({
   assertAllowedUrl,
-  normalizeFamily3ProbeInput,
-  buildFamily3ProbeInputFromPayload,
-  validateProbeResult
+  normalizeProbeRequest,
+  normalizeProbeInput,
+  buildProbeInputFromPayload,
+  validateProbeResult,
+  normalizeFamily3ProbeInput: normalizeProbeRequest,
+  buildFamily3ProbeInputFromPayload: buildProbeInputFromPayload
 });
