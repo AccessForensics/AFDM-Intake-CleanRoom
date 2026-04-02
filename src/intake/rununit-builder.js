@@ -22,6 +22,13 @@ function normalizeAnchorDelimiters(anchorText) {
     .replace(/`n(?=\s*(?:[-*]|\d+[.)]))/g, "\n");
 }
 
+function splitCommaConjunctions(text) {
+  return String(text || "")
+    .split(/\s*,\s*(?:and|also|plus|furthermore|moreover)\s+/i)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
 function splitAnchorTextIntoCandidates(anchorText) {
   const raw = normalizeAnchorDelimiters(anchorText);
 
@@ -42,14 +49,25 @@ function splitAnchorTextIntoCandidates(anchorText) {
     }
   }
 
-  return firstPass
+  const secondPass = [];
+  for (const part of firstPass) {
+    const conjunctionSplit = splitCommaConjunctions(part);
+    for (const candidate of conjunctionSplit) {
+      secondPass.push(candidate);
+    }
+  }
+
+  return secondPass
     .map((part) => normalizeCandidateText(part))
     .filter(Boolean);
 }
 
 function assertAtomicCandidate(candidateText) {
-  const obviousBlend = /;\s*|\s+\/\s+|\s+\band\b\s+/i;
-  if (obviousBlend.test(candidateText)) {
+  const obviousBlend = /;\s*|\s+\/\s+|,\s*(?:and|also|plus|furthermore|moreover)\s+|\s+\band\b\s+/i;
+  const repeatedAssertionVerb =
+    /\b(?:lack(?:s|ed)?|missing|without|did not|does not|fail(?:s|ed)? to|unable to)\b[\s\S]*\band\b[\s\S]*\b(?:lack(?:s|ed)?|missing|without|did not|does not|fail(?:s|ed)? to|unable to)\b/i;
+
+  if (obviousBlend.test(candidateText) || repeatedAssertionVerb.test(candidateText)) {
     throw new Error(`NON_ATOMIC_ASSERTED_CONDITION: ${candidateText}`);
   }
 }
@@ -106,6 +124,7 @@ function buildRunUnitsFromAnchors(anchors, options = {}) {
 }
 
 module.exports = Object.freeze({
+  assertAtomicCandidate,
   buildRunUnitsFromAnchors,
   splitAnchorTextIntoCandidates,
 });

@@ -184,6 +184,16 @@ function routeDetermination(input) {
       });
     }
 
+    if (desktopQualifying > 0 && mobileQualifying > 0) {
+      return createIntakeDeterminationRecord({
+        matter_id,
+        determination_template: DETERMINATION_TEMPLATE.TEMPLATE_1,
+        generated_at_local: generated.generated_at_local,
+        generated_at_epoch_ms: generated.generated_at_epoch_ms,
+        matter_level_note: "",
+      });
+    }
+
     if (desktopQualifying > 0 && mobileConstrained && mobileQualifying === 0) {
       return createIntakeDeterminationRecord({
         matter_id,
@@ -204,13 +214,27 @@ function routeDetermination(input) {
       });
     }
 
-    return createIntakeDeterminationRecord({
-      matter_id,
-      determination_template: DETERMINATION_TEMPLATE.TEMPLATE_1,
-      generated_at_local: generated.generated_at_local,
-      generated_at_epoch_ms: generated.generated_at_epoch_ms,
-      matter_level_note: "",
-    });
+    if (desktopQualifying > 0 && mobileQualifying === 0 && !mobileConstrained) {
+      return createIntakeDeterminationRecord({
+        matter_id,
+        determination_template: DETERMINATION_TEMPLATE.TEMPLATE_2,
+        generated_at_local: generated.generated_at_local,
+        generated_at_epoch_ms: generated.generated_at_epoch_ms,
+        matter_level_note: "",
+      });
+    }
+
+    if (mobileQualifying > 0 && desktopQualifying === 0 && !desktopConstrained) {
+      return createIntakeDeterminationRecord({
+        matter_id,
+        determination_template: DETERMINATION_TEMPLATE.TEMPLATE_4,
+        generated_at_local: generated.generated_at_local,
+        generated_at_epoch_ms: generated.generated_at_epoch_ms,
+        matter_level_note: "",
+      });
+    }
+
+    throw new Error("SUFFICIENCY_REACHED_WITHOUT_ELIGIBLE_TEMPLATE");
   }
 
   const constraintClasses = collectConstraintClasses(runRecords);

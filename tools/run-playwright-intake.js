@@ -30,6 +30,12 @@ const {
   validateProbeResult
 } = require("../src/intake/probes/probe-contract.js");
 
+const {
+  renderExternalOutputText,
+  createExternalOutputValidationRecord,
+  assertExternalOutputMayBeReleased
+} = require("../src/intake/external-output-validator.js");
+
 function usage() {
   console.error("Usage: node tools/run-playwright-intake.js <payload-json-path> <output-dir>");
   process.exit(1);
@@ -236,6 +242,15 @@ async function saveArtifacts(page, prefix) {
     generated_at_epoch_ms: now.getTime()
   });
 
+  const renderedExternalOutputText = renderExternalOutputText(determination);
+  const externalOutputValidationRecord = createExternalOutputValidationRecord({
+    matter_id: payload.matter_id,
+    determination_record: determination,
+    output_text: renderedExternalOutputText
+  });
+
+  assertExternalOutputMayBeReleased(externalOutputValidationRecord);
+
   const summary = {
     matter_id: payload.matter_id,
     matter_scope: payload.matter_scope,
@@ -253,6 +268,8 @@ async function saveArtifacts(page, prefix) {
   fs.writeFileSync(path.join(outDir, "playwright-observations.json"), JSON.stringify(observations, null, 2), "utf8");
   fs.writeFileSync(path.join(outDir, "run-records.json"), JSON.stringify(runRecords, null, 2), "utf8");
   fs.writeFileSync(path.join(outDir, "determination-record.json"), JSON.stringify(determination, null, 2), "utf8");
+  fs.writeFileSync(path.join(outDir, "determination-output.txt"), renderedExternalOutputText, "utf8");
+  fs.writeFileSync(path.join(outDir, "external-output-validation-record.json"), JSON.stringify(externalOutputValidationRecord, null, 2), "utf8");
   fs.writeFileSync(path.join(outDir, "playwright-summary.json"), JSON.stringify(summary, null, 2), "utf8");
 
   console.log("");

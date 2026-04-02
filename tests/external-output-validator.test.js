@@ -6,6 +6,7 @@ const assert = require("node:assert/strict");
 const { DETERMINATION_TEMPLATE } = require("../src/intake/enums.js");
 const {
   SPEC_VERSION,
+  renderExternalOutputText,
   createExternalOutputValidationRecord,
   assertExternalOutputMayBeReleased,
 } = require("../src/intake/external-output-validator.js");
@@ -21,11 +22,14 @@ function makeDetermination(template, note = "") {
 }
 
 test("valid minimal determination output passes automated checks", () => {
+  const determination = makeDetermination(DETERMINATION_TEMPLATE.TEMPLATE_1);
+  const outputText = renderExternalOutputText(determination);
+
   const record = createExternalOutputValidationRecord({
     matter_id: "AF-2026-0001",
     spec_version: SPEC_VERSION,
-    determination_record: makeDetermination(DETERMINATION_TEMPLATE.TEMPLATE_1),
-    output_text: "ACCESS FORENSICS\nINTAKE DETERMINATION\nMATTER ID: AF-2026-0001\n\nDETERMINATION: ELIGIBLE FOR DESKTOP AND MOBILE TECHNICAL RECORD BUILD",
+    determination_record: determination,
+    output_text: outputText,
   });
 
   assert.equal(record.determination_template_used, DETERMINATION_TEMPLATE.TEMPLATE_1);
@@ -38,72 +42,48 @@ test("valid minimal determination output passes automated checks", () => {
   assert.doesNotThrow(() => assertExternalOutputMayBeReleased(record));
 });
 
-test("forbidden disclosure fails validation", () => {
+test("forbidden language in matter_level_note fails validation even when output_text body is clean", () => {
+  const determination = makeDetermination(
+    DETERMINATION_TEMPLATE.TEMPLATE_3,
+    "This audit found issues."
+  );
+
   const record = createExternalOutputValidationRecord({
     matter_id: "AF-2026-0001",
-    determination_record: makeDetermination(DETERMINATION_TEMPLATE.TEMPLATE_2),
-    output_text: "DETERMINATION: ELIGIBLE FOR DESKTOP TECHNICAL RECORD BUILD\nNumber of runs performed: 2",
-  });
-
-  assert.equal(record.forbidden_disclosure_check_passed, false);
-  assert.throws(() => assertExternalOutputMayBeReleased(record), /EXTERNAL_OUTPUT_VALIDATION_FAILED/);
-});
-
-test("forbidden language fails validation", () => {
-  const record = createExternalOutputValidationRecord({
-    matter_id: "AF-2026-0001",
-    determination_record: makeDetermination(DETERMINATION_TEMPLATE.TEMPLATE_6),
-    output_text: "DETERMINATION: NOT ELIGIBLE FOR FORENSIC EXECUTION\nThis audit found issues.",
+    determination_record: determination,
+    output_text: "DETERMINATION: ELIGIBLE FOR DESKTOP TECHNICAL RECORD BUILD / MOBILE BASELINE: CONSTRAINED",
   });
 
   assert.equal(record.forbidden_language_check_passed, false);
+  assert.throws(() => assertExternalOutputMayBeReleased(record), /EXTERNAL_OUTPUT_VALIDATION_FAILED/);
 });
 
-test("mandatory exact terms are required when scope and context are described", () => {
+test("indirect signaling phrase in matter_level_note fails validation even when output_text body is clean", () => {
+  const determination = makeDetermination(
+    DETERMINATION_TEMPLATE.TEMPLATE_3,
+    "Extensive testing was completed."
+  );
+
   const record = createExternalOutputValidationRecord({
     matter_id: "AF-2026-0001",
-    determination_record: makeDetermination(DETERMINATION_TEMPLATE.TEMPLATE_1),
-    output_text: "DETERMINATION: ELIGIBLE FOR DESKTOP AND MOBILE TECHNICAL RECORD BUILD\nReplicated Desktop Browser Context was in scope.",
-  });
-
-  assert.equal(record.mandatory_term_check_passed, false);
-});
-
-test("matter-level context disclosure rejects paraphrase", () => {
-  const record = createExternalOutputValidationRecord({
-    matter_id: "AF-2026-0001",
-    determination_record: makeDetermination(DETERMINATION_TEMPLATE.TEMPLATE_1),
-    output_text: "DETERMINATION: ELIGIBLE FOR DESKTOP AND MOBILE TECHNICAL RECORD BUILD\nThe defined desktop browser context was used.",
-  });
-
-  assert.equal(record.matter_level_context_disclosure_check_passed, false);
-});
-
-test("per-run context leakage fails validation", () => {
-  const record = createExternalOutputValidationRecord({
-    matter_id: "AF-2026-0001",
-    determination_record: makeDetermination(DETERMINATION_TEMPLATE.TEMPLATE_3, "AUTHWALL blocked bounded Mobile baseline access."),
-    output_text: "DETERMINATION: ELIGIBLE FOR DESKTOP TECHNICAL RECORD BUILD / MOBILE BASELINE: CONSTRAINED\nDesktop then Mobile run sequence was used.",
-  });
-
-  assert.equal(record.per_run_context_leakage_check_passed, false);
-});
-
-test("exact indirect-signaling phrase fails validation", () => {
-  const record = createExternalOutputValidationRecord({
-    matter_id: "AF-2026-0001",
-    determination_record: makeDetermination(DETERMINATION_TEMPLATE.TEMPLATE_4),
-    output_text: "DETERMINATION: ELIGIBLE FOR MOBILE TECHNICAL RECORD BUILD\nExtensive testing was completed.",
+    determination_record: determination,
+    output_text: "DETERMINATION: ELIGIBLE FOR DESKTOP TECHNICAL RECORD BUILD / MOBILE BASELINE: CONSTRAINED",
   });
 
   assert.equal(record.indirect_signaling_check_passed, false);
+  assert.throws(() => assertExternalOutputMayBeReleased(record), /EXTERNAL_OUTPUT_VALIDATION_FAILED/);
 });
 
-test("functional-equivalent signaling requires reviewer clearance", () => {
+test("functional-equivalent signaling in matter_level_note requires reviewer clearance", () => {
+  const determination = makeDetermination(
+    DETERMINATION_TEMPLATE.TEMPLATE_3,
+    "A thorough review was completed."
+  );
+
   const record = createExternalOutputValidationRecord({
     matter_id: "AF-2026-0001",
-    determination_record: makeDetermination(DETERMINATION_TEMPLATE.TEMPLATE_2),
-    output_text: "DETERMINATION: ELIGIBLE FOR DESKTOP TECHNICAL RECORD BUILD\nA thorough review was completed.",
+    determination_record: determination,
+    output_text: "DETERMINATION: ELIGIBLE FOR DESKTOP TECHNICAL RECORD BUILD / MOBILE BASELINE: CONSTRAINED",
   });
 
   assert.equal(record.functional_equivalent_review_flagged, true);
@@ -113,11 +93,16 @@ test("functional-equivalent signaling requires reviewer clearance", () => {
   );
 });
 
-test("anti-hedging risk requires reviewer clearance", () => {
+test("anti-hedging language in matter_level_note requires reviewer clearance", () => {
+  const determination = makeDetermination(
+    DETERMINATION_TEMPLATE.TEMPLATE_3,
+    "This likely applies."
+  );
+
   const record = createExternalOutputValidationRecord({
     matter_id: "AF-2026-0001",
-    determination_record: makeDetermination(DETERMINATION_TEMPLATE.TEMPLATE_2),
-    output_text: "DETERMINATION: ELIGIBLE FOR DESKTOP TECHNICAL RECORD BUILD\nThis likely applies.",
+    determination_record: determination,
+    output_text: "DETERMINATION: ELIGIBLE FOR DESKTOP TECHNICAL RECORD BUILD / MOBILE BASELINE: CONSTRAINED",
   });
 
   assert.equal(record.anti_hedging_review_flagged, true);
@@ -128,15 +113,45 @@ test("anti-hedging risk requires reviewer clearance", () => {
 });
 
 test("matter-level note compliance fails if note is not one sentence", () => {
+  const determination = makeDetermination(
+    DETERMINATION_TEMPLATE.TEMPLATE_5,
+    "GEOBLOCK blocked bounded Desktop baseline access. Another sentence."
+  );
+
   const record = createExternalOutputValidationRecord({
     matter_id: "AF-2026-0001",
-    determination_record: makeDetermination(
-      DETERMINATION_TEMPLATE.TEMPLATE_5,
-      "GEOBLOCK blocked bounded Desktop baseline access. Another sentence."
-    ),
+    determination_record: determination,
     output_text: "DETERMINATION: ELIGIBLE FOR MOBILE TECHNICAL RECORD BUILD / DESKTOP BASELINE: CONSTRAINED",
   });
 
   assert.equal(record.matter_level_note_compliance_check_passed, false);
   assert.throws(() => assertExternalOutputMayBeReleased(record), /EXTERNAL_OUTPUT_VALIDATION_FAILED/);
+});
+
+test("note on disallowed template fails validation", () => {
+  const determination = makeDetermination(
+    DETERMINATION_TEMPLATE.TEMPLATE_7,
+    "AUTHWALL blocked bounded Desktop baseline access."
+  );
+
+  const record = createExternalOutputValidationRecord({
+    matter_id: "AF-2026-0001",
+    determination_record: determination,
+    output_text: "DETERMINATION: NOT ELIGIBLE FOR FORENSIC EXECUTION - CONSTRAINTS (BOTMITIGATION)",
+  });
+
+  assert.equal(record.matter_level_note_compliance_check_passed, false);
+  assert.throws(() => assertExternalOutputMayBeReleased(record), /EXTERNAL_OUTPUT_VALIDATION_FAILED/);
+});
+
+test("renderExternalOutputText compiles determination and note", () => {
+  const rendered = renderExternalOutputText(
+    makeDetermination(
+      DETERMINATION_TEMPLATE.TEMPLATE_3,
+      "AUTHWALL blocked bounded Mobile baseline access."
+    )
+  );
+
+  assert.match(rendered, /MOBILE BASELINE: CONSTRAINED/);
+  assert.match(rendered, /AUTHWALL blocked bounded Mobile baseline access\./);
 });

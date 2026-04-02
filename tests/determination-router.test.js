@@ -110,6 +110,34 @@ test("routes Template 5 for mobile-eligible desktop-constrained matter", () => {
   assert.equal(result.matter_level_note, "GEOBLOCK blocked bounded Desktop baseline access.");
 });
 
+test("falls back to Template 2 when only desktop has qualifying runs in dual scope", () => {
+  const result = route({
+    matter_scope: MATTER_SCOPE.DUAL,
+    run_records: [
+      makeRun("RUN-001", "desktop_baseline", OUTCOME_LABEL.OBSERVED),
+      makeRun("RUN-002", "desktop_baseline", OUTCOME_LABEL.NOT_OBSERVED),
+      makeRun("RUN-003", "mobile_baseline", OUTCOME_LABEL.INSUFFICIENT, "", "Missing bounded trigger."),
+    ],
+  });
+
+  assert.equal(result.determination_template, DETERMINATION_TEMPLATE.TEMPLATE_2);
+  assert.equal(result.matter_level_note, "");
+});
+
+test("falls back to Template 4 when only mobile has qualifying runs in dual scope", () => {
+  const result = route({
+    matter_scope: MATTER_SCOPE.DUAL,
+    run_records: [
+      makeRun("RUN-001", "mobile_baseline", OUTCOME_LABEL.OBSERVED),
+      makeRun("RUN-002", "mobile_baseline", OUTCOME_LABEL.NOT_OBSERVED),
+      makeRun("RUN-003", "desktop_baseline", OUTCOME_LABEL.INSUFFICIENT, "", "Missing bounded trigger."),
+    ],
+  });
+
+  assert.equal(result.determination_template, DETERMINATION_TEMPLATE.TEMPLATE_4);
+  assert.equal(result.matter_level_note, "");
+});
+
 test("routes Template 6 for non-constraint generic ineligibility", () => {
   const result = route({
     matter_scope: MATTER_SCOPE.DUAL,

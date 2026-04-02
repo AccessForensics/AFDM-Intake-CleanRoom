@@ -48,6 +48,10 @@ function assertNonEmptyString(value, fieldName) {
   return safe;
 }
 
+function safeTrim(value) {
+  return String(value || "").trim();
+}
+
 function getDeterminationLine(outputText) {
   const lines = String(outputText || "")
     .replace(/\r\n/g, "\n")
@@ -178,9 +182,18 @@ function perRunContextLeakageCheck(body) {
 }
 
 function matterLevelNoteComplianceCheck(determinationRecord) {
-  const note = String(determinationRecord.matter_level_note || "").trim();
+  const note = safeTrim(determinationRecord.matter_level_note);
   if (!note) {
     return true;
+  }
+
+  const template = safeTrim(determinationRecord.determination_template);
+  const noteAllowed =
+    template === DETERMINATION_TEMPLATE.TEMPLATE_3 ||
+    template === DETERMINATION_TEMPLATE.TEMPLATE_5;
+
+  if (!noteAllowed) {
+    return false;
   }
 
   const sentenceCount = note
@@ -191,29 +204,51 @@ function matterLevelNoteComplianceCheck(determinationRecord) {
   return sentenceCount === 1;
 }
 
+function renderExternalOutputText(determinationRecord) {
+  const determinationLine = assertLockedDeterminationTemplate(
+    assertNonEmptyString(determinationRecord.determination_template, "DETERMINATION_TEMPLATE")
+  );
+  const note = safeTrim(determinationRecord.matter_level_note);
+  return note ? `${determinationLine}\n${note}` : determinationLine;
+}
+
 function createExternalOutputValidationRecord(input) {
   const matter_id = assertNonEmptyString(input.matter_id, "MATTER_ID");
   const spec_version = String(input.spec_version || SPEC_VERSION).trim();
   const determinationRecord = input.determination_record || {};
   const output_text = assertNonEmptyString(input.output_text, "OUTPUT_TEXT");
+  const matter_level_note = safeTrim(determinationRecord.matter_level_note);
 
   const determinationLine = assertLockedDeterminationTemplate(getDeterminationLine(output_text));
   const body = getBodyWithoutDeterminationLine(output_text);
 
-  const forbidden_disclosure_check_passed = !hasForbiddenDisclosure(body);
-  const forbidden_language_check_passed = !hasForbiddenLanguage(body);
+  const forbidden_disclosure_check_passed =
+    !hasForbiddenDisclosure(body) && !hasForbiddenDisclosure(matter_level_note);
+
+  const forbidden_language_check_passed =
+    !hasForbiddenLanguage(body) && !hasForbiddenLanguage(matter_level_note);
+
   const mandatory_term_check_passed = mandatoryTermCheck(body);
   const matter_level_context_disclosure_check_passed = matterLevelContextDisclosureCheck(body);
-  const per_run_context_leakage_check_passed = perRunContextLeakageCheck(body);
-  const indirect_signaling_check_passed = !hasIndirectSignalingExactPhrase(body);
 
-  const functional_equivalent_review_flagged = requiresFunctionalEquivalentReview(body);
+  const per_run_context_leakage_check_passed =
+    perRunContextLeakageCheck(body) && perRunContextLeakageCheck(matter_level_note);
+
+  const indirect_signaling_check_passed =
+    !hasIndirectSignalingExactPhrase(body) && !hasIndirectSignalingExactPhrase(matter_level_note);
+
+  const functional_equivalent_review_flagged =
+    requiresFunctionalEquivalentReview(body) || requiresFunctionalEquivalentReview(matter_level_note);
+
   const functional_equivalent_review_cleared = false;
 
-  const anti_hedging_review_flagged = requiresAntiHedgingReview(body);
+  const anti_hedging_review_flagged =
+    requiresAntiHedgingReview(body) || requiresAntiHedgingReview(matter_level_note);
+
   const anti_hedging_review_cleared = false;
 
-  const matter_level_note_compliance_check_passed = matterLevelNoteComplianceCheck(determinationRecord);
+  const matter_level_note_compliance_check_passed =
+    matterLevelNoteComplianceCheck(determinationRecord);
 
   return Object.freeze({
     matter_id,
@@ -267,6 +302,7 @@ function assertExternalOutputMayBeReleased(validationRecord) {
 
 module.exports = Object.freeze({
   SPEC_VERSION,
+  renderExternalOutputText,
   createExternalOutputValidationRecord,
   assertExternalOutputMayBeReleased,
 });
