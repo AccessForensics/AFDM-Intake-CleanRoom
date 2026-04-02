@@ -72,14 +72,14 @@ test("registry returns null for unsupported allegation and runner fallback is in
   });
 });
 
-test("lawsuit1 family match with unimplemented sub allegation fails closed to insufficient", async () => {
+test("lawsuit1 direct probe throws strict fail-closed error for unimplemented sub allegation", async () => {
   const page = new MockPage({
     url: "https://example.com/",
     evaluateQueue: [
       {
         title: "Example",
         bodyText: "Retail content",
-        html: '<html><body><main>Retail content</main></body></html>',
+        html: "<html><body><main>Retail content</main></body></html>",
         anchors: [
           { text: "Home", href: "/" }
         ]
@@ -87,16 +87,15 @@ test("lawsuit1 family match with unimplemented sub allegation fails closed to in
     ]
   });
 
-  const result = await runLawsuit1Probe(
-    page,
-    "Interactive images used as links were ambiguous in a way not yet extracted into deterministic proof logic",
-    "https://example.com/"
-  );
-
-  assert.equal(result.outcome_label, OUTCOME_LABEL.INSUFFICIENT);
-  assert.equal(
-    result.mechanical_note,
-    "Probe matched Lawsuit 1 family but deterministic proof logic is pending extraction for this allegation."
+  await assert.rejects(
+    async () => {
+      await runLawsuit1Probe(
+        page,
+        "Interactive images used as links were ambiguous in a way not yet extracted into deterministic proof logic",
+        "https://example.com/"
+      );
+    },
+    /FAMILY1_PROBE_IMPLEMENTATION_MISSING/
   );
 });
 

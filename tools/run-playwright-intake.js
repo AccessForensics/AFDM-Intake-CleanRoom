@@ -1,205 +1,263 @@
 "use strict";
 
-const fs = require("node:fs");
-const path = require("node:path");
+const fs = require("fs");
+const path = require("path");
+const { chromium } = require("playwright");
+
 const {
-  chromium,
-  devices
-} = require("playwright");
-const {
-  parseComplaintText
-} = require("../src/intake/parse-complaint-text.js");
-const {
-  detectEnvironmentChallenge
-} = require("../src/intake/browser-challenge.js");
-const {
-  OUTCOME_LABEL
+  CONTEXT_ID,
+  OUTCOME_LABEL,
+  CONSTRAINT_CLASS,
+  createRunRecord
 } = require("../src/intake/run-record.js");
+
 const {
-  runFamily1Probe,
-  runFamily2Probe,
-  runFamily3Probe
+  evaluateMatterProgress,
+  appendRunIfPermitted
+} = require("../src/intake/sufficiency-stop.js");
+
+const {
+  routeDetermination
+} = require("../src/intake/determination-router.js");
+
+const {
+  resolveProbe
 } = require("../src/intake/probes/index.js");
 
-const ROOT = path.resolve(__dirname, "..");
-const DEFAULT_OUTPUT_DIR = path.join(ROOT, "tmp", "playwright-intake");
+const {
+  assertAllowedUrl,
+  buildProbeInputFromPayload,
+  validateProbeResult
+} = require("../src/intake/probes/probe-contract.js");
 
-function ensureDir(dirPath) {
-  fs.mkdirSync(dirPath, { recursive: true });
+function usage() {
+  console.error("Usage: node tools/run-playwright-intake.js <payload-json-path> <output-dir>");
+  process.exit(1);
 }
 
-function readJson(jsonPath) {
-  return JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+if (process.argv.length < 4) {
+  usage();
 }
 
-function writeJson(jsonPath, data) {
-  ensureDir(path.dirname(jsonPath));
-  fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2));
+const payloadPath = path.resolve(process.argv[2]);
+const outDir = path.resolve(process.argv[3]);
+
+if (!fs.existsSync(payloadPath)) {
+  throw new Error(`PAYLOAD_NOT_FOUND: ${payloadPath}`);
 }
 
-function safeSlug(value) {
+fs.mkdirSync(outDir, { recursive: true });
+const artifactsDir = path.join(outDir, "artifacts");
+fs.mkdirSync(artifactsDir, { recursive: true });
+
+const payload = JSON.parse(fs.readFileSync(payloadPath, "utf8"));
+const BASE_URL = assertAllowedUrl(
+  payload && payload.source_case && payload.source_case.site,
+  "PAYLOAD_SOURCE_CASE_SITE"
+);
+
+if (!BASE_URL) {
+  throw new Error("PAYLOAD_SOURCE_CASE_SITE_REQUIRED");
+}
+
+const CONTEXT_CONFIG = {
+  [CONTEXT_ID.DESKTOP_BASELINE]: {
+    viewport: { width: 1366, height: 900 },
+    isMobile: false,
+    hasTouch: false,
+    deviceScaleFactor: 1
+  },
+  [CONTEXT_ID.MOBILE_BASELINE]: {
+    viewport: { width: 393, height: 852 },
+    isMobile: true,
+    hasTouch: true,
+    deviceScaleFactor: 1
+  }
+};
+
+function nowLocal() {
+  return new Date().toISOString();
+}
+
+function nowMs() {
+  return Date.now();
+}
+
+function slug(value) {
   return String(value || "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
-    .slice(0, 80) || "run-unit";
+    .slice(0, 80) || "step";
 }
 
-function pickFamilyRunner(familyId) {
-  if (familyId === "family_1_structural_integrity") {
-    return runFamily1Probe;
-  }
-
-  if (familyId === "family_2_form_input_assistance") {
-    return runFamily2Probe;
-  }
-
-  if (familyId === "family_3_form_label_semantics") {
-    return runFamily3Probe;
-  }
-
-  return null;
+function sanitizeFilePart(value) {
+  return String(value || "").replace(/[^a-zA-Z0-9._-]/g, "_");
 }
 
-function buildProbeInput(payload, runUnit) {
-  return Object.freeze({
-    matter_id: payload.matter_id || "",
-    matter_scope: payload.matter_scope || "",
-    run_unit_id: runUnit.run_unit_id || runUnit.rununitid || "",
-    complaint_group_anchor_id:
-      runUnit.complaint_group_anchor_id || runUnit.complaintgroupanchorid || "",
-    family_id: runUnit.family_id || "",
-    asserted_condition_text:
-      runUnit.asserted_condition_text || runUnit.assertedconditiontext || "",
-    target_url: runUnit.target_url || payload.base_url || "",
-    target_page_hint: runUnit.target_page_hint || "",
-    target_element_hint: runUnit.target_element_hint || "",
-    baseline_scope: runUnit.baseline_scope || payload.matter_scope || ""
-  });
+async function saveArtifacts(page, prefix) {
+  const pngPath = path.join(artifactsDir, prefix + ".png");
+  const htmlPath = path.join(artifactsDir, prefix + ".html");
+  await page.screenshot({ path: pngPath, fullPage: true });
+  fs.writeFileSync(htmlPath, await page.content(), "utf8");
+  return { pngPath, htmlPath };
 }
 
-async function createContext(browser, baseline) {
-  if (baseline === "mobile") {
-    return browser.newContext({
-      ...devices["iPhone 13"],
-      viewport: { width: 390, height: 844 },
-      deviceScaleFactor: 3,
-      isMobile: true,
-      hasTouch: true
-    });
-  }
-
-  return browser.newContext({
-    viewport: { width: 1366, height: 900 }
-  });
-}
-
-async function runSingleProbe(browser, payload, runUnit, baseline) {
-  const runner = pickFamilyRunner(runUnit.family_id);
-  if (!runner) {
-    return Object.freeze({
-      outcome_label: OUTCOME_LABEL.INSUFFICIENT,
-      constraint_class: "",
-      mechanical_note: "No family probe is registered for the supplied family id.",
-      evidence: Object.freeze({
-        family_id: runUnit.family_id || "",
-        asserted_condition_text:
-          runUnit.asserted_condition_text || runUnit.assertedconditiontext || ""
-      })
-    });
-  }
-
-  const context = await createContext(browser, baseline);
-  const page = await context.newPage();
-
-  try {
-    const probeInput = buildProbeInput(payload, runUnit);
-    return await runner(page, probeInput, {
-      base_url: payload.base_url || "",
-      detectEnvironmentChallenge
-    });
-  } finally {
-    await context.close();
-  }
-}
-
-function buildResultRecord(runUnit, baseline, result) {
-  return Object.freeze({
-    run_unit_id: runUnit.run_unit_id || runUnit.rununitid || "",
-    family_id: runUnit.family_id || "",
-    baseline,
-    asserted_condition_text:
-      runUnit.asserted_condition_text || runUnit.assertedconditiontext || "",
-    outcome_label: result.outcome_label || "",
-    constraint_class: result.constraint_class || "",
-    mechanical_note: result.mechanical_note || "",
-    evidence: result.evidence || {}
-  });
-}
-
-async function main() {
-  const jsonPath = process.argv[2];
-  const outputDir = process.argv[3] || DEFAULT_OUTPUT_DIR;
-
-  if (!jsonPath) {
-    throw new Error("USAGE: node tools/run-playwright-intake.js <matter.json> [outputDir]");
-  }
-
-  const payload = readJson(path.resolve(jsonPath));
-  const parsed = parseComplaintText(payload.complaint_text || "");
-  const runUnits = Array.isArray(parsed.run_units) ? parsed.run_units : [];
-
-  ensureDir(outputDir);
-
+(async () => {
   const browser = await chromium.launch({ headless: true });
-  const results = [];
+  const observations = [];
+  let runRecords = [];
 
   try {
-    for (const runUnit of runUnits) {
-      const baselines = Array.isArray(runUnit.baselines) && runUnit.baselines.length > 0
-        ? runUnit.baselines
-        : ["desktop"];
-
-      for (const baseline of baselines) {
-        const result = await runSingleProbe(browser, payload, runUnit, baseline);
-        results.push(buildResultRecord(runUnit, baseline, result));
+    for (let i = 0; i < payload.sequencing_plan.length; i += 1) {
+      const progressBefore = evaluateMatterProgress(runRecords);
+      if (progressBefore.intake_closed) {
+        console.log(`Stop reached before step ${i + 1}: ${progressBefore.stop_basis}`);
+        break;
       }
+
+      const step = payload.sequencing_plan[i];
+      const runUnit = payload.run_units.find((ru) => ru.rununitid === step.run_unit_id);
+      if (!runUnit) {
+        throw new Error(`RUN_UNIT_NOT_FOUND: ${step.run_unit_id}`);
+      }
+
+      const contextConfig = CONTEXT_CONFIG[step.context_id];
+      if (!contextConfig) {
+        throw new Error(`UNKNOWN_CONTEXT_ID: ${step.context_id}`);
+      }
+
+      const prefix = [
+        String(i + 1).padStart(3, "0"),
+        sanitizeFilePart(step.context_id),
+        sanitizeFilePart(runUnit.rununitid),
+        sanitizeFilePart(slug(runUnit.assertedconditiontext))
+      ].join("_");
+
+      const runStartLocal = nowLocal();
+      const runStartEpoch = nowMs();
+
+      const context = await browser.newContext({
+        viewport: contextConfig.viewport,
+        isMobile: contextConfig.isMobile,
+        hasTouch: contextConfig.hasTouch,
+        deviceScaleFactor: contextConfig.deviceScaleFactor
+      });
+
+      const page = await context.newPage();
+
+      let probeResult;
+      try {
+        const resolved = resolveProbe(runUnit.assertedconditiontext);
+
+        if (!resolved) {
+          probeResult = validateProbeResult({
+            outcome_label: OUTCOME_LABEL.INSUFFICIENT,
+            constraint_class: "",
+            mechanical_note: "No Playwright probe was implemented for this asserted condition.",
+            evidence: {}
+          });
+        } else {
+          const probeRequest = buildProbeInputFromPayload(payload, runUnit, BASE_URL);
+          probeResult = validateProbeResult(
+            await resolved.run(page, probeRequest, {
+              base_url: BASE_URL,
+              context_id: step.context_id
+            })
+          );
+        }
+      } catch (error) {
+        probeResult = validateProbeResult({
+          outcome_label: OUTCOME_LABEL.CONSTRAINED,
+          constraint_class: CONSTRAINT_CLASS.HARDCRASH,
+          mechanical_note: "Playwright execution failed during bounded step execution.",
+          evidence: { error: String((error && error.stack) || error) }
+        });
+      }
+
+      const artifactPaths = await saveArtifacts(page, prefix);
+
+      const runEndLocal = nowLocal();
+      const runEndEpoch = nowMs();
+
+      const nextRunRecord = createRunRecord({
+        runIndex: runRecords.length + 1,
+        matter_id: payload.matter_id,
+        complaint_group_anchor_id: runUnit.complaintgroupanchorid,
+        run_unit_id: runUnit.rununitid,
+        context_id: step.context_id,
+        outcome_label: probeResult.outcome_label,
+        constraint_class: probeResult.constraint_class || "",
+        mechanical_note: probeResult.mechanical_note || "",
+        run_start_local: runStartLocal,
+        run_start_epoch_ms: runStartEpoch,
+        run_end_local: runEndLocal,
+        run_end_epoch_ms: runEndEpoch
+      });
+
+      const appendResult = appendRunIfPermitted(runRecords, nextRunRecord);
+      runRecords = appendResult.run_records;
+
+      observations.push({
+        step_index: i + 1,
+        matter_id: payload.matter_id,
+        complaint_group_anchor_id: runUnit.complaintgroupanchorid,
+        run_unit_id: runUnit.rununitid,
+        asserted_condition_text: runUnit.assertedconditiontext,
+        context_id: step.context_id,
+        operator_outcome_label: probeResult.outcome_label,
+        operator_constraint_class: probeResult.constraint_class || "",
+        operator_mechanical_note: probeResult.mechanical_note || "",
+        operator_notes_internal_only: JSON.stringify(probeResult.evidence || {}, null, 2),
+        evidence_screenshot_path: artifactPaths.pngPath,
+        evidence_html_path: artifactPaths.htmlPath,
+        run_start_local: runStartLocal,
+        run_start_epoch_ms: runStartEpoch,
+        run_end_local: runEndLocal,
+        run_end_epoch_ms: runEndEpoch
+      });
+
+      await context.close();
+
+      console.log(
+        `[${runRecords.length}] ${step.context_id} ${runUnit.rununitid} -> ${probeResult.outcome_label} ${probeResult.constraint_class || ""} | stop_basis=${appendResult.progress.stop_basis || "not_stopped"}`
+      );
     }
   } finally {
     await browser.close();
   }
 
-  writeJson(path.join(outputDir, "playwright-results.json"), {
-    matter_id: payload.matter_id || "",
-    run_units: runUnits.length,
-    results
+  const now = new Date();
+  const determination = routeDetermination({
+    matter_id: payload.matter_id,
+    matter_scope: payload.matter_scope,
+    run_records: runRecords,
+    generated_at_local: now.toISOString(),
+    generated_at_epoch_ms: now.getTime()
   });
 
-  const summary = results.reduce(
-    (acc, item) => {
-      const key = item.outcome_label || "UNKNOWN";
-      acc[key] = (acc[key] || 0) + 1;
-      return acc;
-    },
-    {}
-  );
+  const summary = {
+    matter_id: payload.matter_id,
+    matter_scope: payload.matter_scope,
+    total_planned_steps: payload.sequencing_plan.length,
+    executed_steps: observations.length,
+    run_count: runRecords.length,
+    progress: evaluateMatterProgress(runRecords),
+    observed_as_asserted: observations.filter((r) => r.operator_outcome_label === OUTCOME_LABEL.OBSERVED).length,
+    not_observed_as_asserted: observations.filter((r) => r.operator_outcome_label === OUTCOME_LABEL.NOT_OBSERVED).length,
+    constrained: observations.filter((r) => r.operator_outcome_label === OUTCOME_LABEL.CONSTRAINED).length,
+    insufficient: observations.filter((r) => r.operator_outcome_label === OUTCOME_LABEL.INSUFFICIENT).length,
+    determination_template: determination.determination_template
+  };
 
-  writeJson(path.join(outputDir, "playwright-summary.json"), summary);
+  fs.writeFileSync(path.join(outDir, "playwright-observations.json"), JSON.stringify(observations, null, 2), "utf8");
+  fs.writeFileSync(path.join(outDir, "run-records.json"), JSON.stringify(runRecords, null, 2), "utf8");
+  fs.writeFileSync(path.join(outDir, "determination-record.json"), JSON.stringify(determination, null, 2), "utf8");
+  fs.writeFileSync(path.join(outDir, "playwright-summary.json"), JSON.stringify(summary, null, 2), "utf8");
 
-  process.stdout.write(
-    JSON.stringify(
-      {
-        output_dir: outputDir,
-        result_count: results.length,
-        summary
-      },
-      null,
-      2
-    ) + "\n"
-  );
-}
-
-main().catch((error) => {
-  console.error(error && error.stack ? error.stack : String(error));
-  process.exitCode = 1;
-});
+  console.log("");
+  console.log("Determination template:", determination.determination_template);
+  console.log("Executed steps:", observations.length);
+  console.log("Run count:", runRecords.length);
+  console.log("Stop basis:", summary.progress.stop_basis || "(not stopped)");
+})();
