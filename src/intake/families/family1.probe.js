@@ -81,34 +81,29 @@ async function probeHeadingStructure(page, request, options) {
 
 async function probeSkipLink(page, request, options) {
   return withChallengeGate(page, request, options, async () => {
+    await page.keyboard.press("Tab");
+
     const data = await page.evaluate(() => {
-      const anchors = Array.from(document.querySelectorAll('a[href^="#"]')).map((el) => ({
-        text: (el.innerText || el.textContent || "").trim().replace(/\s+/g, " "),
-        href: el.getAttribute("href") || ""
+      const active = document.activeElement;
+      const activeText = active ? ((active.innerText || active.textContent || "").trim()) : "";
+      const activeHref = active ? ((active.getAttribute("href") || "").trim()) : "";
+      const skipCandidates = Array.from(document.querySelectorAll("a[href^='#']")).map((a) => ({
+        text: (a.innerText || a.textContent || "").trim(),
+        href: (a.getAttribute("href") || "").trim()
       }));
 
-      const skipCandidates = anchors.filter((anchor) => {
-        const normalizedText = (anchor.text || "").toLowerCase();
-        return normalizedText.includes("skip") && normalizedText.includes("content");
-      });
-
       return {
-        anchorCount: anchors.length,
+        activeText,
+        activeHref,
         skipCandidates
       };
     });
 
-    if (data.anchorCount === 0) {
-      return {
-        outcome_label: OUTCOME_LABEL.INSUFFICIENT,
-        constraint_class: "",
-        mechanical_note: "No in-page anchor controls were detected on the target page.",
-        evidence: data
-      };
-    }
+    const focusedLooksLikeSkip = /skip/i.test(data.activeText) || /^#(main|content)/i.test(data.activeHref);
+    const anySkipCandidate = data.skipCandidates.some((item) => /skip/i.test(item.text) || /^#(main|content)/i.test(item.href));
 
     return {
-      outcome_label: data.skipCandidates.length > 0 ? OUTCOME_LABEL.NOT_OBSERVED : OUTCOME_LABEL.OBSERVED,
+      outcome_label: (focusedLooksLikeSkip || anySkipCandidate) ? OUTCOME_LABEL.NOT_OBSERVED : OUTCOME_LABEL.OBSERVED,
       constraint_class: "",
       mechanical_note: "",
       evidence: data
@@ -116,24 +111,26 @@ async function probeSkipLink(page, request, options) {
   });
 }
 
-async function probeLinkedImagePurpose(page, request, options) {
+async function probeImageLinkPurpose(page, request, options) {
   return withChallengeGate(page, request, options, async () => {
     const data = await page.evaluate(() => {
-      const linkedImages = Array.from(document.querySelectorAll("a img")).map((img) => {
-        const anchor = img.closest("a");
-        return {
-          alt: (img.getAttribute("alt") || "").trim(),
-          href: anchor ? anchor.href : "",
-          anchorText: anchor ? (anchor.innerText || anchor.textContent || "").trim().replace(/\s+/g, " ") : ""
-        };
-      });
+      const rows = Array.from(document.querySelectorAll("a")).slice(0, 250).map((a) => {
+        const img = a.querySelector("img");
+        if (!img) return null;
 
-      const unlabeledLinkedImages = linkedImages.filter((item) => !item.alt && !item.anchorText);
+        return {
+          href: (a.getAttribute("href") || "").trim(),
+          linkText: (a.innerText || a.textContent || "").trim().replace(/\s+/g, " "),
+          alt: (img.getAttribute("alt") || "").trim()
+        };
+      }).filter(Boolean);
+
+      const weak = rows.filter((row) => row.href && !row.linkText && !row.alt);
 
       return {
-        linkedImageCount: linkedImages.length,
-        linkedImages,
-        unlabeledLinkedImages
+        linkedImageCount: rows.length,
+        weakCount: weak.length,
+        samples: weak.slice(0, 10)
       };
     });
 
@@ -141,13 +138,48 @@ async function probeLinkedImagePurpose(page, request, options) {
       return {
         outcome_label: OUTCOME_LABEL.INSUFFICIENT,
         constraint_class: "",
-        mechanical_note: "No linked-image controls were detected on the target page.",
+        mechanical_note: "No bounded linked-image surface was located for link-purpose testing.",
         evidence: data
       };
     }
 
     return {
-      outcome_label: data.unlabeledLinkedImages.length > 0 ? OUTCOME_LABEL.OBSERVED : OUTCOME_LABEL.NOT_OBSERVED,
+      outcome_label: data.weakCount > 0 ? OUTCOME_LABEL.OBSERVED : OUTCOME_LABEL.NOT_OBSERVED,
+      constraint_class: "",
+      mechanical_note: "",
+      evidence: data
+    };
+  });
+}
+
+async function probeAltText(page, request, options) {
+  return withChallengeGate(page, request, options, async () => {
+    const data = await page.evaluate(() => {
+      const linkedImages = Array.from(document.querySelectorAll("a img")).slice(0, 200).map((img) => ({
+        alt: (img.getAttribute("alt") || "").trim(),
+        src: (img.getAttribute("src") || "").trim()
+      }));
+
+      const missingAlt = linkedImages.filter((img) => !img.alt);
+
+      return {
+        linkedImageCount: linkedImages.length,
+        missingAltCount: missingAlt.length,
+        samples: missingAlt.slice(0, 10)
+      };
+    });
+
+    if (data.linkedImageCount === 0) {
+      return {
+        outcome_label: OUTCOME_LABEL.INSUFFICIENT,
+        constraint_class: "",
+        mechanical_note: "No bounded linked-image surface was located for alternative-text testing.",
+        evidence: data
+      };
+    }
+
+    return {
+      outcome_label: data.missingAltCount > 0 ? OUTCOME_LABEL.OBSERVED : OUTCOME_LABEL.NOT_OBSERVED,
       constraint_class: "",
       mechanical_note: "",
       evidence: data
@@ -158,36 +190,35 @@ async function probeLinkedImagePurpose(page, request, options) {
 async function probeNewWindowWarning(page, request, options) {
   return withChallengeGate(page, request, options, async () => {
     const data = await page.evaluate(() => {
-      const anchors = Array.from(document.querySelectorAll("a[target='_blank']")).map((anchor) => ({
-        text: (anchor.innerText || anchor.textContent || "").trim().replace(/\s+/g, " "),
-        ariaLabel: (anchor.getAttribute("aria-label") || "").trim(),
-        title: (anchor.getAttribute("title") || "").trim(),
-        rel: (anchor.getAttribute("rel") || "").trim()
+      const blankLinks = Array.from(document.querySelectorAll("a[target='_blank']")).slice(0, 150).map((a) => ({
+        text: (a.innerText || a.textContent || "").trim().replace(/\s+/g, " "),
+        ariaLabel: (a.getAttribute("aria-label") || "").trim(),
+        href: (a.getAttribute("href") || "").trim()
       }));
 
-      const warnedAnchors = anchors.filter((anchor) => {
-        const combined = `${anchor.text} ${anchor.ariaLabel} ${anchor.title}`.toLowerCase();
-        return combined.includes("new window") || combined.includes("opens in a new window");
+      const unwarned = blankLinks.filter((row) => {
+        const combined = [row.text, row.ariaLabel].join(" ").toLowerCase();
+        return !/new window|opens in|external/.test(combined);
       });
 
       return {
-        targetBlankCount: anchors.length,
-        anchors,
-        warnedAnchors
+        blankLinkCount: blankLinks.length,
+        unwarnedCount: unwarned.length,
+        samples: unwarned.slice(0, 10)
       };
     });
 
-    if (data.targetBlankCount === 0) {
+    if (data.blankLinkCount === 0) {
       return {
         outcome_label: OUTCOME_LABEL.INSUFFICIENT,
         constraint_class: "",
-        mechanical_note: "No new-window link controls were detected on the target page.",
+        mechanical_note: "No bounded new-window link was located for warning testing.",
         evidence: data
       };
     }
 
     return {
-      outcome_label: data.warnedAnchors.length === data.targetBlankCount ? OUTCOME_LABEL.NOT_OBSERVED : OUTCOME_LABEL.OBSERVED,
+      outcome_label: data.unwarnedCount > 0 ? OUTCOME_LABEL.OBSERVED : OUTCOME_LABEL.NOT_OBSERVED,
       constraint_class: "",
       mechanical_note: "",
       evidence: data
@@ -195,138 +226,86 @@ async function probeNewWindowWarning(page, request, options) {
   });
 }
 
-async function probeProductImageAlt(page, request, options) {
+async function probeMenuStateAnnouncement(page, request, options) {
   return withChallengeGate(page, request, options, async () => {
     const data = await page.evaluate(() => {
-      const images = Array.from(document.images).map((img) => ({
-        src: img.currentSrc || img.src || "",
-        alt: (img.getAttribute("alt") || "").trim()
-      }));
-
-      const missingAltImages = images.filter((img) => !img.alt);
-
-      return {
-        imageCount: images.length,
-        images,
-        missingAltImages
-      };
-    });
-
-    if (data.imageCount === 0) {
-      return {
-        outcome_label: OUTCOME_LABEL.INSUFFICIENT,
-        constraint_class: "",
-        mechanical_note: "No images were detected on the target page.",
-        evidence: data
-      };
-    }
-
-    return {
-      outcome_label: data.missingAltImages.length > 0 ? OUTCOME_LABEL.OBSERVED : OUTCOME_LABEL.NOT_OBSERVED,
-      constraint_class: "",
-      mechanical_note: "",
-      evidence: data
-    };
-  });
-}
-
-async function probeMenuStateAnnouncements(page, request, options) {
-  return withChallengeGate(page, request, options, async () => {
-    const data = await page.evaluate(() => {
-      const menuControls = Array.from(
-        document.querySelectorAll('[aria-haspopup="true"], [aria-expanded], button[aria-controls]')
-      ).map((el) => ({
+      const candidates = Array.from(
+        document.querySelectorAll("nav button, nav [role='button'], header button, header [role='button'], [aria-haspopup='true']")
+      ).slice(0, 80).map((el) => ({
         text: (el.innerText || el.textContent || "").trim().replace(/\s+/g, " "),
-        ariaExpanded: el.getAttribute("aria-expanded"),
-        ariaHaspopup: el.getAttribute("aria-haspopup"),
-        tagName: el.tagName.toLowerCase()
+        ariaExpanded: (el.getAttribute("aria-expanded") || "").trim(),
+        ariaHaspopup: (el.getAttribute("aria-haspopup") || "").trim()
       }));
 
-      const missingExpanded = menuControls.filter((item) => item.ariaExpanded === null);
+      const missingState = candidates.filter((row) => row.ariaHaspopup === "true" && !row.ariaExpanded);
 
       return {
-        controlCount: menuControls.length,
-        menuControls,
-        missingExpanded
+        candidateCount: candidates.length,
+        missingStateCount: missingState.length,
+        samples: missingState.slice(0, 10)
       };
     });
 
-    if (data.controlCount === 0) {
+    if (data.candidateCount === 0) {
       return {
         outcome_label: OUTCOME_LABEL.INSUFFICIENT,
         constraint_class: "",
-        mechanical_note: "No expandable navigation menu controls were detected on the target page.",
+        mechanical_note: "No bounded menu-state control was located for state-announcement testing.",
         evidence: data
       };
     }
 
     return {
-      outcome_label: data.missingExpanded.length > 0 ? OUTCOME_LABEL.OBSERVED : OUTCOME_LABEL.NOT_OBSERVED,
+      outcome_label: data.missingStateCount > 0 ? OUTCOME_LABEL.OBSERVED : OUTCOME_LABEL.NOT_OBSERVED,
       constraint_class: "",
       mechanical_note: "",
       evidence: data
     };
   });
-}
-
-function routeFamily1Probe(assertedConditionText) {
-  const normalized = normalizeText(assertedConditionText);
-
-  if (normalized.includes("heading")) {
-    return probeHeadingStructure;
-  }
-
-  if (normalized.includes("skip to content")) {
-    return probeSkipLink;
-  }
-
-  if (normalized.includes("interactive images used as links")) {
-    return probeLinkedImagePurpose;
-  }
-
-  if (normalized.includes("opened new windows")) {
-    return probeNewWindowWarning;
-  }
-
-  if (normalized.includes("product images lacked alternative text")) {
-    return probeProductImageAlt;
-  }
-
-  if (normalized.includes("sub-menus") || normalized.includes("collapsed state") || normalized.includes("expanded state")) {
-    return probeMenuStateAnnouncements;
-  }
-
-  return null;
 }
 
 async function runFamily1Probe(page, inputOrText, legacyBaseUrlOrOptions, maybeOptions) {
-  const { request, options } = normalizeProbeInput(
-    inputOrText,
-    legacyBaseUrlOrOptions,
-    maybeOptions
-  );
+  const normalized = normalizeProbeInput(inputOrText, legacyBaseUrlOrOptions, maybeOptions);
+  const request = normalized.request;
+  const options = normalized.options;
+  const text = normalizeText(request.asserted_condition_text);
 
-  const probe = routeFamily1Probe(request.asserted_condition_text);
-  if (!probe) {
+  if (!request.target_url) {
     return {
       outcome_label: OUTCOME_LABEL.INSUFFICIENT,
       constraint_class: "",
-      mechanical_note: "No family 1 probe route matched the asserted condition text.",
-      evidence: {
-        asserted_condition_text: request.asserted_condition_text
-      }
+      mechanical_note: "No target URL was available for bounded Family 1 execution.",
+      evidence: {}
     };
   }
 
-  return probe(page, request, options);
+  if (text.includes("heading hierarchy was not properly defined") || text.includes("heading levels were missing")) {
+    return probeHeadingStructure(page, request, options);
+  }
+
+  if (text.includes("skip to content link was not implemented")) {
+    return probeSkipLink(page, request, options);
+  }
+
+  if (text.includes("interactive images used as links did not describe the content of the link target")) {
+    return probeImageLinkPurpose(page, request, options);
+  }
+
+  if (text.includes("links opened new windows without prior warning")) {
+    return probeNewWindowWarning(page, request, options);
+  }
+
+  if (text.includes("product images lacked alternative text")) {
+    return probeAltText(page, request, options);
+  }
+
+  if (text.includes("did not announce collapsed state") || text.includes("did not announce expanded state")) {
+    return probeMenuStateAnnouncement(page, request, options);
+  }
+
+  throw new Error("FAMILY1_PROBE_IMPLEMENTATION_MISSING: The matched allegation sub-variant lacks bounded execution logic.");
 }
 
 module.exports = Object.freeze({
-  runFamily1Probe,
-  probeHeadingStructure,
-  probeSkipLink,
-  probeLinkedImagePurpose,
-  probeNewWindowWarning,
-  probeProductImageAlt,
-  probeMenuStateAnnouncements
+  runFamily1Probe
 });

@@ -1,15 +1,10 @@
 {
-  "family_id": "family_2_form_input_assistance",
-  "family_name": "Form Input Assistance",
-  "summary": "Complaint patterns involving missing labels, missing instructions, error recovery, input purpose, and visible focus in checkout, registration, and form workflows.",
+  "family_id": "family_2_popups_and_links",
+  "family_name": "Popups and Link Readability",
+  "summary": "Complaint patterns involving popup link readability, cursor-only popup dismissal, and unreadable links on the website.",
   "core_phrase_patterns": [
-    "fields were not programmatically associated with labels",
-    "required fields were not identified",
-    "error messages did not identify the field in error",
-    "error messages were not announced",
-    "error suggestions were not provided",
-    "input purpose was not programmatically identified",
-    "keyboard focus indicator was not visible",
-    "form instructions were missing"
+    "advertisement pop up links",
+    "use of the cursor to close the advertisement",
+    "fails to read links on the website"
   ]
 }

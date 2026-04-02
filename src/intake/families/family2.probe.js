@@ -38,434 +38,224 @@ async function withChallengeGate(page, request, options, probeFn) {
   return probeFn();
 }
 
-async function probeProgrammaticLabels(page, request, options) {
-  return withChallengeGate(page, request, options, async () => {
-    const data = await page.evaluate(() => {
-      const controls = Array.from(document.querySelectorAll("input, select, textarea")).map((el) => {
-        const labels = [];
-        const id = el.getAttribute("id");
-
-        if (id) {
-          const explicit = document.querySelector(`label[for="${id}"]`);
-          if (explicit) {
-            labels.push((explicit.innerText || explicit.textContent || "").trim().replace(/\s+/g, " "));
-          }
-        }
-
-        const wrappingLabel = el.closest("label");
-        if (wrappingLabel) {
-          labels.push((wrappingLabel.innerText || wrappingLabel.textContent || "").trim().replace(/\s+/g, " "));
-        }
-
-        return {
-          type: el.getAttribute("type") || el.tagName.toLowerCase(),
-          name: el.getAttribute("name") || "",
-          id: id || "",
-          ariaLabel: (el.getAttribute("aria-label") || "").trim(),
-          ariaLabelledby: (el.getAttribute("aria-labelledby") || "").trim(),
-          labels: Array.from(new Set(labels.filter(Boolean)))
-        };
-      });
-
-      const unlabeledControls = controls.filter((item) => {
-        return !item.ariaLabel && !item.ariaLabelledby && item.labels.length === 0;
-      });
-
-      return {
-        controlCount: controls.length,
-        controls,
-        unlabeledControls
-      };
-    });
-
-    if (data.controlCount === 0) {
-      return {
-        outcome_label: OUTCOME_LABEL.INSUFFICIENT,
-        constraint_class: "",
-        mechanical_note: "No form controls were detected on the target page.",
-        evidence: data
-      };
-    }
-
-    return {
-      outcome_label: data.unlabeledControls.length > 0 ? OUTCOME_LABEL.OBSERVED : OUTCOME_LABEL.NOT_OBSERVED,
-      constraint_class: "",
-      mechanical_note: "",
-      evidence: data
-    };
-  });
-}
-
-async function probeRequiredFieldIdentification(page, request, options) {
-  return withChallengeGate(page, request, options, async () => {
-    const data = await page.evaluate(() => {
-      const controls = Array.from(document.querySelectorAll("input, select, textarea")).map((el) => ({
-        type: el.getAttribute("type") || el.tagName.toLowerCase(),
-        name: el.getAttribute("name") || "",
-        required: el.required,
-        ariaRequired: el.getAttribute("aria-required"),
-        placeholder: el.getAttribute("placeholder") || ""
-      }));
-
-      const weakRequiredSignals = controls.filter((item) => {
-        const ariaRequired = String(item.ariaRequired || "").toLowerCase();
-        return item.required && ariaRequired !== "true";
-      });
-
-      return {
-        controlCount: controls.length,
-        controls,
-        weakRequiredSignals
-      };
-    });
-
-    if (data.controlCount === 0) {
-      return {
-        outcome_label: OUTCOME_LABEL.INSUFFICIENT,
-        constraint_class: "",
-        mechanical_note: "No form controls were detected on the target page.",
-        evidence: data
-      };
-    }
-
-    return {
-      outcome_label: data.weakRequiredSignals.length > 0 ? OUTCOME_LABEL.OBSERVED : OUTCOME_LABEL.NOT_OBSERVED,
-      constraint_class: "",
-      mechanical_note: "",
-      evidence: data
-    };
-  });
-}
-
-async function probeErrorIdentification(page, request, options) {
-  return withChallengeGate(page, request, options, async () => {
-    const data = await page.evaluate(() => {
-      const invalidControls = Array.from(document.querySelectorAll('[aria-invalid="true"], .error, .field-error')).map((el) => ({
-        tagName: el.tagName.toLowerCase(),
-        text: (el.innerText || el.textContent || "").trim().replace(/\s+/g, " "),
-        id: el.getAttribute("id") || "",
-        ariaDescribedby: el.getAttribute("aria-describedby") || ""
-      }));
-
-      const ambiguousErrors = invalidControls.filter((item) => !item.text);
-
-      return {
-        invalidControlCount: invalidControls.length,
-        invalidControls,
-        ambiguousErrors
-      };
-    });
-
-    if (data.invalidControlCount === 0) {
-      return {
-        outcome_label: OUTCOME_LABEL.INSUFFICIENT,
-        constraint_class: "",
-        mechanical_note: "No bounded error-state controls were detected on the target page.",
-        evidence: data
-      };
-    }
-
-    return {
-      outcome_label: data.ambiguousErrors.length > 0 ? OUTCOME_LABEL.OBSERVED : OUTCOME_LABEL.NOT_OBSERVED,
-      constraint_class: "",
-      mechanical_note: "",
-      evidence: data
-    };
-  });
-}
-
-async function probeErrorAnnouncement(page, request, options) {
-  return withChallengeGate(page, request, options, async () => {
-    const data = await page.evaluate(() => {
-      const liveRegions = Array.from(document.querySelectorAll('[role="alert"], [aria-live]')).map((el) => ({
-        role: el.getAttribute("role") || "",
-        ariaLive: el.getAttribute("aria-live") || "",
-        text: (el.innerText || el.textContent || "").trim().replace(/\s+/g, " ")
-      }));
-
-      return {
-        liveRegionCount: liveRegions.length,
-        liveRegions
-      };
-    });
-
-    return {
-      outcome_label: data.liveRegionCount > 0 ? OUTCOME_LABEL.NOT_OBSERVED : OUTCOME_LABEL.OBSERVED,
-      constraint_class: "",
-      mechanical_note: "",
-      evidence: data
-    };
-  });
-}
-
-async function probeErrorSuggestions(page, request, options) {
-  return withChallengeGate(page, request, options, async () => {
-    const data = await page.evaluate(() => {
-      const suggestionText = Array.from(document.querySelectorAll("body *"))
-        .map((el) => (el.innerText || el.textContent || "").trim().replace(/\s+/g, " "))
-        .filter(Boolean)
-        .filter((text) => {
-          const normalized = text.toLowerCase();
-          return normalized.includes("try") || normalized.includes("please") || normalized.includes("must");
-        });
-
-      return {
-        suggestionTextCount: suggestionText.length,
-        suggestionText: suggestionText.slice(0, 50)
-      };
-    });
-
-    return {
-      outcome_label: data.suggestionTextCount > 0 ? OUTCOME_LABEL.NOT_OBSERVED : OUTCOME_LABEL.OBSERVED,
-      constraint_class: "",
-      mechanical_note: "",
-      evidence: data
-    };
-  });
-}
-
-async function probeInputPurpose(page, request, options) {
-  return withChallengeGate(page, request, options, async () => {
-    const autocompleteCandidates = [
-      "name",
-      "honorific-prefix",
-      "given-name",
-      "additional-name",
-      "family-name",
-      "honorific-suffix",
-      "nickname",
-      "email",
-      "username",
-      "new-password",
-      "current-password",
-      "organization-title",
-      "organization",
-      "street-address",
-      "address-line1",
-      "address-line2",
-      "address-line3",
-      "address-level4",
-      "address-level3",
-      "address-level2",
-      "address-level1",
-      "country",
-      "country-name",
-      "postal-code",
-      "cc-name",
-      "cc-given-name",
-      "cc-additional-name",
-      "cc-family-name",
-      "cc-number",
-      "cc-exp",
-      "cc-exp-month",
-      "cc-exp-year",
-      "cc-csc",
-      "cc-type",
-      "transaction-currency",
-      "transaction-amount",
-      "language",
-      "bday",
-      "bday-day",
-      "bday-month",
-      "bday-year",
-      "sex",
-      "tel",
-      "tel-country-code",
-      "tel-national",
-      "tel-area-code",
-      "tel-local",
-      "tel-extension",
-      "impp",
-      "url",
-      "photo"
+async function findPopupSurface(page) {
+  return await page.evaluate(() => {
+    const selectors = [
+      "[role='dialog']",
+      "dialog",
+      "[aria-modal='true']",
+      ".modal",
+      ".popup",
+      "[class*='modal']",
+      "[class*='popup']"
     ];
 
-    const data = await page.evaluate((allowedAutocomplete) => {
-      const controls = Array.from(document.querySelectorAll("input")).map((el) => ({
-        type: el.getAttribute("type") || "text",
-        name: el.getAttribute("name") || "",
-        autocomplete: (el.getAttribute("autocomplete") || "").trim().toLowerCase()
-      }));
+    const candidates = [];
+    for (const selector of selectors) {
+      for (const el of Array.from(document.querySelectorAll(selector)).slice(0, 20)) {
+        const rect = el.getBoundingClientRect();
+        const style = window.getComputedStyle(el);
+        const visible = rect.width > 10 && rect.height > 10 && style.display !== "none" && style.visibility !== "hidden";
+        if (!visible) continue;
 
-      const missingPurpose = controls.filter((item) => {
-        if (!["text", "email", "tel", "search", "url"].includes(item.type)) {
-          return false;
-        }
-        return item.autocomplete && !allowedAutocomplete.includes(item.autocomplete);
-      });
-
-      return {
-        controlCount: controls.length,
-        controls,
-        missingPurpose
-      };
-    }, autocompleteCandidates);
-
-    if (data.controlCount === 0) {
-      return {
-        outcome_label: OUTCOME_LABEL.INSUFFICIENT,
-        constraint_class: "",
-        mechanical_note: "No input controls were detected on the target page.",
-        evidence: data
-      };
-    }
-
-    return {
-      outcome_label: data.missingPurpose.length > 0 ? OUTCOME_LABEL.OBSERVED : OUTCOME_LABEL.NOT_OBSERVED,
-      constraint_class: "",
-      mechanical_note: "",
-      evidence: data
-    };
-  });
-}
-
-async function probeVisibleFocus(page, request, options) {
-  return withChallengeGate(page, request, options, async () => {
-    const data = await page.evaluate(() => {
-      const focusable = Array.from(
-        document.querySelectorAll('a, button, input, select, textarea, [tabindex]')
-      )
-        .filter((el) => !el.hasAttribute("disabled"))
-        .slice(0, 25)
-        .map((el) => ({
-          tagName: el.tagName.toLowerCase(),
-          text: (el.innerText || el.textContent || "").trim().replace(/\s+/g, " "),
-          className: el.className || ""
+        const links = Array.from(el.querySelectorAll("a")).map((a) => ({
+          text: (a.innerText || a.textContent || "").trim().replace(/\s+/g, " "),
+          ariaLabel: (a.getAttribute("aria-label") || "").trim(),
+          title: (a.getAttribute("title") || "").trim(),
+          href: (a.getAttribute("href") || "").trim()
         }));
 
-      return {
-        focusableCount: focusable.length,
-        focusable
-      };
-    });
+        const keyboardClose = Array.from(el.querySelectorAll("button,[role='button'],summary,[tabindex]")).map((node) => ({
+          tag: node.tagName.toLowerCase(),
+          text: (node.innerText || node.textContent || "").trim().replace(/\s+/g, " "),
+          ariaLabel: (node.getAttribute("aria-label") || "").trim()
+        }));
 
-    if (data.focusableCount === 0) {
-      return {
-        outcome_label: OUTCOME_LABEL.INSUFFICIENT,
-        constraint_class: "",
-        mechanical_note: "No focusable controls were detected on the target page.",
-        evidence: data
-      };
+        const pointerOnlyClose = Array.from(el.querySelectorAll("div,span,svg")).map((node) => ({
+          text: (node.innerText || node.textContent || "").trim().replace(/\s+/g, " "),
+          ariaLabel: (node.getAttribute("aria-label") || "").trim(),
+          className: (node.getAttribute("class") || "").trim()
+        })).filter((row) => /close|x/i.test([row.text, row.ariaLabel, row.className].join(" ")));
+
+        candidates.push({
+          selector,
+          text: (el.innerText || el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 300),
+          links,
+          keyboardClose,
+          pointerOnlyClose
+        });
+      }
     }
 
-    return {
-      outcome_label: OUTCOME_LABEL.PENDING_EXTRACTION,
-      constraint_class: "",
-      mechanical_note: "",
-      evidence: Object.assign({}, data, {
-        pending_extraction: "visible focus requires screenshot review"
-      })
-    };
+    return candidates;
   });
 }
 
-async function probeFormInstructions(page, request, options) {
+async function probePopupUnreadLinks(page, request, options) {
   return withChallengeGate(page, request, options, async () => {
-    const data = await page.evaluate(() => {
-      const forms = Array.from(document.querySelectorAll("form")).map((form) => ({
-        text: (form.innerText || form.textContent || "").trim().replace(/\s+/g, " ").slice(0, 500),
-        ariaDescribedby: form.getAttribute("aria-describedby") || "",
-        hasFieldset: Boolean(form.querySelector("fieldset"))
-      }));
-
-      const withInstructions = forms.filter((item) => {
-        const normalized = (item.text || "").toLowerCase();
-        return normalized.includes("required") || normalized.includes("optional") || normalized.includes("fields marked");
-      });
-
-      return {
-        formCount: forms.length,
-        forms,
-        withInstructions
-      };
-    });
-
-    if (data.formCount === 0) {
+    const popups = await findPopupSurface(page);
+    if (!Array.isArray(popups) || popups.length === 0) {
       return {
         outcome_label: OUTCOME_LABEL.INSUFFICIENT,
         constraint_class: "",
-        mechanical_note: "No forms were detected on the target page.",
-        evidence: data
+        mechanical_note: "No bounded advertisement or popup surface was located for popup-link readability testing.",
+        evidence: { popups: [] }
+      };
+    }
+
+    const unlabeledLinks = [];
+    for (const popup of popups) {
+      for (const link of popup.links) {
+        const combined = [link.text, link.ariaLabel, link.title].join(" ").trim();
+        if (link.href && !combined) {
+          unlabeledLinks.push({ popupSelector: popup.selector, link });
+        }
+      }
+    }
+
+    if (unlabeledLinks.length > 0) {
+      return {
+        outcome_label: OUTCOME_LABEL.OBSERVED,
+        constraint_class: "",
+        mechanical_note: "",
+        evidence: { popups, unlabeledLinks }
       };
     }
 
     return {
-      outcome_label: data.withInstructions.length > 0 ? OUTCOME_LABEL.NOT_OBSERVED : OUTCOME_LABEL.OBSERVED,
+      outcome_label: OUTCOME_LABEL.NOT_OBSERVED,
       constraint_class: "",
       mechanical_note: "",
-      evidence: data
+      evidence: { popups }
     };
   });
 }
 
-function routeFamily2Probe(assertedConditionText) {
-  const normalized = normalizeText(assertedConditionText);
+async function probeCursorRequiredClose(page, request, options) {
+  return withChallengeGate(page, request, options, async () => {
+    const popups = await findPopupSurface(page);
+    if (!Array.isArray(popups) || popups.length === 0) {
+      return {
+        outcome_label: OUTCOME_LABEL.INSUFFICIENT,
+        constraint_class: "",
+        mechanical_note: "No bounded advertisement or popup surface was located for close-control testing.",
+        evidence: { popups: [] }
+      };
+    }
 
-  if (normalized.includes("programmatically associated with labels")) {
-    return probeProgrammaticLabels;
-  }
+    const hasKeyboardClose = popups.some((popup) =>
+      popup.keyboardClose.some((row) => /close|dismiss|x/i.test([row.text, row.ariaLabel].join(" ")))
+    );
 
-  if (normalized.includes("required fields were not identified")) {
-    return probeRequiredFieldIdentification;
-  }
+    const hasPointerOnlyClose = popups.some((popup) => popup.pointerOnlyClose.length > 0);
 
-  if (normalized.includes("error messages did not identify the field in error")) {
-    return probeErrorIdentification;
-  }
+    if (!hasKeyboardClose && hasPointerOnlyClose) {
+      return {
+        outcome_label: OUTCOME_LABEL.OBSERVED,
+        constraint_class: "",
+        mechanical_note: "",
+        evidence: { popups }
+      };
+    }
 
-  if (normalized.includes("error messages were not announced")) {
-    return probeErrorAnnouncement;
-  }
+    if (hasKeyboardClose) {
+      return {
+        outcome_label: OUTCOME_LABEL.NOT_OBSERVED,
+        constraint_class: "",
+        mechanical_note: "",
+        evidence: { popups }
+      };
+    }
 
-  if (normalized.includes("error suggestions were not provided")) {
-    return probeErrorSuggestions;
-  }
-
-  if (normalized.includes("input purpose was not programmatically identified")) {
-    return probeInputPurpose;
-  }
-
-  if (normalized.includes("keyboard focus indicator was not visible")) {
-    return probeVisibleFocus;
-  }
-
-  if (normalized.includes("form instructions were missing")) {
-    return probeFormInstructions;
-  }
-
-  return null;
-}
-
-async function runFamily2Probe(page, inputOrText, legacyBaseUrlOrOptions, maybeOptions) {
-  const { request, options } = normalizeProbeInput(
-    inputOrText,
-    legacyBaseUrlOrOptions,
-    maybeOptions
-  );
-
-  const probe = routeFamily2Probe(request.asserted_condition_text);
-  if (!probe) {
     return {
       outcome_label: OUTCOME_LABEL.INSUFFICIENT,
       constraint_class: "",
-      mechanical_note: "No family 2 probe route matched the asserted condition text.",
-      evidence: {
-        asserted_condition_text: request.asserted_condition_text
-      }
+      mechanical_note: "Popup surfaced but no bounded close-control pattern was classifiable.",
+      evidence: { popups }
+    };
+  });
+}
+
+async function probeUnreadLinks(page, request, options) {
+  return withChallengeGate(page, request, options, async () => {
+    const data = await page.evaluate(() => {
+      const anchors = Array.from(document.querySelectorAll("a[href]")).slice(0, 300).map((a) => {
+        const img = a.querySelector("img");
+        const imgAlt = img ? (img.getAttribute("alt") || "").trim() : "";
+        return {
+          text: (a.innerText || a.textContent || "").trim().replace(/\s+/g, " "),
+          ariaLabel: (a.getAttribute("aria-label") || "").trim(),
+          title: (a.getAttribute("title") || "").trim(),
+          href: (a.getAttribute("href") || "").trim(),
+          imgAlt
+        };
+      });
+
+      const unreadable = anchors.filter((a) => {
+        const combined = [a.text, a.ariaLabel, a.title, a.imgAlt].join(" ").trim();
+        return a.href && !combined;
+      });
+
+      return {
+        anchorCount: anchors.length,
+        unreadableCount: unreadable.length,
+        samples: unreadable.slice(0, 20)
+      };
+    });
+
+    if (data.unreadableCount > 0) {
+      return {
+        outcome_label: OUTCOME_LABEL.OBSERVED,
+        constraint_class: "",
+        mechanical_note: "",
+        evidence: data
+      };
+    }
+
+    return {
+      outcome_label: OUTCOME_LABEL.NOT_OBSERVED,
+      constraint_class: "",
+      mechanical_note: "",
+      evidence: data
+    };
+  });
+}
+
+async function runFamily2Probe(page, inputOrText, legacyBaseUrlOrOptions, maybeOptions) {
+  const normalized = normalizeProbeInput(inputOrText, legacyBaseUrlOrOptions, maybeOptions);
+  const request = normalized.request;
+  const options = normalized.options;
+  const text = normalizeText(request.asserted_condition_text);
+
+  if (!request.target_url) {
+    return {
+      outcome_label: OUTCOME_LABEL.INSUFFICIENT,
+      constraint_class: "",
+      mechanical_note: "No target URL was available for bounded Family 2 execution.",
+      evidence: {}
     };
   }
 
-  return probe(page, request, options);
+  if (text.includes("advertisement pop up links")) {
+    return probePopupUnreadLinks(page, request, options);
+  }
+
+  if (text.includes("use of the cursor to close the advertisement")) {
+    return probeCursorRequiredClose(page, request, options);
+  }
+
+  if (text.includes("fails to read links on the website")) {
+    return probeUnreadLinks(page, request, options);
+  }
+
+  return {
+    outcome_label: OUTCOME_LABEL.INSUFFICIENT,
+    constraint_class: "",
+    mechanical_note: "No Playwright probe was implemented for this asserted condition.",
+    evidence: {}
+  };
 }
 
 module.exports = Object.freeze({
-  runFamily2Probe,
-  probeProgrammaticLabels,
-  probeRequiredFieldIdentification,
-  probeErrorIdentification,
-  probeErrorAnnouncement,
-  probeErrorSuggestions,
-  probeInputPurpose,
-  probeVisibleFocus,
-  probeFormInstructions
+  runFamily2Probe
 });
