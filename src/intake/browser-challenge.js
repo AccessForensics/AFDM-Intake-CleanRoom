@@ -4,11 +4,23 @@ function normalizeText(value) {
   return String(value || "").toLowerCase();
 }
 
+function unique(values) {
+  return Array.from(new Set((values || []).filter(Boolean)));
+}
+
 async function detectEnvironmentChallenge(page) {
   const url = page.url();
 
   const data = await page.evaluate(() => {
-    const title = (document.title || "").trim();
+    function safeText(value) {
+      return String(value || "").trim();
+    }
+
+    function uniqueInner(values) {
+      return Array.from(new Set((values || []).filter(Boolean)));
+    }
+
+    const title = safeText(document.title || "");
     const bodyText = (document.body ? document.body.innerText : "")
       .replace(/\s+/g, " ")
       .trim()
@@ -20,19 +32,97 @@ async function detectEnvironmentChallenge(page) {
       href: (a.getAttribute("href") || "").trim()
     }));
 
-    return { title, bodyText, html, anchors };
+    const scriptSrcs = Array.from(document.querySelectorAll("script[src]"))
+      .slice(0, 50)
+      .map((script) => safeText(script.getAttribute("src")))
+      .filter(Boolean);
+
+    const domSignals = [];
+    if (document.getElementById("challenge-running")) {
+      domSignals.push("id:challenge-running");
+    }
+    if (document.getElementById("cf-please-wait")) {
+      domSignals.push("id:cf-please-wait");
+    }
+    if (
+      document.querySelector(
+        "iframe[src*='captcha-delivery.com'], iframe[src*='challenge-platform'], iframe[src*='px-captcha'], iframe[src*='managed-challenge']"
+      )
+    ) {
+      domSignals.push("challenge-iframe");
+    }
+
+    const runtimeSignals = [];
+    if (typeof window._cf_chl_opt !== "undefined") {
+      runtimeSignals.push("window._cf_chl_opt");
+    }
+    if (typeof window.__cf_chl_opt !== "undefined") {
+      runtimeSignals.push("window.__cf_chl_opt");
+    }
+    if (typeof window.turnstile !== "undefined") {
+      runtimeSignals.push("window.turnstile");
+    }
+    if (typeof window.DataDome !== "undefined") {
+      runtimeSignals.push("window.DataDome");
+    }
+    if (typeof window.ddcid !== "undefined") {
+      runtimeSignals.push("window.ddcid");
+    }
+    if (typeof window.ddjskey !== "undefined") {
+      runtimeSignals.push("window.ddjskey");
+    }
+    if (typeof window._pxAppId !== "undefined") {
+      runtimeSignals.push("window._pxAppId");
+    }
+    if (typeof window.pxAppId !== "undefined") {
+      runtimeSignals.push("window.pxAppId");
+    }
+    if (typeof window._pxVid !== "undefined") {
+      runtimeSignals.push("window._pxVid");
+    }
+
+    return {
+      title,
+      bodyText,
+      html,
+      anchors,
+      scriptSrcs: uniqueInner(scriptSrcs),
+      domSignals: uniqueInner(domSignals),
+      runtimeSignals: uniqueInner(runtimeSignals)
+    };
   });
 
-  const markers = [
-    "cloudflare",
-    "managed-challenge",
+  const visibleTextMarkers = [
     "verify you are human",
     "checking your browser",
     "attention required",
-    "challenge-platform",
+    "just a moment",
+    "managed-challenge"
+  ];
+
+  const strongHtmlMarkers = [
+    "managed-challenge",
     "cf-challenge",
+    "/cdn-cgi/challenge-platform"
+  ];
+
+  const strongUrlMarkers = [
     "/cdn-cgi/challenge-platform",
-    "privacy pass"
+    "managed-challenge",
+    "cf-challenge"
+  ];
+
+  const strongScriptMarkers = [
+    "/cdn-cgi/challenge-platform",
+    "captcha-delivery.com",
+    "px-captcha"
+  ];
+
+  const weakScriptMarkers = [
+    "challenges.cloudflare.com/turnstile",
+    "js.datadome.co",
+    "perimeterx",
+    "px-cloud.net"
   ];
 
   const urlLower = normalizeText(url);
@@ -40,19 +130,67 @@ async function detectEnvironmentChallenge(page) {
   const bodyLower = normalizeText(data.bodyText);
   const htmlLower = normalizeText(data.html);
 
-  const hitMarkers = markers.filter((marker) =>
-    urlLower.includes(marker) ||
-    titleLower.includes(marker) ||
-    bodyLower.includes(marker) ||
+  const visibleTextHitMarkers = visibleTextMarkers.filter((marker) =>
+    titleLower.includes(marker) || bodyLower.includes(marker)
+  );
+
+  const htmlHitMarkers = strongHtmlMarkers.filter((marker) =>
     htmlLower.includes(marker)
   );
 
+  const urlHitMarkers = strongUrlMarkers.filter((marker) =>
+    urlLower.includes(marker)
+  );
+
+  const strongScriptSignalMarkers = unique(
+    (data.scriptSrcs || []).filter((src) =>
+      strongScriptMarkers.some((marker) => normalizeText(src).includes(marker))
+    )
+  );
+
+  const weakScriptSignalMarkers = unique(
+    (data.scriptSrcs || []).filter((src) =>
+      weakScriptMarkers.some((marker) => normalizeText(src).includes(marker))
+    )
+  );
+
+  const domSignalMarkers = unique((data.domSignals || []).map((value) => normalizeText(value)));
+
+  const runtimeSignals = unique((data.runtimeSignals || []).map((value) => normalizeText(value)));
+  const strongRuntimeSignals = runtimeSignals.filter((signal) =>
+    signal === "window._cf_chl_opt" || signal === "window.__cf_chl_opt"
+  );
+  const weakRuntimeSignals = runtimeSignals.filter((signal) =>
+    signal === "window.turnstile" ||
+    signal === "window.datadome" ||
+    signal === "window.ddcid" ||
+    signal === "window.ddjskey" ||
+    signal === "window._pxappid" ||
+    signal === "window.pxappid" ||
+    signal === "window._pxvid"
+  );
+
+  const challengeDetected =
+    visibleTextHitMarkers.length > 0 ||
+    htmlHitMarkers.length > 0 ||
+    urlHitMarkers.length > 0 ||
+    strongScriptSignalMarkers.length > 0 ||
+    domSignalMarkers.length > 0 ||
+    strongRuntimeSignals.length > 0;
+
   return Object.freeze({
-    challengeDetected: hitMarkers.length > 0,
+    challengeDetected,
     evidence: Object.freeze({
       url,
       title: data.title,
-      hitMarkers,
+      visibleTextHitMarkers,
+      htmlHitMarkers,
+      urlHitMarkers,
+      strongScriptSignalMarkers,
+      weakScriptSignalMarkers,
+      domSignalMarkers,
+      strongRuntimeSignals,
+      weakRuntimeSignals,
       anchors: data.anchors,
       bodyExcerpt: data.bodyText.slice(0, 1200)
     })
