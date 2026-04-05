@@ -1,0 +1,48 @@
+{
+    "version":  1,
+    "scope":  "internal_hardening_preflight_only",
+    "status":  "active",
+    "description":  "Observed-runtime unsupported-current-coverage registry for negative hardening fixtures. This is an internal fail-closed gate for known unsupported matters only. It does not claim general implemented coverage resolution for unknown matters.",
+    "matters":  {
+                    "AF-HARDEN-001-MANE-SKIP":  {
+                                                    "matter_id":  "AF-HARDEN-001-MANE-SKIP",
+                                                    "site":  "https://heymane.com",
+                                                    "asserted_condition":  "\"Skip to content\" link was not implemented.",
+                                                    "observed_runtime_outcome_label":  "Insufficiently specified for bounded execution",
+                                                    "observed_runtime_mechanical_note":  "No Playwright probe was implemented for this asserted condition.",
+                                                    "classification":  "unsupported_current_coverage",
+                                                    "production_intake_runnable":  false,
+                                                    "action":  "classify_and_stop"
+                                                },
+                    "AF-HARDEN-002-MANE-IMGLINKS":  {
+                                                        "matter_id":  "AF-HARDEN-002-MANE-IMGLINKS",
+                                                        "site":  "https://heymane.com",
+                                                        "asserted_condition":  "Plaintiff encountered interactive images that were used as links that did not describe the content of the link target.",
+                                                        "observed_runtime_outcome_label":  "Insufficiently specified for bounded execution",
+                                                        "observed_runtime_mechanical_note":  "No Playwright probe was implemented for this asserted condition.",
+                                                        "classification":  "unsupported_current_coverage",
+                                                        "production_intake_runnable":  false,
+                                                        "action":  "classify_and_stop"
+                                                    },
+                    "AF-HARDEN-003-PRECIOUS-ALT":  {
+                                                       "matter_id":  "AF-HARDEN-003-PRECIOUS-ALT",
+                                                       "site":  "https://www.preciousmoments.com",
+                                                       "asserted_condition":  "Different images of the same product had similar and poorly descriptive alternative text.",
+                                                       "observed_runtime_outcome_label":  "Insufficiently specified for bounded execution",
+                                                       "observed_runtime_mechanical_note":  "No Playwright probe was implemented for this asserted condition.",
+                                                       "classification":  "unsupported_current_coverage",
+                                                       "production_intake_runnable":  false,
+                                                       "action":  "classify_and_stop"
+                                                   },
+                    "AF-HARDEN-004-PRECIOUS-FORMS":  {
+                                                         "matter_id":  "AF-HARDEN-004-PRECIOUS-FORMS",
+                                                         "site":  "https://www.preciousmoments.com",
+                                                         "asserted_condition":  "The Website also lacks prompting information and accommodations necessary to allow visually impaired shoppers who use screen-readers to locate and accurately fill-out online forms.",
+                                                         "observed_runtime_outcome_label":  "Insufficiently specified for bounded execution",
+                                                         "observed_runtime_mechanical_note":  "No Playwright probe was implemented for this asserted condition.",
+                                                         "classification":  "unsupported_current_coverage",
+                                                         "production_intake_runnable":  false,
+                                                         "action":  "classify_and_stop"
+                                                     }
+                }
+}
