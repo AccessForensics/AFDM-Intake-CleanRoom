@@ -1,0 +1,16 @@
+{
+  "generated_at": "2026-04-07T02:53:39.239Z",
+  "copied_authority_files": [],
+  "missing_authority_files_at_repo_root": [
+    "1-10 Layer Instructions.pdf",
+    "1-10 Layer 1 - Authority and Doctrine.pdf",
+    "1-10 Layer 2 - Jules.pdf",
+    "1-10 Layer 3 - Machine-Bindable Specs.pdf",
+    "AFintaketemplates1-8.pdf",
+    "AFintaketemplates1-8.md"
+  ],
+  "notes": [
+    "This manifest records which expected authority files were present at repo root during patch execution.",
+    "Missing entries do not invent absence from the broader project, they only record absence at this repo root during this run."
+  ]
+}
