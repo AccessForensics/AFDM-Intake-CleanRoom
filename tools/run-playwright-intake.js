@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { spawnSync } = require("child_process");
 const { chromium } = require("playwright");
 
 const {
@@ -109,7 +110,84 @@ async function saveArtifacts(page, prefix) {
   return { pngPath, htmlPath };
 }
 
+// BEGIN INTERNAL PREFLIGHT COVERAGE GATE
+function runUnsupportedCoveragePreflight(payloadPath, outDir) {
+  const scriptPath = path.resolve(__dirname, "..", "scripts", "hardening", "preflight-coverage-check.js");
+
+  if (!fs.existsSync(scriptPath)) {
+    throw new Error(`PREFLIGHT_DEPENDENCY_MISSING: ${scriptPath}`);
+  }
+
+  const result = spawnSync(process.execPath, [scriptPath, "--matter-file", payloadPath], {
+    encoding: "utf8",
+    timeout: 30000
+  });
+
+  if (result.error) {
+    throw result.error;
+  }
+
+  if (typeof result.status !== "number") {
+    throw new Error("PREFLIGHT_EXECUTION_FAILED: missing exit status");
+  }
+
+  if (result.status === 0) {
+    return {
+      blocked: false,
+      exitCode: 0,
+      classification: null,
+      artifactPath: null
+    };
+  }
+
+  if (result.status === 2) {
+    const stdoutText = String(result.stdout || "").trim();
+    if (!stdoutText) {
+      throw new Error("PREFLIGHT_OUTPUT_PARSE_FAILED: empty stdout for blocked matter");
+    }
+
+    let classification;
+    try {
+      classification = JSON.parse(stdoutText);
+    } catch (error) {
+      throw new Error(`PREFLIGHT_OUTPUT_PARSE_FAILED: ${error.message}`);
+    }
+
+    if (!classification || classification.preflight_status !== "unsupported_current_coverage") {
+      throw new Error("PREFLIGHT_OUTPUT_INVALID: blocked result did not return unsupported_current_coverage");
+    }
+
+    const artifactPath = path.join(outDir, "preflight-classification.json");
+    fs.mkdirSync(outDir, { recursive: true });
+    fs.writeFileSync(artifactPath, JSON.stringify(classification, null, 2), "utf8");
+
+    return {
+      blocked: true,
+      exitCode: 2,
+      classification,
+      artifactPath
+    };
+  }
+
+  const stderrText = String(result.stderr || "").trim();
+  const stdoutText = String(result.stdout || "").trim();
+  throw new Error(
+    `PREFLIGHT_EXECUTION_FAILED: exit=${result.status}; stderr=${stderrText}; stdout=${stdoutText}`
+  );
+}
+// END INTERNAL PREFLIGHT COVERAGE GATE
+
 (async () => {
+  // BEGIN INTERNAL PREFLIGHT COVERAGE GATE INVOCATION
+  const preflight = runUnsupportedCoveragePreflight(payloadPath, outDir);
+  if (preflight.blocked) {
+    console.log("Preflight classification: unsupported_current_coverage");
+    console.log(`Matter: ${preflight.classification.matter_id}`);
+    console.log(`Artifact: ${preflight.artifactPath}`);
+    process.exitCode = preflight.exitCode;
+    return;
+  }
+  // END INTERNAL PREFLIGHT COVERAGE GATE INVOCATION
   const browser = await chromium.launch({ headless: true });
   const observations = [];
   let runRecords = [];
