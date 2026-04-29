@@ -1,109 +1,141 @@
 {
-  "spec_version": "L3-v8",
-  "fixtures": [
-    {
-      "fixture_id": "fixture_1_desktop_only_eligible",
-      "appendix_d_reference": "D.1",
-      "purpose": "proves Desktop-only determination path",
-      "expected_state": "Template 2",
-      "status": "implemented",
-      "fixture_path": "fixtures/intake/appendix-d/d1_desktop_only_eligible.json"
-    },
-    {
-      "fixture_id": "fixture_2_desktop_and_mobile_eligible",
-      "appendix_d_reference": "D.2",
-      "purpose": "proves dual-baseline eligibility",
-      "expected_state": "Template 1",
-      "status": "implemented",
-      "fixture_path": "fixtures/intake/appendix-d/d2_desktop_and_mobile_eligible.json"
-    },
-    {
-      "fixture_id": "fixture_3_desktop_eligible_mobile_constrained",
-      "appendix_d_reference": "D.3",
-      "purpose": "proves Template 3 guardrail",
-      "expected_state": "Template 3",
-      "status": "implemented",
-      "fixture_path": "fixtures/intake/appendix-d/d3_desktop_eligible_mobile_constrained.json"
-    },
-    {
-      "fixture_id": "fixture_4_mobile_only_eligible",
-      "appendix_d_reference": "D.4",
-      "purpose": "proves Mobile-only determination path",
-      "expected_state": "Template 4",
-      "status": "implemented",
-      "fixture_path": "fixtures/intake/appendix-d/d4_mobile_only_eligible.json"
-    },
-    {
-      "fixture_id": "fixture_5_mobile_eligible_desktop_constrained",
-      "appendix_d_reference": "D.5",
-      "purpose": "proves Template 5 guardrail",
-      "expected_state": "Template 5",
-      "status": "implemented",
-      "fixture_path": "fixtures/intake/appendix-d/d5_mobile_eligible_desktop_constrained.json"
-    },
-    {
-      "fixture_id": "fixture_6_not_eligible_generic",
-      "appendix_d_reference": "D.6",
-      "purpose": "proves non-eligibility without constraint-specific template",
-      "expected_state": "Template 6",
-      "status": "implemented",
-      "fixture_path": "fixtures/intake/appendix-d/d6_not_eligible_generic.json"
-    },
-    {
-      "fixture_id": "fixture_7_not_eligible_botmitigation",
-      "appendix_d_reference": "D.7",
-      "purpose": "proves Template 7",
-      "expected_state": "Template 7",
-      "status": "implemented",
-      "fixture_path": "fixtures/intake/appendix-d/d7_not_eligible_botmitigation.json"
-    },
-    {
-      "fixture_id": "fixture_8_not_eligible_constraints_other",
-      "appendix_d_reference": "D.8",
-      "purpose": "proves Template 8",
-      "expected_state": "Template 8",
-      "status": "implemented",
-      "fixture_path": "fixtures/intake/appendix-d/d8_not_eligible_constraints_other.json"
-    },
-    {
-      "fixture_id": "fixture_9_note_gated_constrained_run",
-      "appendix_d_reference": "D.9",
-      "purpose": "proves notes only appear when permitted",
-      "expected_state": "note passes validation",
-      "status": "implemented",
-      "fixture_path": "fixtures/intake/appendix-d/d9_note_gated_constrained_run.json"
-    },
-    {
-      "fixture_id": "fixture_10_invalid_note_on_observed_run",
-      "appendix_d_reference": "D.10",
-      "purpose": "proves prohibited note attachment fails",
-      "expected_state": "validation failure",
-      "status": "implemented",
-      "fixture_path": "fixtures/intake/appendix-d/d10_invalid_note_on_observed_run.json"
-    },
-    {
-      "fixture_id": "fixture_11_non_alternating_sequencing_failure",
-      "appendix_d_reference": "D.11",
-      "purpose": "proves sequencing enforcement",
-      "expected_state": "validation failure",
-      "status": "implemented",
-      "fixture_path": "fixtures/intake/appendix-d/d11_non_alternating_sequencing_failure.json"
-    },
-    {
-      "fixture_id": "fixture_12_state_persistence_failure",
-      "appendix_d_reference": "D.12",
-      "purpose": "proves clean-state isolation enforcement",
-      "expected_state": "validation failure",
-      "status": "implemented",
-      "fixture_path": "fixtures/intake/appendix-d/d12_state_persistence_failure.json"
-    },
-    {
-      "fixture_id": "fixture_13_indirect_signaling_output_failure",
-      "appendix_d_reference": "D.13",
-      "purpose": "proves external wording validation rejects internal-depth phrasing",
-      "expected_state": "validation failure",
-      "status": "implemented",
-      "fixture_path": "fixtures/intake/appendix-d/d13_indirect_signaling_output_failure.json"
-    }
-  ]
+    "spec_version":  "L3-v8",
+    "fixtures":  [
+                     {
+                         "fixture_id":  "fixture_1_desktop_only_eligible",
+                         "appendix_d_reference":  "D.1",
+                         "purpose":  "proves Desktop-only determination path",
+                         "expected_state":  "Template 2",
+                         "status":  "implemented",
+                         "fixture_path":  "fixtures/intake/appendix-d/d1_desktop_only_eligible.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_2_desktop_and_mobile_eligible",
+                         "appendix_d_reference":  "D.2",
+                         "purpose":  "proves dual-baseline eligibility",
+                         "expected_state":  "Template 1",
+                         "status":  "implemented",
+                         "fixture_path":  "fixtures/intake/appendix-d/d2_desktop_and_mobile_eligible.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_3_desktop_eligible_mobile_constrained",
+                         "appendix_d_reference":  "D.3",
+                         "purpose":  "proves Template 3 guardrail",
+                         "expected_state":  "Template 3",
+                         "status":  "implemented",
+                         "fixture_path":  "fixtures/intake/appendix-d/d3_desktop_eligible_mobile_constrained.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_4_mobile_only_eligible",
+                         "appendix_d_reference":  "D.4",
+                         "purpose":  "proves Mobile-only determination path",
+                         "expected_state":  "Template 4",
+                         "status":  "implemented",
+                         "fixture_path":  "fixtures/intake/appendix-d/d4_mobile_only_eligible.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_5_mobile_eligible_desktop_constrained",
+                         "appendix_d_reference":  "D.5",
+                         "purpose":  "proves Template 5 guardrail",
+                         "expected_state":  "Template 5",
+                         "status":  "implemented",
+                         "fixture_path":  "fixtures/intake/appendix-d/d5_mobile_eligible_desktop_constrained.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_6_not_eligible_generic",
+                         "appendix_d_reference":  "D.6",
+                         "purpose":  "proves non-eligibility without constraint-specific template",
+                         "expected_state":  "Template 6",
+                         "status":  "implemented",
+                         "fixture_path":  "fixtures/intake/appendix-d/d6_not_eligible_generic.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_7_not_eligible_botmitigation",
+                         "appendix_d_reference":  "D.7",
+                         "purpose":  "proves Template 7",
+                         "expected_state":  "Template 7",
+                         "status":  "implemented",
+                         "fixture_path":  "fixtures/intake/appendix-d/d7_not_eligible_botmitigation.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_8_not_eligible_constraints_other",
+                         "appendix_d_reference":  "D.8",
+                         "purpose":  "proves Template 8",
+                         "expected_state":  "Template 8",
+                         "status":  "implemented",
+                         "fixture_path":  "fixtures/intake/appendix-d/d8_not_eligible_constraints_other.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_9_note_gated_constrained_run",
+                         "appendix_d_reference":  "D.9",
+                         "purpose":  "proves notes only appear when permitted",
+                         "expected_state":  "note passes validation",
+                         "status":  "implemented",
+                         "fixture_path":  "fixtures/intake/appendix-d/d9_note_gated_constrained_run.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_10_invalid_note_on_observed_run",
+                         "appendix_d_reference":  "D.10",
+                         "purpose":  "proves prohibited note attachment fails",
+                         "expected_state":  "validation failure",
+                         "status":  "implemented",
+                         "fixture_path":  "fixtures/intake/appendix-d/d10_invalid_note_on_observed_run.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_11_non_alternating_sequencing_failure",
+                         "appendix_d_reference":  "D.11",
+                         "purpose":  "proves sequencing enforcement",
+                         "expected_state":  "validation failure",
+                         "status":  "implemented",
+                         "fixture_path":  "fixtures/intake/appendix-d/d11_non_alternating_sequencing_failure.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_12_state_persistence_failure",
+                         "appendix_d_reference":  "D.12",
+                         "purpose":  "proves clean-state isolation enforcement",
+                         "expected_state":  "validation failure",
+                         "status":  "implemented",
+                         "fixture_path":  "fixtures/intake/appendix-d/d12_state_persistence_failure.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_13_indirect_signaling_output_failure",
+                         "appendix_d_reference":  "D.13",
+                         "purpose":  "proves external wording validation rejects internal-depth phrasing",
+                         "expected_state":  "validation failure",
+                         "status":  "implemented",
+                         "fixture_path":  "fixtures/intake/appendix-d/d13_indirect_signaling_output_failure.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_14_unbounded_alt_text_insufficiently_specified",
+                         "appendix_d_reference":  "D.14",
+                         "purpose":  "proves generic alt-text allegation without a bounded page, product, section, flow, or component returns Insufficiently specified for bounded execution, not Constrained",
+                         "expected_state":  "Insufficiently specified for bounded execution",
+                         "status":  "scaffolded",
+                         "fixture_path":  "fixtures/intake/appendix-d/d14_unbounded_alt_text_insufficiently_specified.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_15_mixed_boundedness_preserves_bounded_execution",
+                         "appendix_d_reference":  "D.15",
+                         "purpose":  "proves a mixed-boundedness matter preserves all RUN_UNIT records and permits bounded execution to continue",
+                         "expected_state":  "bounded execution preserved",
+                         "status":  "scaffolded",
+                         "fixture_path":  "fixtures/intake/appendix-d/d15_mixed_boundedness_preserves_bounded_execution.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_16_marker_only_not_botmitigation",
+                         "appendix_d_reference":  "D.16",
+                         "purpose":  "proves challenge or enforcement script markers alone do not produce BOTMITIGATION when meaningful title, substantive content, and the alleged surface materially render",
+                         "expected_state":  "not BOTMITIGATION by marker presence alone",
+                         "status":  "scaffolded",
+                         "fixture_path":  "fixtures/intake/appendix-d/d16_marker_only_not_botmitigation.json"
+                     },
+                     {
+                         "fixture_id":  "fixture_17_true_challenge_wall_botmitigation",
+                         "appendix_d_reference":  "D.17",
+                         "purpose":  "proves a true challenge wall with challenge text or equivalent takeover behavior still produces BOTMITIGATION",
+                         "expected_state":  "BOTMITIGATION",
+                         "status":  "scaffolded",
+                         "fixture_path":  "fixtures/intake/appendix-d/d17_true_challenge_wall_botmitigation.json"
+                     }
+                 ]
 }

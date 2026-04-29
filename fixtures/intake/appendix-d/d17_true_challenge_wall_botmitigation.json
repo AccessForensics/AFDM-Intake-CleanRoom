@@ -1,0 +1,8 @@
+{
+    "fixture_id":  "fixture_17_true_challenge_wall_botmitigation",
+    "appendix_d_reference":  "D.17",
+    "purpose":  "proves a true challenge wall with challenge text or equivalent takeover behavior still produces BOTMITIGATION",
+    "expected_state":  "BOTMITIGATION",
+    "status":  "scaffolded",
+    "note":  "Placeholder scaffold fixture. Populate concrete inputs and expected outputs before treating as implemented."
+}

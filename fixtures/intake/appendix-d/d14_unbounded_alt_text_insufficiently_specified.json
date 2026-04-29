@@ -1,0 +1,8 @@
+{
+    "fixture_id":  "fixture_14_unbounded_alt_text_insufficiently_specified",
+    "appendix_d_reference":  "D.14",
+    "purpose":  "proves generic alt-text allegation without a bounded page, product, section, flow, or component returns Insufficiently specified for bounded execution, not Constrained",
+    "expected_state":  "Insufficiently specified for bounded execution",
+    "status":  "scaffolded",
+    "note":  "Placeholder scaffold fixture. Populate concrete inputs and expected outputs before treating as implemented."
+}
