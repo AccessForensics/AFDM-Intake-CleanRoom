@@ -1,0 +1,8 @@
+{
+    "fixture_id":  "fixture_16_marker_only_not_botmitigation",
+    "appendix_d_reference":  "D.16",
+    "purpose":  "proves challenge or enforcement script markers alone do not produce BOTMITIGATION when meaningful title, substantive content, and the alleged surface materially render",
+    "expected_state":  "not BOTMITIGATION by marker presence alone",
+    "status":  "scaffolded",
+    "note":  "Placeholder scaffold fixture. Populate concrete inputs and expected outputs before treating as implemented."
+}

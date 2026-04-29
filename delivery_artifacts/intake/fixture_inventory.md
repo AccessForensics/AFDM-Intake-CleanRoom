@@ -17,8 +17,13 @@ Status: evidence_snapshot_only
 - D.11, fixture_11_non_alternating_sequencing_failure, expected state: validation failure, status: implemented, fixture path: fixtures/intake/appendix-d/d11_non_alternating_sequencing_failure.json
 - D.12, fixture_12_state_persistence_failure, expected state: validation failure, status: implemented, fixture path: fixtures/intake/appendix-d/d12_state_persistence_failure.json
 - D.13, fixture_13_indirect_signaling_output_failure, expected state: validation failure, status: implemented, fixture path: fixtures/intake/appendix-d/d13_indirect_signaling_output_failure.json
+- D.14, fixture_14_unbounded_alt_text_insufficiently_specified, expected state: Insufficiently specified for bounded execution, status: scaffolded, fixture path: fixtures/intake/appendix-d/d14_unbounded_alt_text_insufficiently_specified.json
+- D.15, fixture_15_mixed_boundedness_preserves_bounded_execution, expected state: bounded execution preserved, status: scaffolded, fixture path: fixtures/intake/appendix-d/d15_mixed_boundedness_preserves_bounded_execution.json
+- D.16, fixture_16_marker_only_not_botmitigation, expected state: not BOTMITIGATION by marker presence alone, status: scaffolded, fixture path: fixtures/intake/appendix-d/d16_marker_only_not_botmitigation.json
+- D.17, fixture_17_true_challenge_wall_botmitigation, expected state: BOTMITIGATION, status: scaffolded, fixture path: fixtures/intake/appendix-d/d17_true_challenge_wall_botmitigation.json
 
 ## Validation result note
 
 - implemented fixtures are proven only to the extent current local tests pass
+- scaffolded fixtures are present in the scaffold but are not yet treated as implemented proof
 - scaffolded or partial areas must remain disclosed in Appendix F until fully verified

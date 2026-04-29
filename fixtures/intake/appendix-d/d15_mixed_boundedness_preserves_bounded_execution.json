@@ -1,0 +1,8 @@
+{
+    "fixture_id":  "fixture_15_mixed_boundedness_preserves_bounded_execution",
+    "appendix_d_reference":  "D.15",
+    "purpose":  "proves a mixed-boundedness matter preserves all RUN_UNIT records and permits bounded execution to continue",
+    "expected_state":  "bounded execution preserved",
+    "status":  "scaffolded",
+    "note":  "Placeholder scaffold fixture. Populate concrete inputs and expected outputs before treating as implemented."
+}

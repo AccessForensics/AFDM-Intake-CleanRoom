@@ -170,13 +170,28 @@ async function detectEnvironmentChallenge(page) {
     signal === "window._pxvid"
   );
 
-  const challengeDetected =
+  const hasChallengeTextOrTakeoverMarkers =
     visibleTextHitMarkers.length > 0 ||
     htmlHitMarkers.length > 0 ||
-    urlHitMarkers.length > 0 ||
+    urlHitMarkers.length > 0;
+
+  const markerOnlySignalsPresent =
     strongScriptSignalMarkers.length > 0 ||
     domSignalMarkers.length > 0 ||
     strongRuntimeSignals.length > 0;
+
+  const substantiveTitleOrBodyPresent =
+    (titleLower.length > 0 || bodyLower.length > 0) &&
+    visibleTextHitMarkers.length === 0;
+
+  const allegedSurfaceMateriallyRendered =
+    Array.isArray(data.anchors) &&
+    data.anchors.length > 0 &&
+    visibleTextHitMarkers.length === 0;
+
+  const challengeDetected =
+    hasChallengeTextOrTakeoverMarkers ||
+    (markerOnlySignalsPresent && !(substantiveTitleOrBodyPresent || allegedSurfaceMateriallyRendered));
 
   return Object.freeze({
     challengeDetected,
@@ -191,6 +206,8 @@ async function detectEnvironmentChallenge(page) {
       domSignalMarkers,
       strongRuntimeSignals,
       weakRuntimeSignals,
+      substantiveTitleOrBodyPresent,
+      allegedSurfaceMateriallyRendered,
       anchors: data.anchors,
       bodyExcerpt: data.bodyText.slice(0, 1200)
     })
