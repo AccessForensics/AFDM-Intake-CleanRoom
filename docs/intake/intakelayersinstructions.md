@@ -1,124 +1,320 @@
-AF Intake, Layer 1–3 Unified Implementation Spec (intakelayersinstructions.md)
-Internal use only. Governs implementation in the intake branch.
+# AF SECTIONS 1 TO 10
 
-## How an AI agent must use this document
+# AF INTAKE, LAYER 1-3 UNIFIED IMPLEMENTATION SPEC
 
-As the AI agent implementing intake in the intake branch, you must treat this file as a hard contract, not suggestions.
+Internal Use Only. Governs implementation in the intake branch.
 
-When building or modifying code for intake:
+Unified file name: `intakelayersinstructions.md`
 
-- Do not infer or invent behavior that is not specified here.
-- If any requirement is unclear or conflicts with existing behavior, you must flag it as a conflict instead of guessing a behavior.
-- You must implement logic so that:
-  - All rules in this document are enforced, and
-  - All records and outputs that you generate can be validated back to these rules.
+## How to use this document
 
-If you cannot implement a rule as written, for example because a test, fixture, or schema is missing, you must:
+This is the unified implementation spec for AF intake.
 
-- Explicitly label the rule as not implemented, and
-- Surface that gap for governed correction rather than silently ignoring or weakening the rule.
+It is a consolidation layer across the current standalone source files:
 
-This file unifies:
+- `1-10 Layer 1 - Authority and Doctrine.md`, for meaning, posture, nondisclosure, feasibility-gate boundary, and doctrinal interpretation
+- `1-10 Layer 2 - Jules.md`, for build obligations, validation obligations, test obligations, fixture obligations, delivery obligations, and completion criteria
+- `1-10 Layer 3 - Machine-Bindable Specs.md`, for exact machine expression, enums, determination templates, conditionals, sequencing, validation rules, and record contracts
 
-- Layer 1, doctrine, meaning, posture, nondisclosure, run rules, see `1-10 Layer 1 - Authority and Doctrine.md`
-- Layer 2, Jules' build contract, what must be implemented and tested, see `1-10 Layer 2 - Jules.md`
-- Layer 3, machine spec, enums, schemas, conditionals, validation, see `1-10 Layer 3 - Machine-Bindable Specs.md`
+This unified document does not replace the standalone layer files. It unifies them for implementation use.
 
-Implementation must satisfy all rules below.
+If this unified document conflicts with a standalone layer file, the standalone layer file governs for that subject.
 
-# 1. Intake phase and scope
+If doctrine text conflicts with implemented AFDM runtime behavior, runtime behavior governs what the system actually did. That does not authorize silent drift. The conflict must be surfaced and corrected through governance.
 
-1. Implement intake as a bounded feasibility gate. It must only answer:
+When building, modifying, validating, or testing intake:
 
-   "Is this matter eligible for full forensic execution under controlled Desktop/Mobile browser contexts, based solely on the complaint or demand materials provided?"
+- do not infer or invent behavior that is not specified
+- do not silently weaken a locked rule
+- if a requirement is unclear, incomplete, or conflicts with implementation, flag the conflict instead of guessing
+- if a rule can be machine-enforced, implement that enforcement
+- if a rule cannot yet be machine-enforced, explicitly disclose that gap through the governed limitations path and do not pretend the rule is complete
 
-2. Treat the submitted complaint or demand materials as the only scope anchor. Do not use any other input to create intake eligibility behavior.
+You must not claim completion unless:
 
-3. You must not implement intake or label it as:
-   - compliance audit
-   - defect inventory
-   - remediation guide
-   - certification
-   - legal opinion
-   - merits assessment or narrative about site quality, claim strength, or party conduct
+- every locked rule is either implemented or explicitly disclosed as an unresolved governed gap
+- required tests are present and passing
+- required fixtures are present and valid
+- required delivery artifacts are present
+- required traceability is complete
+- no unresolved locked-rule gap remains undocumented
 
-4. External-facing intake output must be limited to one eligibility determination line plus doctrine-permitted neutral scope/context wording. Code must prevent any leakage of internal run counts, depth, selection detail, or sequencing.
+## Cross-reference rule
 
-# 2. Authority, drift, and conflict handling
+When this file refers to a section or subsection in a standalone layer file, it must preserve the style used in that source file.
 
-1. Treat AFDM repository behavior, current implementation, as the source of truth for:
-   - output labels
-   - record fields
-   - parameter locks
-   - constraint handling
-   - stop logic
-   - determination template usage
+If the source layer file uses a numbered section with lettered subheads beneath it, references must cite the numbered section and the lettered subhead exactly as used there.
 
-2. When doctrine and implementation conflict:
-   - You must treat runtime implementation behavior as describing what the system actually did.
-   - You must not treat the conflict as permission for silent drift.
-   - You must surface the conflict through the governed reporting path and must not patch doctrine by improvising new labels, fields, stop rules, procedures, or metadata classes.
+Do not invent composite subsection numbers that do not appear in the source file.
 
-3. You must keep internal intake records non-evaluative:
-   - Do not add evaluative fields, intent signals, strength/probability signals, or outcome-leaning metadata.
-   - Do not label internal records as findings, violations, or assessments.
+# SECTION 1: PURPOSE AND BOUNDARY OF INTAKE [LOCKED]
 
-4. You must not introduce new external templates, outcome labels, constraint_class values, note types, or scope/anchor types beyond those locked in this spec. If a change is required, it must go through a governed update to all three layers, not by direct code changes alone.
+## 1.1 Intake as a bounded feasibility gate
 
-# 3. External language, nondisclosure, and templates
+Intake is a bounded feasibility gate.
 
-## 3.1 Nondisclosure rules
+It determines whether the matter qualifies for full forensic execution under controlled browser contexts, using only the complaint or demand materials provided as the scope anchor.
 
-External-facing intake output must never disclose, or imply, any of:
+The intake question is:
+
+"Is this matter eligible for full forensic execution under controlled Desktop and Mobile browser contexts, based solely on the complaint or demand materials provided?"
+
+## 1.2 What intake is not
+
+Intake is not:
+
+- a compliance audit
+- a defect inventory
+- a remediation guide
+- a certification
+- a legal opinion
+- a disguised merits assessment
+- a narrative about site quality, claim strength, or party conduct
+
+## 1.3 Intake output boundary
+
+Intake outputs eligibility only.
+
+External-facing intake output must not disclose internal depth, internal selection detail, counts, run volume, or internal sequencing.
+
+External-facing intake output is limited to one eligibility determination line plus doctrine-permitted mechanically neutral scope and context wording.
+
+## 1.4 Locked nondisclosure posture, external outputs
+
+Any external-facing intake output must not disclose:
 
 - number of runs performed
 - number of confirmations reached
-- any observed/not-observed counts
-- cap-reached status
-- which asserted conditions were selected or attempted
+- any observed or not observed counts
+- cap reached status
+- which specific asserted conditions were selected as run units during intake
+- which asserted conditions were attempted
 - per-run sequencing details
-- per-run or per-asserted-condition context assignment
+- per-run or per-asserted-condition context assignment beyond the matter-level context disclosed by the determination template or other governed external intake template
 
-Allowed at matter level only:
+Matter-level execution context may be disclosed using the locked exact terms Replicated Desktop Browser Context and Replicated Mobile Browser Context, including whether the matter was assessed under Desktop only, Desktop and Mobile, Desktop with Mobile baseline constrained, Mobile only, or Mobile with Desktop baseline constrained.
 
-- whether Desktop, Mobile, or both were in scope
-- whether a baseline was constrained, using only the locked terms in Section 3.4 below
+Such disclosure must remain at the matter level only.
 
-## 3.2 Banned framing
+## 1.5 Indirect signaling prohibition
 
-External output must reject, and not use:
+External-facing intake outputs must not imply prohibited internal details indirectly, including through phrases such as:
 
-- pass / fail
-- compliant / non-compliant
+- extensive testing
+- limited testing
+- we checked everything
+- we checked only a few items
+
+Functional equivalents are also prohibited.
+
+## 1.6 Intake is not a disguised merits process
+
+Intake is a feasibility gate only.
+
+It must not become a disguised assessment, a partial audit, a remediation posture, or an external narrative about site quality, claim strength, party conduct, motive, or responsibility.
+
+# SECTION 2: AUTHORITY, SOURCE OF TRUTH, AND DRIFT CONTROL [LOCKED]
+
+## 2.1 AFDM as the implemented intake system
+
+AFDM is the implemented automated execution system that performs intake runs and emits intake artifacts.
+
+## 2.2 AFDM repository behavior is the source of truth
+
+AFDM repository behavior is the source of truth for:
+
+- output labels
+- record fields
+- parameter locks
+- constraint handling
+- stop logic
+- template usage
+
+This unified spec must not claim artifacts, parameters, label sets, stop rules, templates, or behaviors that are not supported by the implemented system.
+
+## 2.3 Locked discipline, internal records only
+
+Internal intake records must not contain:
+
+- evaluative fields
+- intent signals
+- strength indicators
+- probability indicators
+- outcome-leaning metadata
+
+## 2.4 Outcome categories must remain neutral
+
+Internal outcome categories and record fields must not imply:
+
+- compliance posture
+- liability posture
+- likelihood posture
+
+## 2.5 Record terminology discipline
+
+Internal intake record terminology must not frame entries as:
+
+- findings
+- violations
+- assessments
+
+## 2.6 Scope note
+
+This section governs internal record structure and metadata discipline.
+
+External-facing vocabulary restrictions are governed by Section 3.
+
+## 2.7 Conflict rule
+
+If doctrine text conflicts with implemented AFDM behavior, runtime AFDM behavior governs what the system actually did.
+
+That does not authorize silent drift.
+
+Any identified conflict between doctrine text and implemented behavior must be surfaced and corrected through governance.
+
+## 2.8 Drift control
+
+Operators and implementers must not resolve doctrinal ambiguity by improvising:
+
+- new metadata
+- new record fields
+- new labels
+- new stop logic
+- new scope logic
+- new context logic
+- new procedures
+- new external templates
+- new note types
+- new constraint classes
+
+If implementation and doctrine diverge, governance must correct the doctrine. Operators do not patch doctrine by practice.
+
+## 2.9 No informal expansion rule
+
+No new labels, fields, procedures, stop rules, note types, scope or anchor types, or metadata classes may be introduced informally to resolve ambiguity.
+
+## 2.10 Why this section is hard-edged
+
+This section exists to stop doctrine from drifting into fiction and to stop implementation from drifting into improvisation.
+
+If AFDM does not support it, doctrine must not pretend it does.
+
+If AFDM behaves differently, the doctrine must be corrected through governance, not operator creativity.
+
+# SECTION 3: MECHANICAL OBSERVER LANGUAGE [LOCKED]
+
+## 3.1 Mechanical neutrality
+
+Intake language is mechanically neutral.
+
+It records observed state under bounded execution parameters.
+
+It does not characterize, evaluate, assign responsibility, imply motive, suggest wrongdoing, or imply intent.
+
+## 3.2 Locked banned framing, principle-governed
+
+The following terms are prohibited in all external-facing intake output, along with functional equivalents:
+
+- pass
+- fail
+- compliant
+- non-compliant
 - violation
-- audit or remediation as intake purpose
+- audit, as intake purpose
+- remediation, as intake purpose
 - certification
 - guarantee
-- any blame or adversarial posture
-- phrases that signal execution depth, including "extensive testing", "limited testing", "we checked everything", "we checked only a few items", and functional equivalents
+- blame posture
+- adversarial posture
 
-Output must remain mechanically neutral, describing only:
+## 3.3 Definition of blame posture or adversarial posture
+
+Blame posture or adversarial posture means any language that:
+
+- assigns fault
+- implies intent
+- suggests wrongdoing
+- frames either party as acting improperly
+
+Such framing is prohibited in intake output.
+
+## 3.4 Governing principle
+
+If a term characterizes the site, the claim, or either party, rather than recording a mechanically observed state under bounded parameters, it is prohibited whether or not it appears on the explicit banned list.
+
+## 3.5 Locked scope anchor terms, external outputs only, mandatory use
+
+External-facing intake output must use the following exact terms when describing scope and execution context. Paraphrase is not permitted:
+
+- complaint or demand materials provided
+- specific website conditions asserted in those materials
+- bounded execution parameters
+- Replicated Desktop Browser Context
+- Replicated Mobile Browser Context
+
+## 3.6 Locked burden rule
+
+Intake must stay literal about:
 
 - what was executed
 - what was observed
-- what was blocked
+- what was blocked by a constraint
 - what could not be bounded due to missing specification
 
 Rhetorical burden-shifting language is invalid.
 
-## 3.3 Mandatory scope/context terms
+### A. Missing bounded target is not a constraint
 
-When describing scope and context externally, always use these exact terms, no paraphrase:
+When the complaint or demand materials provided assert a website condition, but do not identify a bounded page, product, section, flow, component, or other executable surface for that condition, intake must not classify that condition as Constrained.
 
-- "complaint or demand materials provided"
-- "specific website conditions asserted in those materials"
-- "bounded execution parameters"
-- "Replicated Desktop Browser Context"
-- "Replicated Mobile Browser Context"
+The correct doctrinal meaning in that circumstance is Insufficiently specified for bounded execution.
 
-## 3.4 Determination templates, 8 only
+A technical constraint exists only where a bounded attempt was available under controlled parameters, but was blocked by an identifiable technical condition.
 
-Each matter must produce exactly one determination from this locked set:
+### B. Bounded narrowing may come only from the complaint or demand materials provided
+
+Intake may narrow a generic allegation only by using bounded references that appear in the complaint or demand materials provided.
+
+Permitted narrowing sources include:
+
+- named URLs
+- named products
+- named sections
+- named flows
+- named page types
+- other equally bounded references stated in the submitted materials
+
+Intake must not invent a target page, invent a target flow, substitute a preferred page, or otherwise create boundedness that is not present in the submitted materials.
+
+### C. One insufficiently specified asserted condition does not freeze the matter
+
+A matter may contain a mix of sufficiently bounded asserted website conditions and asserted website conditions that are Insufficiently specified for bounded execution.
+
+An insufficiently specified asserted website condition does not invalidate, relabel, suppress, or freeze other bounded RUN_UNIT records in the same matter.
+
+Bounded RUN_UNITs may proceed through intake under the locked sequencing, run-cap, and stop rules even if other normalized RUN_UNITs remain insufficiently specified or unexecuted.
+
+### D. BOTMITIGATION requires prevention of a meaningful bounded attempt
+
+BOTMITIGATION is valid only when the technical condition prevented a meaningful bounded attempt of the asserted website condition under controlled parameters.
+
+Challenge-related scripts, CDN enforcement assets, runtime markers, source markers, DOM markers, or vendor markers alone are not enough.
+
+### E. Challenge signals must yield to actual rendered surface
+
+If the relevant page title, substantive body content, or alleged site surface materially rendered, implementation must not classify the run as BOTMITIGATION solely because challenge-related markers are present in source or DOM.
+
+## 3.7 Why this section is strict
+
+This section is strict because intake is not permitted to become rhetoric.
+
+It must remain a mechanical observer.
+
+# SECTION 4: INTAKE DETERMINATION TEMPLATES [LOCKED]
+
+## 4.1 Locked determination template set, eight options only
+
+Each matter must produce exactly one determination from this locked set, with no paraphrase and no alternates:
 
 - DETERMINATION: ELIGIBLE FOR DESKTOP AND MOBILE TECHNICAL RECORD BUILD
 - DETERMINATION: ELIGIBLE FOR DESKTOP TECHNICAL RECORD BUILD
@@ -129,258 +325,406 @@ Each matter must produce exactly one determination from this locked set:
 - DETERMINATION: NOT ELIGIBLE FOR FORENSIC EXECUTION - CONSTRAINTS (BOTMITIGATION)
 - DETERMINATION: NOT ELIGIBLE FOR FORENSIC EXECUTION - CONSTRAINTS (OTHER)
 
-Routing and validity rules:
+These eight templates are the only permitted external determinations.
 
-- Exactly one determination per matter.
-- No paraphrase, no modifiers, no appended explanatory text, no leakage of run counts, sufficiency proximity, or internal reasoning.
-- "Mobile-preferred", "Desktop-preferred", and "partial eligibility" outputs are prohibited.
+## 4.2 Locked nondisclosure, determination line
 
-Constraint routing:
+The determination line must not reveal, directly or indirectly:
 
-- Use Template 6 only when ineligibility is not constraint-driven.
-- Use Template 7 only when BOTMITIGATION is the controlling ineligibility basis.
-- Use Template 8 only when a non-BOTMITIGATION constraint_class is the controlling basis.
-- Never mix these or cross-use them.
+- how close intake came to sufficiency
+- which asserted conditions were selected or attempted
+- what was observed or not observed
+- whether any run cap or stop rule was reached
 
-# 4. Run units, runs, cap, and sufficiency
+The determination line must not include modifiers or hedging such as:
 
-## 4.1 Complaint anchors and RunUnitRecord
+- provisionally
+- appears
+- strongly
+- weakly
+- likely
+- unlikely
 
-Normalize complaint or demand materials into ComplaintGroupAnchor records with:
+or functional equivalents.
 
-- `anchor_type ∈ {page_paragraph_range, page_bullet_range}`
-- `anchor_value = a page-scoped range string`, for `page_paragraph_range`, identify page and paragraph range, for `page_bullet_range`, identify page and bullet range
+## 4.3 Peer-baseline eligibility and constraint guardrails
 
-For each distinct asserted website condition within an anchor, create one RunUnitRecord with at least:
+The following guardrails apply:
 
-- `run_unit_id`, unique per matter
-- `complaint_group_anchor_id`
-- `asserted_condition_text`
-- `desktop_in_scope`, bool
-- `mobile_in_scope`, bool
-- `created_context_basis ∈ {generic_accessibility_allegation, materials_cabined_desktop_only, materials_cabined_mobile_only, constrained_peer_baseline}`
+- Template 1 is the only dual-baseline eligibility template
+- Template 2 is the only Desktop-only eligibility template
+- Template 3 is the only Desktop-eligible plus Mobile-constrained template
+- Template 4 is the only Mobile-only eligibility template
+- Template 5 is the only Mobile-eligible plus Desktop-constrained template
+- mobile-preferred outputs are invalid
+- desktop-preferred outputs are invalid
+- partial-eligibility outputs are invalid
 
-One RUN_UNIT equals exactly one asserted condition. No blended or multi-assertion RUN_UNITs.
+For purposes of this rule, partial eligibility means any output that grants eligibility for a baseline not governed by a locked determination template, or that qualifies, limits, or conditions eligibility in a manner not expressed through one of the eight locked determination templates.
 
-One run maps to exactly one RUN_UNIT and exactly one browser context.
+Templates 3 and 5 are not partial-eligibility outputs. They are the locked constrained-baseline templates.
 
-Pre-execution normalization:
+## 4.4 Determination rigidity rule
 
-- Create all RunUnitRecords for a matter before any intake runs execute.
-- Do not create new RunUnitRecords after the stop condition has been evaluated.
+Exactly one external-facing determination is permitted per matter.
 
-Unexecuted RUN_UNITs:
+No modifiers, alternate phrasings, blended outputs, or supplemental determination lines are allowed.
 
-- If the cap hits before all RUN_UNITs are executed, unexecuted RUN_UNITs remain in the record and are not deleted, relabeled, or treated as errors.
+## 4.5 Why Section 4 is rigid
 
-Missing bounded target is not a constraint:
+External intake determination is the only governed external eligibility line.
 
-- When the complaint or demand materials provided assert a website condition but do not identify a bounded page, product, section, flow, component, or other executable surface for that condition, intake must not classify that condition as Constrained.
-- The correct doctrinal meaning in that circumstance is Insufficiently specified for bounded execution.
-- A technical constraint exists only where a bounded attempt was available under controlled parameters, but was blocked by an identifiable technical condition.
+That makes template drift unacceptable.
 
-Bounded narrowing rule:
+## 4.6 Constraint-driven ineligibility routing
 
-- Intake may narrow a generic allegation only by using bounded references that appear in the complaint or demand materials provided.
-- Permitted narrowing sources include named URLs, named products, named sections, named flows, named page types, and other equally bounded references stated in the submitted materials.
-- Intake must not invent a target page, invent a target flow, substitute a preferred page, or otherwise create boundedness that is not present in the submitted materials.
+Template 6, DETERMINATION: NOT ELIGIBLE FOR FORENSIC EXECUTION, is valid only when the matter is not eligible for reasons other than a technical constraint.
 
-Mixed-boundedness rule:
+Template 7, DETERMINATION: NOT ELIGIBLE FOR FORENSIC EXECUTION - CONSTRAINTS (BOTMITIGATION), is valid only when BOTMITIGATION is the controlling ineligibility basis.
 
-- A matter may contain a mix of sufficiently bounded asserted website conditions and asserted website conditions that are Insufficiently specified for bounded execution.
-- One insufficiently specified asserted website condition does not invalidate, relabel, suppress, or freeze other bounded RUN_UNIT records in the same matter.
-- Bounded RUN_UNITs may proceed through intake under the locked sequencing, run-cap, and stop rules even if other normalized RUN_UNITs remain insufficiently specified or unexecuted.
+Template 8, DETERMINATION: NOT ELIGIBLE FOR FORENSIC EXECUTION - CONSTRAINTS (OTHER), is valid only when a non-BOTMITIGATION locked constraint class is the controlling ineligibility basis.
 
-## 4.2 Outcome labels
+## 4.7 Locked note rule
 
-Each run must produce exactly one outcome label from this locked set:
+`{{MATTER_LEVEL_NOTE}}` may appear only in Template 3 or Template 5, and only when note permission is authorized under the locked gate.
+
+When present, it must be exactly one mechanical sentence stating the blocking condition only.
+
+If not authorized, omit it entirely.
+
+# SECTION 5: RUN CAP, SUFFICIENCY, AND STOP RULES [LOCKED]
+
+## 5.1 Run cap
+
+At most 10 intake runs may be executed per matter.
+
+There is no time cap.
+
+There is no assertion-count cap.
+
+## 5.2 Run definition
+
+A run is one controlled attempt of one RUN_UNIT under one browser context, executed in a fresh isolated browser session using the locked context parameters.
+
+## 5.3 Qualifying confirmations
+
+Only the following outcomes are qualifying confirmations:
+
+- Observed as asserted
+- Not observed as asserted
+
+Constrained and Insufficiently specified for bounded execution are not qualifying confirmations.
+
+## 5.4 Sufficiency threshold
+
+Sufficiency is reached when there are two qualifying confirmations, each produced by a distinct run, across any mix of contexts that are in scope for the matter.
+
+The two qualifying confirmations may come from runs executed against the same RUN_UNIT or against different RUN_UNITs.
+
+Distinct runs are required, not distinct run units.
+
+For matters with only one context in scope, both qualifying confirmations must come from that single in-scope context.
+
+## 5.5 Stop rule
+
+Stop immediately when either condition occurs first:
+
+- sufficiency reached
+- 10 runs completed
+
+If sufficiency is reached on the same run that completes the 10-run cap, both conditions are met simultaneously. In that case, stop basis is sufficiency reached.
+
+## 5.6 No runs after stop
+
+No additional runs are permitted after the stop condition is met for that matter.
+
+## 5.7 Intake closure rule
+
+Once a stop condition is met, intake is closed for that matter.
+
+It must not be resumed or extended without a new matter scope submission.
+
+## 5.8 Cap Consumption Rule
+
+Every run consumes one run slot.
+
+A run that produces Constrained or Insufficiently specified for bounded execution still consumes a cap slot.
+
+# SECTION 6: COMPLAINT-ANCHORED NORMALIZATION [LOCKED]
+
+## 6.1 Complaint structure preserved for traceability
+
+Complaint or demand drafting structure must be preserved for traceability, but grouped drafting must not control execution atomics.
+
+## 6.2 Locked normalization ruleset, complaint group anchors
+
+Each complaint or demand grouping must be assigned a complaint group anchor using one of these forms only:
+
+- page_paragraph_range
+- page_bullet_range
+
+No alternate anchor types are permitted.
+
+## 6.3 Complaint group anchor is a pointer only
+
+A complaint group anchor is a reference pointer only.
+
+It does not determine the number of executable conditions.
+
+## 6.4 Distinct asserted conditions become distinct run units
+
+Each distinct asserted website condition within a complaint group anchor must produce its own RUN_UNIT.
+
+A single complaint group anchor may therefore produce multiple RUN_UNIT records.
+
+## 6.5 Independent execution requirement
+
+Each run must map to exactly one RUN_UNIT.
+
+## 6.6 No blended testing
+
+A single run must not blend multiple asserted conditions.
+
+## 6.7 Locked atomicity rule
+
+One RUN_UNIT equals exactly one asserted website condition.
+
+Blended or multi-assertion RUN_UNITs are invalid.
+
+## 6.8 Locked traceability rule
+
+Each RUN_UNIT must remain traceable back to its originating complaint group anchor and asserted condition text.
+
+## 6.9 Why this normalization exists
+
+This normalization exists so grouped pleading can be preserved for traceability without allowing grouped drafting to control execution atomics.
+
+## 6.10 Pre-execution normalization
+
+All RUN_UNIT records for a matter must be created before any intake runs execute for that matter.
+
+No new RUN_UNIT may be created after the stop condition has been evaluated for that matter.
+
+## 6.11 Unexecuted RUN_UNITs
+
+The run cap may result in normalized RUN_UNIT records that are never executed before the stop condition fires.
+
+Unexecuted RUN_UNITs are not an error condition and must remain in the matter record. They must not be deleted, relabeled, or treated as invalid because no run was executed against them.
+
+## 6.12 Mixed-boundedness matters
+
+A matter may contain a mix of sufficiently bounded asserted website conditions and asserted website conditions that are Insufficiently specified for bounded execution.
+
+An insufficiently specified asserted website condition does not invalidate, relabel, suppress, or freeze other bounded RUN_UNIT records in the same matter.
+
+Bounded RUN_UNITs may proceed through intake under the locked sequencing, run-cap, and stop rules even if other normalized RUN_UNITs remain insufficiently specified or unexecuted.
+
+## 6.13 Bounded target derivation discipline
+
+A target page, target product, target section, target flow, or target component may be used for intake execution only when that bounded surface is directly derivable from the complaint or demand materials provided.
+
+Permitted derivation sources include named URLs, named products, named sections, named flows, named page types, and other equally bounded references stated in the submitted materials.
+
+Operators and implementations must not invent a target surface, substitute a preferred page, or create boundedness that does not exist in the submitted materials.
+
+# SECTION 7: OUTCOME LABEL SET AND DEFINITIONS [LOCKED]
+
+## 7.1 Locked outcome label set
+
+Only these outcome labels are permitted:
 
 - Observed as asserted
 - Not observed as asserted
 - Constrained
 - Insufficiently specified for bounded execution
 
-No paraphrase, sublabels, aggregate labels, or multi-outcome statements per run.
+No additional labels, sublabels, variants, or aggregate labels are permitted.
 
-## 4.3 Run cap and sufficiency
+## 7.2 Observed as asserted
 
-Run cap:
+Meaning: under bounded execution parameters for that run unit and browser context, the asserted website condition manifested.
 
-- At most 10 intake runs per matter.
-- No time cap.
-- No assertion-count cap.
+## 7.3 Not observed as asserted
 
-A run is one controlled attempt of one RUN_UNIT under one context profile, executed in a fresh, isolated browser session using the locked context parameters.
+Meaning: under bounded execution parameters for that run unit and browser context, the asserted website condition did not manifest.
 
-Qualifying confirmations:
+## 7.4 Constrained
 
-- Only Observed as asserted and Not observed as asserted are qualifying confirmations.
-- Constrained and Insufficiently specified for bounded execution are not qualifying confirmations.
+Constrained is valid only when all of the following are true:
 
-Sufficiency threshold:
+- a bounded target surface existed for the run
+- execution encountered an identifiable technical blocker
+- the blocker prevented a meaningful bounded attempt of the asserted website condition
+- the blocker maps to one of the locked constraint_class values
 
-- Sufficiency is reached when there are 2 qualifying confirmations, each from a distinct run, across any mix of in-scope contexts.
-- The two runs may target the same RUN_UNIT or different RUN_UNITs.
-- Distinct runs are required, not distinct run units.
+### A. BOTMITIGATION validity gate
 
-Stop rule:
+If outcome_label = Constrained and constraint_class = BOTMITIGATION, the run is valid only if both of the following are true:
 
-- Stop immediately when either:
-  - sufficiency is reached, or
-  - 10 runs have been completed.
-- If sufficiency is reached on the same run that completes the 10-run cap, both conditions are met, and the stop basis is sufficiency.
+- blocker_evidence_present = true
+- bounded_attempt_prevented = true
 
-No additional runs are permitted after stop. Intake is closed for that matter and cannot resume without a new matter submission.
+For purposes of this rule, blocker_evidence_present may be satisfied by challenge text, runtime challenge takeover behavior, or equivalent structural blocker evidence that demonstrates interference with bounded execution.
 
-Cap consumption rule:
+Enforcement script only is not sufficient.
 
-- Every run, regardless of outcome, consumes one of the 10 slots.
-- Constrained and Insufficiently specified runs count against the cap and do not produce confirmations.
+If enforcement_script_only = true, challenge_text_present = false, and substantive_title_or_body_present = true, BOTMITIGATION is invalid unless the internal record also demonstrates that bounded_attempt_prevented = true.
 
-Sufficiency remains a mechanical threshold tied to run counts and locked labels, not a narrative confidence signal.
+### B. Rendered-surface override
 
-# 5. Context baselines, reflow, and scope
+If the relevant page title, substantive body content, or alleged site surface materially rendered, implementation must not classify the run as BOTMITIGATION solely because challenge-related markers are present in source or DOM.
 
-## 5.1 Baseline context profiles
+## 7.5 Insufficiently specified for bounded execution
 
-Implement two locked baseline contexts.
+Insufficiently specified for bounded execution is valid when the submitted materials do not provide sufficient bounded specification to attempt the asserted website condition under controlled parameters for that RUN_UNIT and browser context.
 
-Desktop baseline, `context_id = desktop_baseline`:
+This includes generic allegations that do not identify a page, product, section, flow, component, or comparable executable surface and cannot be narrowed directly from the complaint or demand materials provided.
 
-- `viewport_width: 1366`
-- `viewport_height: 900`
-- `zoom: 100%`
-- `device_scale_factor: 1`
-- `orientation: landscape`
-- `is_mobile: false`
-- `has_touch: false`
+This label also governs any blocking condition that does not map to a locked constraint_class value.
 
-Mobile baseline, `context_id = mobile_baseline`:
+## 7.6 Locked hard constraints on labels
 
-- `viewport_width: 393`
-- `viewport_height: 852`
-- `zoom: 100%`
-- `device_scale_factor: 1`
-- `orientation: portrait`
-- `is_mobile: true`
-- `has_touch: true`
+One run must not emit more than one outcome label.
 
-Layer 1 may refer to these using camelCase, for example `deviceScaleFactor`, `isMobile`, `hasTouch`, but the canonical schema field names are the snake_case forms above.
+No blended, qualified, or multi-label states are permitted.
 
-## 5.2 Peer-baseline scope rule
+## 7.7 One run, one outcome
 
-For generic website accessibility allegations, both Desktop and Mobile baselines must be brought into scope under intake logic.
+Each run must produce exactly one outcome label from the locked set.
+
+## 7.8 Why this section is rigid
+
+Outcome labels drive sufficiency, stop rules, notes, validation, and external determination routing.
+
+That makes label drift unacceptable.
+
+# SECTION 8: EXECUTION CONTEXT RIGOR [LOCKED]
+
+## 8.1 Contexts are parameter locks, not suggestions
+
+Desktop and Mobile intake contexts are parameter locks, not descriptive approximations.
+
+## 8.2 Replicated Desktop Browser Context, locked baseline
+
+Locked Desktop baseline parameters:
+
+- viewport_width: 1366
+- viewport_height: 900
+- zoom: 100%
+- device_scale_factor: 1
+- orientation: landscape
+- is_mobile: false
+- has_touch: false
+
+At human-readable doctrine level, camelCase references may appear. The canonical machine field names remain the snake_case forms.
+
+## 8.3 Replicated Mobile Browser Context, locked baseline
+
+Locked Mobile baseline parameters:
+
+- viewport_width: 393
+- viewport_height: 852
+- zoom: 100%
+- device_scale_factor: 1
+- orientation: portrait
+- is_mobile: true
+- has_touch: true
+
+At human-readable doctrine level, camelCase references may appear. The canonical machine field names remain the snake_case forms.
+
+## 8.4 Peer-baseline scope rule
+
+Desktop baseline and Mobile baseline are each first-class intake baselines. Neither is subordinate to the other.
+
+For generic website accessibility allegations, both Replicated Desktop Browser Context and Replicated Mobile Browser Context must be brought into scope.
+
+Where the submitted materials expressly cabin the asserted condition to one baseline only, intake must issue the corresponding single-baseline determination.
+
+Where one baseline is feasible and the peer baseline is blocked under controlled parameters, intake must issue the corresponding constrained-baseline determination.
 
 Generic accessibility phrasing must not be treated as Desktop-only by default.
 
-If submitted materials explicitly cabin the asserted condition to Desktop only or Mobile only, scope only that baseline and issue the corresponding single-baseline determination.
+## 8.5 Reflow separation
 
-If one baseline is in scope and feasible, and the peer baseline is in scope but blocked under controlled parameters, issue the corresponding constrained-baseline determination, Template 3 or Template 5, with internal constraint_class recorded.
+Reflow testing under WCAG 1.4.10 is operationally separate from baseline intake capture.
 
-For generic accessibility allegations, implementation must set both `desktop_in_scope` and `mobile_in_scope` to `true` for each affected RunUnitRecord, unless the materials expressly cabin the condition to one baseline.
+## 8.6 Reflow primary method
 
-## 5.3 Reflow, separate from baselines
+- viewport_width: 320
+- viewport_height: not fixed, browser-determined
+- zoom: 100%
+- orientation: portrait
+- device_scale_factor: 1
+- is_mobile: false
+- has_touch: false
 
-Implement two reflow contexts, separate from baseline intake.
+## 8.7 Reflow supplemental method
 
-`reflow_primary`:
+- viewport_width: 1280
+- viewport_height: not fixed, browser-determined
+- zoom: 400%
+- effective_width: 320
+- orientation: portrait
+- device_scale_factor: 1
+- is_mobile: false
+- has_touch: false
 
-- `viewport_width: 320`
-- `viewport_height: not fixed`
-- `zoom: 100%`
-- `orientation: portrait`
-- `device_scale_factor: 1`
-- `is_mobile: false`
-- `has_touch: false`
-
-`reflow_supplemental`:
-
-- `viewport_width: 1280`
-- `viewport_height: not fixed`
-- `zoom: 400%`
-- `effective_width: 320`
-- `orientation: portrait`
-- `device_scale_factor: 1`
-- `is_mobile: false`
-- `has_touch: false`
+## 8.8 Reflow does not alter baselines
 
 Reflow methods must not change the locked Desktop or Mobile baselines.
 
-# 6. Sequencing, state isolation, and timing
+## 8.9 Why context rigor is strict
 
-## 6.1 Sequencing
+These contexts are locked because intake feasibility, traceability, and comparability depend on exact parameter discipline.
 
-When both baselines are in scope, alternate contexts:
+# SECTION 9: MECHANICAL NOTE DISCIPLINE AND CONSTRAINT CLASSIFICATION [LOCKED]
 
-- Desktop, Mobile, Desktop, Mobile, and so on until stop
+## 9.1 Purpose of notes
 
-When only one baseline is in scope:
+Notes exist only to state the blocking condition where the locked gate permits them.
 
-- execute all runs in that baseline
-- no interleaving
-
-When both baselines are in scope but one is blocked, constrained:
-
-- still attempt runs in the constrained baseline in their alternating slots
-- each attempt must produce a distinct run record with a locked outcome and applicable constraint_class
-- each such run consumes a cap slot
-- the sequence does not skip or collapse because one baseline is constrained
-
-Sequencing must not be manipulated to favor any condition, context, or party.
-
-## 6.2 Clean-state isolation
-
-Each run must execute in a fresh, isolated browser context. No carry-over state between runs, including cookies, localStorage, sessionStorage, IndexedDB, Cache API, or service workers.
-
-If clean-state isolation cannot be established for a run:
-
-- the run must not proceed to condition evaluation
-- classify the blocking condition using the locked outcome labels and applicable constraint_class, if it maps
-- otherwise, label the run Insufficiently specified for bounded execution with a mechanical note describing the missing bounded path or trigger
-- record isolation failure as internal metadata for that run, for example via a StateIsolationRecord tied to the run identifier
-
-Clean-state isolation applies identically to Desktop and Mobile runs.
-
-## 6.3 Timing metadata, internal only
-
-For each run, record internal timestamps:
-
-- `run_start_local`, `run_start_epoch_ms`
-- `run_end_local`, `run_end_epoch_ms`
-
-These timestamps are internal only and must never appear in external-facing output, nor be hinted at via language like "lengthy", "brief", or "extensive".
-
-# 7. Notes and constraints
-
-## 7.1 Note permission gates
+## 9.2 Note permission gate
 
 Notes are permitted only when:
 
-- `outcome_label = Constrained`, per-run note
-- `outcome_label = Insufficiently specified for bounded execution`, per-run note
-- `determination = Desktop eligible / Mobile baseline constrained`, matter-level note
-- `determination = Mobile eligible / Desktop baseline constrained`, matter-level note
+- outcome_label = Constrained
+- outcome_label = Insufficiently specified for bounded execution
+- the matter determination is Template 3
+- the matter determination is Template 5
 
-Per-run notes attach to runs. Matter-level notes attach to the determination record.
+Gates 1 and 2 authorize per-run notes.
 
-## 7.2 Note format and content
+Gates 3 and 4 authorize matter-level notes recorded in the matter-level determination record.
 
-When permitted:
-
-- Exactly one mechanical sentence stating only the blocking condition.
-- No legal terms, evaluative language, blame language, speculation, motive, severity, or probability framing.
+## 9.3 Notes are prohibited for
 
 Notes are prohibited for:
 
 - Observed as asserted
 - Not observed as asserted
 - statements about sufficiency reached or not reached
-- statements about run ordering or context ordering
-- any attempt to explain, defend, or argue outcome selection
+- statements about run ordering, context ordering, or interleaving decisions
+- attempts to explain, defend, or argue outcome selection
 
-## 7.3 constraint_class enum
+## 9.4 Mechanical sentence rule
 
-If `outcome_label = Constrained`, `constraint_class` must be exactly one of:
+Any permitted note must be exactly one mechanical sentence stating the blocking condition only.
+
+## 9.5 Content restrictions for notes
+
+Permitted notes must contain:
+
+- no legal terms
+- no evaluative language
+- no blame language
+- no speculation
+- no motive framing
+- no severity framing
+- no probability framing
+
+## 9.6 Locked constraint_class enum set
+
+If outcome_label = Constrained, constraint_class must be exactly one of:
 
 - AUTHWALL
 - BOTMITIGATION
@@ -388,53 +732,93 @@ If `outcome_label = Constrained`, `constraint_class` must be exactly one of:
 - HARDCRASH
 - NAVIMPEDIMENT
 
-No new values may be introduced.
+No additional values are permitted.
 
-If a blocking condition does not map to any of these:
+## 9.7 Unmapped blocking condition rule and BOTMITIGATION validity gate
 
-- label the run Insufficiently specified for bounded execution, and
-- use the mechanical note to state the missing bounded path or trigger
+If a blocking condition does not map to one of the locked constraint_class values, the run must not be labeled Constrained.
 
-BOTMITIGATION validity rule:
+It must instead be labeled Insufficiently specified for bounded execution, with the mechanical note stating the missing bounded path or trigger.
 
-- BOTMITIGATION must not be assigned solely because source, DOM, or rendered HTML contains challenge-platform scripts, CDN enforcement assets, or similar vendor markers.
-- If meaningful page title, substantive page content, or the alleged site surface rendered, implementation must evaluate whether bounded condition review remained possible.
-- If bounded condition review remained possible, the run must not auto-route to BOTMITIGATION.
-- BOTMITIGATION is valid only when the technical condition prevented a meaningful bounded attempt of the asserted condition under controlled parameters.
+BOTMITIGATION must satisfy the meaningful bounded-attempt-prevention rule in Section 7.4A and the rendered-surface override in Section 7.4B.
 
-## 7.4 note_basis enum, internal classification
+## 9.8 Locked note_basis enum
 
-When a note is permitted, `note_basis` must be one of:
+If note_permitted = true, note_basis must be exactly one of:
 
-- `outcome_constrained`
-- `outcome_insufficiently_specified`
-- `determination_desktop_eligible_mobile_constrained`
-- `determination_mobile_eligible_desktop_constrained`
+- outcome_constrained
+- outcome_insufficiently_specified
+- determination_desktop_eligible_mobile_constrained
+- determination_mobile_eligible_desktop_constrained
 
-`note_basis` is stored in the MechanicalNoteRuleRecord associated with the run and must comply with the same gate and content restrictions as the note itself.
+No additional note_basis values are permitted.
 
-No other `note_basis` values are allowed.
+# SECTION 10: RUN SEQUENCING, STATE ISOLATION, AND TEMPORAL LOGGING [LOCKED]
 
-# 8. Records and external output validation, high level
+## 10.1 Sequencing rule
 
-Implementation must satisfy the record contracts implied by Layer 3 Appendix A and preserved in Layer 2 Appendix A:
+When both Desktop and Mobile contexts are in scope, run order must alternate:
 
-- IntakeRunRecord, one run, one RUN_UNIT, one context, one outcome, optional constraint_class and mechanical_note, run timing fields present and internal-only
-- ComplaintGroupAnchorRecord, locked `anchor_type` and `anchor_value` representing the page-scoped range
-- RunUnitRecord, exactly one asserted condition, `desktop_in_scope` and `mobile_in_scope` booleans reflecting scope rule, `created_context_basis` indicating how baselines were brought into scope
-- IntakeDeterminationRecord, exactly one per matter, `determination_template` is one of the eight locked templates, optional matter-level note only for constrained-baseline determinations
-- IntakeManifestRecord, ties together all runs, RUN_UNITs, anchors, determination, and internal timing, includes unexecuted RUN_UNITs
-- MechanicalNoteRuleRecord, ContextProfileRecord, SequencingRecord, StateIsolationRecord, ExternalOutputValidationRecord, as defined in Layer 3 and enforced via Layer 2 tests
+- Desktop
+- Mobile
+- Desktop
+- Mobile
 
-Before any intake determination is exposed externally, implementation must generate an ExternalOutputValidationRecord and require that all automated checks pass, including:
+continuing until a stop condition is reached.
 
-- forbidden disclosure
-- forbidden language
-- mandatory terms
-- matter-level context disclosure
-- per-run context leakage
-- indirect signaling
-- anti-hedging
-- matter-level note compliance
+When only one baseline is in scope, all runs must execute in that baseline context and no interleaving occurs.
 
-Any failure must block external output until cleared through governed review where required.
+When both baselines are in scope but one baseline is blocked by a constraint, runs in the constrained context must still be physically attempted in their alternating slot. Each alternating slot for a constrained baseline requires a fresh physical attempt regardless of prior constraint outcomes for that context. The result of each such attempt must be recorded as a distinct IntakeRunRecord using the locked outcome label set and the applicable constraint_class. It consumes a run slot. The alternating sequence does not skip or collapse because one baseline is constrained.
+
+## 10.2 Anti-manipulation sequencing rule
+
+Run sequence must not be reordered, clustered, or manipulated to favor any asserted condition, context, or party.
+
+## 10.3 Clean-state isolation between every run
+
+Each run must execute in a fresh isolated browser context.
+
+Storage state must not persist between runs. Storage isolation applies to all browser-managed state mechanisms, including:
+
+- cookies
+- localStorage
+- sessionStorage
+- IndexedDB
+- Cache API
+- service worker registrations
+
+## 10.4 Clean-state failure handling
+
+If clean-state isolation cannot be established for a run, a StateIsolationRecord must be generated for that run with fresh_browser_context = false and storage_state_persisted = true.
+
+The run must not proceed to condition evaluation.
+
+If the isolation failure maps to an identifiable technical blocker that fits exactly one locked constraint_class value, the run must be labeled Constrained with the applicable constraint_class.
+
+If the isolation failure does not map to any locked constraint_class value, the run must be labeled Insufficiently specified for bounded execution.
+
+## 10.5 Temporal logging
+
+Each run must record internal timestamps sufficient to show sequencing and separation, at minimum:
+
+- run_start
+- run_end
+
+## 10.6 Temporal logging is internal only
+
+These timestamps are internal execution metadata only.
+
+They must not appear in any external-facing intake output and must not be indirectly signaled through language such as lengthy, brief, or extensive.
+
+## 10.7 Why this section exists
+
+This section exists to preserve reproducibility, sequencing discipline, fresh-state integrity, and internal traceability without leaking execution depth externally.
+
+## Appendix note for the unified file
+
+This unified file intentionally does not restate the full appendix contracts from Layer 2 and Layer 3.
+
+For exact machine schemas, exact required tests, exact fixture matrix, exact delivery package requirements, exact limitations disclosure format, and exact external validation record structure, use the standalone appendices in:
+
+- `1-10 Layer 2 - Jules.md`
+- `1-10 Layer 3 - Machine-Bindable Specs.md`
