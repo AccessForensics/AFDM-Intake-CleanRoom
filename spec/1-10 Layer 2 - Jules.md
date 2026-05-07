@@ -86,13 +86,13 @@ assignment, or other internal execution structure.
 
 Jules must prevent external-facing intake outputs from implying the prohibited internal details indirectly, including through phrasing such as:
 
-* â€œextensive testingâ€
+* "extensive testing"
 
-* â€œlimited testingâ€
+* "limited testing"
 
-* â€œwe checked everythingâ€
+* "we checked everything"
 
-* â€œwe checked only a few itemsâ€
+* "we checked only a few items"
 
 * or similar statements that signal internal execution depth
 
@@ -203,11 +203,11 @@ If a term characterizes the site, the claim, or either party, rather than record
 
 Jules must require the following exact terms in external-facing intake output when describing scope and execution context. Paraphrase is not permitted:
 
-* â€œcomplaint or demand materials providedâ€
-* â€œspecific website conditions asserted in those materialsâ€
-* â€œbounded execution parametersâ€
-* â€œReplicated Desktop Browser Contextâ€
-* â€œReplicated Mobile Browser Contextâ€
+* "complaint or demand materials provided"
+* "specific website conditions asserted in those materials"
+* "bounded execution parameters"
+* "Replicated Desktop Browser Context"
+* "Replicated Mobile Browser Context"
 
 ## **3.6 Locked burden rule**
 
@@ -332,7 +332,7 @@ Template 5 is permitted only when:
 
 * the internal record uses the applicable constraint\_class value
 
-â€œMobile-preferred,â€ â€œDesktop-preferred,â€ and â€œpartial eligibilityâ€ determinations are prohibited.
+"Mobile-preferred," "Desktop-preferred," and "partial eligibility" determinations are prohibited.
 
 ## **4.5 Constraint-template selection and prohibited determination forms**
 
@@ -535,7 +535,7 @@ Jules must not approximate these contexts by resizing live browser windows or de
 
 Jules must implement the Desktop baseline as:
 
-* viewport: 1366 Ã— 900 CSS pixels, fixed
+* viewport: 1366 x 900 CSS pixels, fixed
 * browser zoom: 100%
 * deviceScaleFactor: 1
 
@@ -546,7 +546,7 @@ Desktop baseline is a first-class intake baseline.
 Jules must implement the Mobile baseline as:
 
 *
-*   viewport: 393 Ã— 852 CSS pixels, portrait only, fixed
+*   viewport: 393 x 852 CSS pixels, portrait only, fixed
 *   orientation: Portrait, locked
 *   browser zoom: 100%
 *   deviceScaleFactor: 1
@@ -1069,13 +1069,13 @@ At a minimum:
 * banned framing rejected
 * no run counts or confirmation counts leak
 * no context-per-run leakage
-* no â€œextensiveâ€ or â€œlimited testingâ€ style phrasing
+* no "extensive" or "limited testing" style phrasing
 
 ---
 
 # **APPENDIX D: REQUIRED FIXTURE MATRIX**
 
-Jules must provide all of the following fixtures. â€œRepresentative fixtureâ€ alone is insufficient.
+Jules must provide all of the following fixtures. "Representative fixture" alone is insufficient.
 
 ## **D.1 Fixture 1, Desktop-only eligible matter**
 
