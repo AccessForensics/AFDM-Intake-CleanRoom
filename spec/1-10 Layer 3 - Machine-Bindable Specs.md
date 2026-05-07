@@ -3,7 +3,7 @@
 # **LAYER 3, MACHINE-BINDABLE SPECS**
 
 Internal Use Only. Not for external distribution.
-Version: L3-v8 â€” Standalone machine contract for intake feasibility gating.
+Version: L3-v8 - Standalone machine contract for intake feasibility gating.
 
 ## **How to use this document**
 
@@ -473,7 +473,7 @@ Locked Desktop baseline ContextProfileRecord parameters:
 * orientation: landscape
 * is\_mobile: false
 * has\_touch: false
-  At Layer 1, these same parameters may be referenced using camelCase notation (deviceScaleFactor, isMobile, hasTouch) for human readability. The canonical field names for machine contracts remain the snake\_case forms defined here and in Appendix A.â€‹
+  At Layer 1, these same parameters may be referenced using camelCase notation (deviceScaleFactor, isMobile, hasTouch) for human readability. The canonical field names for machine contracts remain the snake\_case forms defined here and in Appendix A.
 
 ## **8.3 Replicated Mobile Browser Context baseline**
 
@@ -486,7 +486,7 @@ Locked Mobile baseline ContextProfileRecord parameters:
 * orientation: portrait
 * is\_mobile: true
 * has\_touch: true
-  At Layer 1, these same parameters may be referenced using camelCase notation (deviceScaleFactor, isMobile, hasTouch) for human readability. The canonical field names for machine contracts remain the snake\_case forms defined here and in Appendix A.â€‹
+  At Layer 1, these same parameters may be referenced using camelCase notation (deviceScaleFactor, isMobile, hasTouch) for human readability. The canonical field names for machine contracts remain the snake\_case forms defined here and in Appendix A.
 
 ## **8.4 Peer-baseline scope rule**
 
@@ -740,10 +740,10 @@ Constraints:
 * at least one of desktop\_in\_scope or mobile\_in\_scope must be true; any run\_unit where both are false must be rejected and must not have any intake runs executed against it
 * desktop\_in\_scope and mobile\_in\_scope reflect the peer-baseline scope rule defined in Section 8.4; both must be true for generic accessibility allegations unless the submitted materials expressly cabin scope to one baseline
 * created\_context\_basis must be exactly one of the following locked values:
-  * generic\_accessibility\_allegation â€” both baselines brought into scope because the submitted materials assert a generic accessibility condition not expressly cabined to one baseline
-  * materials\_cabined\_desktop\_only â€” Desktop baseline only, because the submitted materials expressly limit the asserted condition to Desktop
-  * materials\_cabined\_mobile\_only â€” Mobile baseline only, because the submitted materials expressly limit the asserted condition to Mobile
-  * constrained\_peer\_baseline â€” one baseline in scope and feasible, peer baseline in scope but blocked under controlled parameters
+  * generic\_accessibility\_allegation - both baselines brought into scope because the submitted materials assert a generic accessibility condition not expressly cabined to one baseline
+  * materials\_cabined\_desktop\_only - Desktop baseline only, because the submitted materials expressly limit the asserted condition to Desktop
+  * materials\_cabined\_mobile\_only - Mobile baseline only, because the submitted materials expressly limit the asserted condition to Mobile
+  * constrained\_peer\_baseline - one baseline in scope and feasible, peer baseline in scope but blocked under controlled parameters
 
 ## **A4. IntakeDeterminationRecord Schema**
 
@@ -812,7 +812,7 @@ Required fields:
 
 * matter\_id
 * run\_id
-* note\_permitted â€” boolean
+* note\_permitted - boolean
 * note\_basis
 
 Constraints:
@@ -866,7 +866,7 @@ Constraints:
 * stop\_basis must be either:
   * sufficiency\_reached
   * run\_cap\_reached
-* when both stop conditions occur on the same run â€” sufficiency is reached on the run that also completes the 10-run cap â€” stop\_basis must be recorded as sufficiency\_reached
+* when both stop conditions occur on the same run - sufficiency is reached on the run that also completes the 10-run cap - stop\_basis must be recorded as sufficiency\_reached
 * both\_baselines\_in\_scope must be boolean
 
 ## **A9. StateIsolationRecord Schema**

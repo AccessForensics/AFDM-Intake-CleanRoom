@@ -3,7 +3,7 @@
 # **LAYER 1, AUTHORITY AND DOCTRINE**
 
 Internal Use Only. Not for external distribution.
-Version: L1â€‘v1 â€” Human authority reference for intake feasibility gating.
+Version: L1-v1 - Human authority reference for intake feasibility gating.
 
 ## **How to use this document**
 
@@ -18,8 +18,8 @@ Use this document to answer:
 * how run sufficiency, stop rules, and sequencing work
 * how complaint structure is preserved without allowing grouped drafting to control execution atomics
 * how contexts, notes, and constraints are governed
-  Use Layer 2 when the question is, â€œWhat exactly must Jules build, validate, output, and prove for intake?â€
-  Use Layer 3 when the question is, â€œWhat are the exact fields, enums, templates, conditionals, context locks, sequencing rules, and machine-bindable constraints?â€
+  Use Layer 2 when the question is, "What exactly must Jules build, validate, output, and prove for intake?"
+  Use Layer 3 when the question is, "What are the exact fields, enums, templates, conditionals, context locks, sequencing rules, and machine-bindable constraints?"
 
 # **SECTION 1: PURPOSE AND BOUNDARY OF INTAKE \[LOCKED\]**
 
@@ -71,13 +71,13 @@ Such disclosure must remain at the matter level only. It must not disclose per-r
 
 External-facing intake outputs must not imply any of the prohibited internal details indirectly, including through phrasing such as:
 
-* â€œextensive testingâ€
+* "extensive testing"
 
-* â€œlimited testingâ€
+* "limited testing"
 
-* â€œwe checked everythingâ€
+* "we checked everything"
 
-* â€œwe checked only a few itemsâ€
+* "we checked only a few items"
 
 * or similar statements that signal internal execution depth
 
@@ -89,7 +89,7 @@ Intake is a feasibility gate only. It does not become a disguised assessment, a 
 
 ## **2.1 AFDM as the implemented intake system**
 
-AFDM is the implemented automated execution system that performs intake runs and emits intake artifacts. â€œAFDM repository behaviorâ€ means the actual outputs, labels, record fields, parameter locks, and constraint handling produced by the current implemented system.  AFDM intake record schemas, field contracts, and validation rules are defined in Layer 3 and must not be narrowed, expanded, or paraphrased at this layer.
+AFDM is the implemented automated execution system that performs intake runs and emits intake artifacts. "AFDM repository behavior" means the actual outputs, labels, record fields, parameter locks, and constraint handling produced by the current implemented system.  AFDM intake record schemas, field contracts, and validation rules are defined in Layer 3 and must not be narrowed, expanded, or paraphrased at this layer.
 
 ## **2.2 AFDM repository behavior is the source of truth**
 
@@ -174,7 +174,7 @@ The following terms are prohibited in all external-facing intake output. In addi
 
 ## **3.3 Definition of blame posture or adversarial posture**
 
-â€œBlame posture or adversarial postureâ€ means any language that assigns fault, implies intent, suggests wrongdoing, or frames either party as acting improperly. Intake output must not contain such framing.
+"Blame posture or adversarial posture" means any language that assigns fault, implies intent, suggests wrongdoing, or frames either party as acting improperly. Intake output must not contain such framing.
 
 ## **3.4 Governing principle**
 
@@ -184,11 +184,11 @@ If a term characterizes the site, the claim, or either party, rather than record
 
 External-facing intake output must use the following exact terms when describing scope and execution context. Paraphrase is not permitted:
 
-* â€œcomplaint or demand materials providedâ€
-* â€œspecific website conditions asserted in those materialsâ€
-* â€œbounded execution parametersâ€
-* â€œReplicated Desktop Browser Contextâ€
-* â€œReplicated Mobile Browser Contextâ€
+* "complaint or demand materials provided"
+* "specific website conditions asserted in those materials"
+* "bounded execution parameters"
+* "Replicated Desktop Browser Context"
+* "Replicated Mobile Browser Context"
 
 ## **3.6 Locked burden rule**
 
@@ -316,7 +316,7 @@ Template 3 is permitted only when Mobile baseline is in scope and Mobile baselin
 
 Template 5 is permitted only when Desktop baseline is in scope and Desktop baseline execution is blocked under controlled parameters, and the internal record uses the applicable constraint\_class value.
 
-â€œMobile-preferred,â€ â€œDesktop-preferred,â€ and â€œpartial eligibilityâ€ determinations are prohibited.
+"Mobile-preferred," "Desktop-preferred," and "partial eligibility" determinations are prohibited.
 
 ## **4.4 Determination rigidity rule**
 
@@ -326,7 +326,7 @@ The determination line is a locked output surface. It must not be expanded, soft
 
 This is the most externally exposed intake output. If this section drifts, internal execution depth, sufficiency proximity, and internal path selection start leaking through wording even when the labels look controlled.
 
-## **4.6 Constraintâ€‘driven ineligibility routing**
+## **4.6 Constraint-driven ineligibility routing**
 
 DETERMINATION: NOT ELIGIBLE FOR FORENSIC EXECUTION is valid only when the matter is not eligible for forensic execution for reasons other than a constraint condition.
 
@@ -334,7 +334,7 @@ DETERMINATION: NOT ELIGIBLE FOR FORENSIC EXECUTION \- CONSTRAINTS (BOTMITIGATION
 
 DETERMINATION: NOT ELIGIBLE FOR FORENSIC EXECUTION \- CONSTRAINTS (OTHER) is valid only when a locked constraint\_class value other than BOTMITIGATION is the controlling ineligibility basis.
 
-DETERMINATION: NOT ELIGIBLE FOR FORENSIC EXECUTION must not be used when any locked constraint\_class is the controlling ineligibility basis. The BOTMITIGATION template must not be used for nonâ€‘BOTMITIGATION ineligibility. The OTHERâ€‘constraints template must not be used when the controlling ineligibility basis is BOTMITIGATION.
+DETERMINATION: NOT ELIGIBLE FOR FORENSIC EXECUTION must not be used when any locked constraint\_class is the controlling ineligibility basis. The BOTMITIGATION template must not be used for non-BOTMITIGATION ineligibility. The OTHER-constraints template must not be used when the controlling ineligibility basis is BOTMITIGATION.
 
 # **SECTION 5: RUN CAP, SUFFICIENCY, AND STOP RULES \[LOCKED\]**
 
@@ -360,7 +360,7 @@ The only outcomes that qualify as confirmations are:
 
 ## **5.5 Stop rule**
 
-Stop immediately when sufficiency is reached, or when 10 runs are completed, whichever happens first. When sufficiency is reached on the same run that completes the 10â€‘run cap, both stop conditions are met simultaneously; in that case, sufficiency is the stop basis for that matter.
+Stop immediately when sufficiency is reached, or when 10 runs are completed, whichever happens first. When sufficiency is reached on the same run that completes the 10-run cap, both stop conditions are met simultaneously; in that case, sufficiency is the stop basis for that matter.
 
 ## **5.6 No runs after stop**
 
@@ -431,7 +431,7 @@ Complaint anchoring is preserved for reference integrity, but execution remains 
 
 Complaint drafting may group assertions for pleading convenience. Intake preserves that grouping for traceability only. It does not let grouped drafting dictate execution atomicity.
 
-## **6.10 Preâ€‘execution normalization**
+## **6.10 Pre-execution normalization**
 
 All RUN\_UNIT records for a matter must be created before any intake runs execute for that matter. No new RUN\_UNIT may be created after the stop condition has been evaluated for that matter.
 
@@ -521,25 +521,25 @@ Replicated Desktop Browser Context and Replicated Mobile Browser Context are fix
 
 The locked Desktop baseline is:
 
-* viewport: 1366 Ã— 900 CSS pixels, fixed
+* viewport: 1366 x 900 CSS pixels, fixed
 * browser zoom: 100%
 * deviceScaleFactor: 1
 * orientation: landscape
 * isMobile: false
 * hasTouch: false
-  Desktop baseline is a firstâ€‘class intake baseline.
+  Desktop baseline is a first-class intake baseline.
 
 ## **8.3 Replicated Mobile Browser Context, locked baseline**
 
 The locked Mobile baseline is:
 
-* viewport: 393 Ã— 852 CSS pixels, portrait only, fixed
+* viewport: 393 x 852 CSS pixels, portrait only, fixed
 * orientation: Portrait, locked
 * browser zoom: 100%
 * deviceScaleFactor: 1
 * isMobile: true
 * hasTouch: true
-  Mobile baseline is a firstâ€‘class intake baseline.
+  Mobile baseline is a first-class intake baseline.
 
 ## **8.4 Peer-baseline scope rule**
 
@@ -551,7 +551,7 @@ Where the submitted materials expressly cabin the asserted condition to one base
 
 Where one baseline is feasible and the peer baseline is blocked under controlled parameters, intake must issue the corresponding constrained-baseline determination.
 
-Generic accessibility phrasing must not be treated as Desktopâ€‘only by default. For generic website accessibility allegations, both Replicated Desktop Browser Context and Replicated Mobile Browser Context must be brought into scope unless the submitted materials expressly cabin the asserted condition to one baseline only.
+Generic accessibility phrasing must not be treated as Desktop-only by default. For generic website accessibility allegations, both Replicated Desktop Browser Context and Replicated Mobile Browser Context must be brought into scope unless the submitted materials expressly cabin the asserted condition to one baseline only.
 
 ## **8.5 Reflow separation**
 
@@ -600,11 +600,11 @@ Notes exist solely to prevent drift and preserve mechanical clarity when an atte
 
 Notes are permitted only when:
 
-* the outcome label is Constrained (perâ€‘run note)
-* the outcome label is Insufficiently specified for bounded execution (perâ€‘run note)
-* the matter determination is DETERMINATION: ELIGIBLE FOR DESKTOP TECHNICAL RECORD BUILD / MOBILE BASELINE: CONSTRAINED (matterâ€‘level note)
-* the matter determination is DETERMINATION: ELIGIBLE FOR MOBILE TECHNICAL RECORD BUILD / DESKTOP BASELINE: CONSTRAINED (matterâ€‘level note)
-  Gates 1 and 2 authorize a single mechanical note attached to the affected run record. Gates 3 and 4 authorize a single mechanical note attached to the matterâ€‘level determination record.
+* the outcome label is Constrained (per-run note)
+* the outcome label is Insufficiently specified for bounded execution (per-run note)
+* the matter determination is DETERMINATION: ELIGIBLE FOR DESKTOP TECHNICAL RECORD BUILD / MOBILE BASELINE: CONSTRAINED (matter-level note)
+* the matter determination is DETERMINATION: ELIGIBLE FOR MOBILE TECHNICAL RECORD BUILD / DESKTOP BASELINE: CONSTRAINED (matter-level note)
+  Gates 1 and 2 authorize a single mechanical note attached to the affected run record. Gates 3 and 4 authorize a single mechanical note attached to the matter-level determination record.
 
 ## **9.3 Notes are prohibited for**
 
@@ -674,7 +674,7 @@ Between every run, the prior execution state must not carry forward.
 
 ## **10.3 Locked clean-state requirements**
 
-Each run must execute in a fresh, isolated browser context. Storage state must not persist between runs. Any attempt that cannot be performed under cleanâ€‘state isolation must not proceed to condition evaluation. The blocking condition must be labeled using the locked outcome labels and, when applicable, a locked constraint\_class value, and the isolation failure must be preserved as internal execution metadata for that run. Cleanâ€‘state isolation applies identically to Desktop and Mobile runs.
+Each run must execute in a fresh, isolated browser context. Storage state must not persist between runs. Any attempt that cannot be performed under clean-state isolation must not proceed to condition evaluation. The blocking condition must be labeled using the locked outcome labels and, when applicable, a locked constraint\_class value, and the isolation failure must be preserved as internal execution metadata for that run. Clean-state isolation applies identically to Desktop and Mobile runs.
 
 ## **10.4 Temporal logging**
 
