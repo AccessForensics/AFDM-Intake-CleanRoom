@@ -1,223 +1,114 @@
 {
-    "snapshot_type":  "completion_audit_snapshot",
-    "matter_system":  "AFDM Intake CleanRoom",
-    "spec_version":  "L3-v8",
-    "completion_percent":  97.8,
-    "node_test_status":  "fail",
-    "traceability_row_count":  10,
-    "appendix_d_fixtures_implemented":  13,
-    "appendix_d_fixtures_total":  13,
-    "source_files":  [
-                         {
-                             "file":  "docs/source-locks/1-10 Layer 1 - Authority and Doctrine.pdf",
-                             "present":  true
-                         },
-                         {
-                             "file":  "docs/source-locks/1-10 Layer 2 - Jules.pdf",
-                             "present":  true
-                         },
-                         {
-                             "file":  "docs/source-locks/1-10 Layer 3 - Machine-Bindable Specs.pdf",
-                             "present":  true
-                         },
-                         {
-                             "file":  "docs/source-locks/1-10 Layer Instructions.pdf",
-                             "present":  true
-                         },
-                         {
-                             "file":  "spec/AFintaketemplates1-8.md",
-                             "present":  true
-                         },
-                         {
-                             "file":  "agent.md",
-                             "present":  true
-                         },
-                         {
-                             "file":  ".gitignore",
-                             "present":  true
-                         },
-                         {
-                             "file":  ".env.example",
-                             "present":  true
-                         }
-                     ],
-    "runtime_files":  [
-                          {
-                              "file":  "src/intake/enums.js",
-                              "present":  true
-                          },
-                          {
-                              "file":  "src/intake/template-validator.js",
-                              "present":  true
-                          },
-                          {
-                              "file":  "src/intake/complaint-normalizer.js",
-                              "present":  true
-                          },
-                          {
-                              "file":  "src/intake/rununit-builder.js",
-                              "present":  true
-                          },
-                          {
-                              "file":  "src/intake/run-record.js",
-                              "present":  true
-                          },
-                          {
-                              "file":  "src/intake/sequencing.js",
-                              "present":  true
-                          },
-                          {
-                              "file":  "src/intake/mechanical-note-rule.js",
-                              "present":  true
-                          },
-                          {
-                              "file":  "src/intake/state-isolation.js",
-                              "present":  true
-                          },
-                          {
-                              "file":  "src/intake/sufficiency-stop.js",
-                              "present":  true
-                          },
-                          {
-                              "file":  "src/intake/determination-router.js",
-                              "present":  true
-                          },
-                          {
-                              "file":  "src/intake/external-output-validator.js",
-                              "present":  true
-                          },
-                          {
-                              "file":  "src/intake/context-profiles.js",
-                              "present":  true
-                          },
-                          {
-                              "file":  "src/intake/intake-manifest.js",
-                              "present":  true
-                          }
-                      ],
-    "delivery_files":  [
-                           {
-                               "file":  "delivery_artifacts/intake/change_inventory.md",
-                               "present":  true
-                           },
-                           {
-                               "file":  "delivery_artifacts/intake/implementation_inventory.md",
-                               "present":  true
-                           },
-                           {
-                               "file":  "delivery_artifacts/intake/test_inventory.md",
-                               "present":  true
-                           },
-                           {
-                               "file":  "delivery_artifacts/intake/fixture_inventory.md",
-                               "present":  true
-                           },
-                           {
-                               "file":  "delivery_artifacts/intake/golden_artifact_verification.md",
-                               "present":  true
-                           },
-                           {
-                               "file":  "delivery_artifacts/intake/traceability_matrix.csv",
-                               "present":  true
-                           },
-                           {
-                               "file":  "delivery_artifacts/intake/limitations_appendix_f.md",
-                               "present":  true
-                           },
-                           {
-                               "file":  "delivery_artifacts/intake/pr_ready_summary.md",
-                               "present":  true
-                           }
-                       ],
-    "fixture_files":  [
-                          {
-                              "file":  "fixtures/intake/appendix-d-fixtures.json",
-                              "present":  true
-                          },
-                          {
-                              "file":  "fixtures/intake/appendix-d/d1_desktop_only_eligible.json",
-                              "present":  true
-                          },
-                          {
-                              "file":  "fixtures/intake/appendix-d/d2_desktop_and_mobile_eligible.json",
-                              "present":  true
-                          },
-                          {
-                              "file":  "fixtures/intake/appendix-d/d3_desktop_eligible_mobile_constrained.json",
-                              "present":  true
-                          },
-                          {
-                              "file":  "fixtures/intake/appendix-d/d4_mobile_only_eligible.json",
-                              "present":  true
-                          },
-                          {
-                              "file":  "fixtures/intake/appendix-d/d5_mobile_eligible_desktop_constrained.json",
-                              "present":  true
-                          },
-                          {
-                              "file":  "fixtures/intake/appendix-d/d6_not_eligible_generic.json",
-                              "present":  true
-                          },
-                          {
-                              "file":  "fixtures/intake/appendix-d/d7_not_eligible_botmitigation.json",
-                              "present":  true
-                          },
-                          {
-                              "file":  "fixtures/intake/appendix-d/d8_not_eligible_constraints_other.json",
-                              "present":  true
-                          },
-                          {
-                              "file":  "fixtures/intake/appendix-d/d9_note_gated_constrained_run.json",
-                              "present":  true
-                          },
-                          {
-                              "file":  "fixtures/intake/appendix-d/d10_invalid_note_on_observed_run.json",
-                              "present":  true
-                          },
-                          {
-                              "file":  "fixtures/intake/appendix-d/d11_non_alternating_sequencing_failure.json",
-                              "present":  true
-                          },
-                          {
-                              "file":  "fixtures/intake/appendix-d/d12_state_persistence_failure.json",
-                              "present":  true
-                          },
-                          {
-                              "file":  "fixtures/intake/appendix-d/d13_indirect_signaling_output_failure.json",
-                              "present":  true
-                          }
-                      ],
-    "blockers":  [
-                     {
-                         "blocker_id":  "BLOCK-TESTS",
-                         "category":  "tests",
-                         "description":  "Current Node test suite is not passing.",
-                         "blocks_completion":  true
-                     },
-                     {
-                         "blocker_id":  "BLOCK-LIM-001",
-                         "category":  "appendix_f",
-                         "description":  "Appendix F contains completion-blocking limitation LIM-001.",
-                         "blocks_completion":  true
-                     },
-                     {
-                         "blocker_id":  "BLOCK-LIM-002",
-                         "category":  "appendix_f",
-                         "description":  "Appendix F contains completion-blocking limitation LIM-002.",
-                         "blocks_completion":  true
-                     },
-                     {
-                         "blocker_id":  "BLOCK-LIM-003",
-                         "category":  "appendix_f",
-                         "description":  "Appendix F contains completion-blocking limitation LIM-003.",
-                         "blocks_completion":  true
-                     },
-                     {
-                         "blocker_id":  "BLOCK-TRACEABILITY",
-                         "category":  "traceability",
-                         "description":  "Doctrine-to-code traceability matrix is still partial.",
-                         "blocks_completion":  true
-                     }
-                 ],
-    "completion_claim_permitted":  false
+  "snapshot_type": "completion_audit_snapshot",
+  "matter_system": "AFDM Intake CleanRoom",
+  "spec_version": "L3-v8",
+  "snapshot_date": "2026-05-07",
+  "completion_percent": 98.6,
+  "node_test_status": "pass",
+  "node_test_command": "node --test <all discovered test files>",
+  "node_test_file_count": 25,
+  "node_test_exit_code": 0,
+  "completion_claim_permitted": false,
+  "completion_claim_reason": "Traceability and golden verification artifacts are now curated for the implemented slice, but completion remains blocked by open preflight/probe coverage hardening and CI guardrail limitations.",
+  "traceability_status": "expanded_curated_matrix",
+  "traceability_row_count": 64,
+  "golden_artifact_status": "curated_verification_table_for_D1_through_D13",
+  "appendix_d_fixtures_implemented": 13,
+  "appendix_d_fixtures_scaffolded": 4,
+  "appendix_d_fixtures_total": 17,
+  "source_files": [
+    { "file": "docs/source-locks/1-10 Layer 1 - Authority and Doctrine.pdf", "present": true },
+    { "file": "docs/source-locks/1-10 Layer 2 - Jules.pdf", "present": true },
+    { "file": "docs/source-locks/1-10 Layer 3 - Machine-Bindable Specs.pdf", "present": true },
+    { "file": "docs/source-locks/1-10 Layer Instructions.pdf", "present": true },
+    { "file": "spec/AFintaketemplates1-8.md", "present": true },
+    { "file": "agent.md", "present": true },
+    { "file": ".gitignore", "present": true },
+    { "file": ".env.example", "present": true }
+  ],
+  "runtime_files": [
+    { "file": "src/intake/enums.js", "present": true },
+    { "file": "src/intake/template-validator.js", "present": true },
+    { "file": "src/intake/complaint-normalizer.js", "present": true },
+    { "file": "src/intake/rununit-builder.js", "present": true },
+    { "file": "src/intake/run-record.js", "present": true },
+    { "file": "src/intake/sequencing.js", "present": true },
+    { "file": "src/intake/mechanical-note-rule.js", "present": true },
+    { "file": "src/intake/state-isolation.js", "present": true },
+    { "file": "src/intake/sufficiency-stop.js", "present": true },
+    { "file": "src/intake/determination-router.js", "present": true },
+    { "file": "src/intake/external-output-validator.js", "present": true },
+    { "file": "src/intake/context-profiles.js", "present": true },
+    { "file": "src/intake/intake-manifest.js", "present": true }
+  ],
+  "delivery_files": [
+    { "file": "delivery_artifacts/intake/change_inventory.md", "present": true },
+    { "file": "delivery_artifacts/intake/implementation_inventory.md", "present": true },
+    { "file": "delivery_artifacts/intake/test_inventory.md", "present": true },
+    { "file": "delivery_artifacts/intake/fixture_inventory.md", "present": true },
+    { "file": "delivery_artifacts/intake/golden_artifact_verification.md", "present": true, "status": "curated_verification_table" },
+    { "file": "delivery_artifacts/intake/traceability_matrix.csv", "present": true, "status": "expanded_curated_matrix" },
+    { "file": "delivery_artifacts/intake/limitations_appendix_f.md", "present": true, "status": "updated_with_resolved_and_open_limitations" },
+    { "file": "delivery_artifacts/intake/pr_ready_summary.md", "present": true }
+  ],
+  "fixture_files": [
+    { "file": "fixtures/intake/appendix-d-fixtures.json", "present": true },
+    { "file": "fixtures/intake/appendix-d/d1_desktop_only_eligible.json", "present": true, "status": "implemented" },
+    { "file": "fixtures/intake/appendix-d/d2_desktop_and_mobile_eligible.json", "present": true, "status": "implemented" },
+    { "file": "fixtures/intake/appendix-d/d3_desktop_eligible_mobile_constrained.json", "present": true, "status": "implemented" },
+    { "file": "fixtures/intake/appendix-d/d4_mobile_only_eligible.json", "present": true, "status": "implemented" },
+    { "file": "fixtures/intake/appendix-d/d5_mobile_eligible_desktop_constrained.json", "present": true, "status": "implemented" },
+    { "file": "fixtures/intake/appendix-d/d6_not_eligible_generic.json", "present": true, "status": "implemented" },
+    { "file": "fixtures/intake/appendix-d/d7_not_eligible_botmitigation.json", "present": true, "status": "implemented" },
+    { "file": "fixtures/intake/appendix-d/d8_not_eligible_constraints_other.json", "present": true, "status": "implemented" },
+    { "file": "fixtures/intake/appendix-d/d9_note_gated_constrained_run.json", "present": true, "status": "implemented" },
+    { "file": "fixtures/intake/appendix-d/d10_invalid_note_on_observed_run.json", "present": true, "status": "implemented" },
+    { "file": "fixtures/intake/appendix-d/d11_non_alternating_sequencing_failure.json", "present": true, "status": "implemented" },
+    { "file": "fixtures/intake/appendix-d/d12_state_persistence_failure.json", "present": true, "status": "implemented" },
+    { "file": "fixtures/intake/appendix-d/d13_indirect_signaling_output_failure.json", "present": true, "status": "implemented" },
+    { "file": "fixtures/intake/appendix-d/d14_unbounded_alt_text_insufficiently_specified.json", "present": true, "status": "scaffolded" },
+    { "file": "fixtures/intake/appendix-d/d15_mixed_boundedness_preserves_bounded_execution.json", "present": true, "status": "scaffolded" },
+    { "file": "fixtures/intake/appendix-d/d16_marker_only_not_botmitigation.json", "present": true, "status": "scaffolded" },
+    { "file": "fixtures/intake/appendix-d/d17_true_challenge_wall_botmitigation.json", "present": true, "status": "scaffolded" }
+  ],
+  "resolved_blockers": [
+    {
+      "blocker_id": "BLOCK-TESTS",
+      "category": "tests",
+      "description": "Prior scorecard test failure status is stale. Local validation passed across 25 test files.",
+      "blocks_completion": false
+    },
+    {
+      "blocker_id": "BLOCK-LIM-001",
+      "category": "appendix_f",
+      "description": "Traceability matrix expanded into curated doctrine-to-implementation evidence matrix.",
+      "blocks_completion": false
+    },
+    {
+      "blocker_id": "BLOCK-LIM-002",
+      "category": "appendix_f",
+      "description": "Golden artifact verification replaced with curated fixture verification table for D.1-D.13.",
+      "blocks_completion": false
+    }
+  ],
+  "open_blockers": [
+    {
+      "blocker_id": "BLOCK-LIM-003",
+      "category": "appendix_f",
+      "description": "Final completion package remains blocked until open hardening and CI limitations are closed.",
+      "blocks_completion": true
+    },
+    {
+      "blocker_id": "BLOCK-LIM-004",
+      "category": "preflight_probe_coverage",
+      "description": "Unsupported probe coverage must not fall through into external doctrinal labels.",
+      "blocks_completion": true
+    },
+    {
+      "blocker_id": "BLOCK-LIM-005",
+      "category": "ci_guardrails",
+      "description": "CI guardrails are still required for tests, template validation, Appendix F blockers, traceability, unsupported coverage fallthrough, context drift, and internal-only artifact leakage.",
+      "blocks_completion": true
+    }
+  ]
 }
