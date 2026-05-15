@@ -4,6 +4,10 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
+const {
+  classifyProbeCoverageForRunUnits
+} = require("../../src/intake/probes/index.js");
+
 const EXIT_OK = 0;
 const EXIT_BLOCKED = 2;
 const EXIT_USAGE = 64;
@@ -50,7 +54,15 @@ function loadRegistry() {
   return registry;
 }
 
-function resolveMatterIdFromPath(inputPath) {
+function resolveMatterIdFromPayload(payload, inputPath) {
+  if (payload && typeof payload.matter_id === "string" && payload.matter_id.trim().length > 0) {
+    return payload.matter_id.trim();
+  }
+
+  fail(`JSON file does not contain a usable matter_id: ${inputPath}`);
+}
+
+function resolveMatterInputFromPath(inputPath) {
   const absolutePath = path.resolve(process.cwd(), inputPath);
 
   if (!fs.existsSync(absolutePath)) {
@@ -60,15 +72,18 @@ function resolveMatterIdFromPath(inputPath) {
   const stat = fs.statSync(absolutePath);
 
   if (stat.isDirectory()) {
-    return path.basename(absolutePath);
+    return {
+      matterId: path.basename(absolutePath),
+      payload: null
+    };
   }
 
   if (path.extname(absolutePath).toLowerCase() === ".json") {
     const payload = readJsonFile(absolutePath);
-    if (payload && typeof payload.matter_id === "string" && payload.matter_id.trim().length > 0) {
-      return payload.matter_id.trim();
-    }
-    fail(`JSON file does not contain a usable matter_id: ${inputPath}`);
+    return {
+      matterId: resolveMatterIdFromPayload(payload, inputPath),
+      payload
+    };
   }
 
   const raw = fs.readFileSync(absolutePath, "utf8").trim();
@@ -76,10 +91,30 @@ function resolveMatterIdFromPath(inputPath) {
     fail(`Text file is empty and does not provide a matter id: ${inputPath}`);
   }
 
-  return raw.split(/\r?\n/, 1)[0].trim();
+  return {
+    matterId: raw.split(/\r?\n/, 1)[0].trim(),
+    payload: null
+  };
 }
 
-function classifyMatter(registry, matterId) {
+function buildNoRegistryBlock(normalizedMatterId, payload) {
+  const hasPayloadRunUnits = Boolean(payload && Array.isArray(payload.run_units));
+
+  return {
+    matter_id: normalizedMatterId,
+    preflight_status: "no_registry_block",
+    production_intake_runnable: hasPayloadRunUnits ? true : null,
+    classification_basis: hasPayloadRunUnits
+      ? "payload_run_units_resolve_to_supported_probe_families"
+      : "no_observed_runtime_registry_block",
+    action: "allow_existing_process_to_decide",
+    note: hasPayloadRunUnits
+      ? "Payload run units resolved to currently supported probe families."
+      : "This preflight gate does not assert implemented coverage for unknown matters without payload run units."
+  };
+}
+
+function classifyMatter(registry, matterId, payload = null) {
   const normalizedMatterId = String(matterId || "").trim();
 
   if (!normalizedMatterId) {
@@ -88,29 +123,47 @@ function classifyMatter(registry, matterId) {
 
   const entry = registry.matters[normalizedMatterId];
 
-  if (!entry) {
+  if (entry) {
     return {
       matter_id: normalizedMatterId,
-      preflight_status: "no_registry_block",
-      production_intake_runnable: null,
-      classification_basis: "no_observed_runtime_registry_block",
-      action: "allow_existing_process_to_decide",
-      note: "This preflight gate does not assert implemented coverage for unknown matters. It only blocks matters already observed as unsupported current coverage."
+      preflight_status: "unsupported_current_coverage",
+      production_intake_runnable: false,
+      classification_basis: "observed_runtime_no_implemented_probe",
+      action: "classify_and_stop",
+      negative_hardening_fixture: true,
+      observed_runtime_outcome_label: entry.observed_runtime_outcome_label,
+      observed_runtime_mechanical_note: entry.observed_runtime_mechanical_note,
+      site: entry.site,
+      asserted_condition: entry.asserted_condition
     };
   }
 
-  return {
-    matter_id: normalizedMatterId,
-    preflight_status: "unsupported_current_coverage",
-    production_intake_runnable: false,
-    classification_basis: "observed_runtime_no_implemented_probe",
-    action: "classify_and_stop",
-    negative_hardening_fixture: true,
-    observed_runtime_outcome_label: entry.observed_runtime_outcome_label,
-    observed_runtime_mechanical_note: entry.observed_runtime_mechanical_note,
-    site: entry.site,
-    asserted_condition: entry.asserted_condition
-  };
+  if (payload && Array.isArray(payload.run_units)) {
+    const coverage = classifyProbeCoverageForRunUnits(payload.run_units);
+
+    if (coverage.unsupported_count > 0) {
+      return {
+        matter_id: normalizedMatterId,
+        preflight_status: "unsupported_current_coverage",
+        production_intake_runnable: false,
+        classification_basis: coverage.classification_basis,
+        action: coverage.action,
+        negative_hardening_fixture: false,
+        supported_probe_family_count: coverage.supported_count,
+        unsupported_probe_family_count: coverage.unsupported_count,
+        unsupported_run_units: coverage.unsupported_run_units,
+        run_unit_coverage: coverage.run_unit_coverage
+      };
+    }
+
+    return Object.assign(buildNoRegistryBlock(normalizedMatterId, payload), {
+      supported_probe_family_count: coverage.supported_count,
+      unsupported_probe_family_count: coverage.unsupported_count,
+      run_unit_coverage: coverage.run_unit_coverage
+    });
+  }
+
+  return buildNoRegistryBlock(normalizedMatterId, payload);
 }
 
 function printJson(value) {
@@ -140,7 +193,7 @@ function parseArgs(argv) {
     if (args.length !== 2) {
       fail("--matter must be used by itself with exactly one value.", EXIT_USAGE);
     }
-    return { mode: "single", matterId: value };
+    return { mode: "single", matterId: value, payload: null };
   }
 
   const matterFileIndex = args.indexOf("--matter-file");
@@ -152,7 +205,9 @@ function parseArgs(argv) {
     if (args.length !== 2) {
       fail("--matter-file must be used by itself with exactly one value.", EXIT_USAGE);
     }
-    return { mode: "single", matterId: resolveMatterIdFromPath(value) };
+
+    const resolved = resolveMatterInputFromPath(value);
+    return { mode: "single", matterId: resolved.matterId, payload: resolved.payload };
   }
 
   fail("Unsupported arguments. Use --matter, --matter-file, or --all.", EXIT_USAGE);
@@ -179,7 +234,7 @@ function main() {
     process.exit(blockedCount > 0 ? EXIT_BLOCKED : EXIT_OK);
   }
 
-  const classification = classifyMatter(registry, parsed.matterId);
+  const classification = classifyMatter(registry, parsed.matterId, parsed.payload);
   printJson(classification);
   process.exit(classification.preflight_status === "unsupported_current_coverage" ? EXIT_BLOCKED : EXIT_OK);
 }
