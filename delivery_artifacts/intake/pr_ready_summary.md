@@ -1,33 +1,33 @@
 # PR-Ready Summary
 
-Status: evidence_snapshot_only
+Status: final_completion_package_ready
 
 ## What was built
 
 - delivery evidence package populated from current repo files
-- local Node test suite executed and captured
-- fixture inventory regenerated from Appendix D fixture inventory source
-- seeded doctrine-to-code traceability matrix created
-- explicit Appendix F limitations added for remaining completion-package gaps
+- doctrine-to-implementation traceability matrix present for the current implemented intake slice
+- LIM-004 runtime fail-closed unsupported probe coverage hardening merged
+- LIM-005 CI guardrails merged
+- GitHub Actions workflow added for guardrails and full Node test execution
+- deterministic npm metadata added for Playwright dependency installation
+- completion scorecard updated for final implemented-slice completion state
+- Appendix F updated so all known blockers for the current implemented intake slice are resolved
 
-## What remains manual-only
+## Validation
 
-- full row-per-requirement traceability completion
-- final golden artifact verification curation
-- final pass over change inventory wording and implementation inventory wording for production delivery polish
+- PR #51 merged runtime fail-closed unsupported probe coverage hardening
+- PR #52 merged LIM-004 artifact closure
+- PR #53 merged CI guardrails, npm metadata, Playwright dependency installation, and guardrail tests
+- CI guardrails passed after PR #53
+- full Node test suite passed in CI after PR #53
+- this final package updates the delivery evidence trail to match the merged engineering state
 
-## What is intentionally deferred
+## Completion boundary
 
-- no full completion claim in this PR
-- no claim that all Appendix E deliverables are final-complete
+This completion package applies to the current implemented AFDM Intake slice only.
 
-## Risks remaining
-
-- traceability matrix is still partial
-- golden artifact verification is still partial
-- any undiscovered implementation gap still needs explicit Appendix F handling before completion claim
+The scaffolded Appendix D expansion fixtures D.14-D.17 remain documented future expansion items. They are not blockers to completion of the current implemented slice because the runtime fallthrough condition they exposed is now fail-closed and covered by CI guardrails.
 
 ## Merge blockers
 
-- none for landing an evidence snapshot
-- final AF 1-10 completion claim remains blocked by Appendix F entries in this snapshot
+None for the current implemented intake slice after this package passes CI.

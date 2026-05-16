@@ -79,10 +79,9 @@ function listNodeTestFiles(repoRoot) {
 
 function validateScorecardObject(scorecard) {
   assert(scorecard && typeof scorecard === "object" && !Array.isArray(scorecard), "completion scorecard must be an object");
-  assert(scorecard.completion_claim_permitted === false, "completion_claim_permitted must remain false while LIM-003/LIM-005 are open");
   assert(scorecard.node_test_status === "pass", "scorecard must record passing node_test_status");
   assert(scorecard.node_test_exit_code === 0, "scorecard must record node_test_exit_code 0");
-  assert(Number(scorecard.node_test_file_count) >= 25, "scorecard must record at least 25 Node test files after LIM-004 hardening");
+  assert(Number(scorecard.node_test_file_count) >= 26, "scorecard must record at least 26 Node test files after LIM-005 guardrails");
 
   const openBlockers = Array.isArray(scorecard.open_blockers) ? scorecard.open_blockers : [];
   const resolvedBlockers = Array.isArray(scorecard.resolved_blockers) ? scorecard.resolved_blockers : [];
@@ -90,12 +89,21 @@ function validateScorecardObject(scorecard) {
   const openIds = new Set(openBlockers.map((item) => item && item.blocker_id).filter(Boolean));
   const resolvedIds = new Set(resolvedBlockers.map((item) => item && item.blocker_id).filter(Boolean));
 
-  assert(openIds.has("BLOCK-LIM-003"), "BLOCK-LIM-003 must remain open until final package closure");
-  assert(openIds.has("BLOCK-LIM-005"), "BLOCK-LIM-005 must remain open until CI guardrails are merged and scored");
   assert(!openIds.has("BLOCK-LIM-004"), "BLOCK-LIM-004 must not remain open after PR #51 and PR #52");
   assert(resolvedIds.has("BLOCK-LIM-004"), "BLOCK-LIM-004 must be listed as resolved");
   assert(scorecard.runtime_hardening_status === "lim_004_runtime_fail_closed_resolved", "scorecard must record LIM-004 runtime hardening as resolved");
 
+  if (scorecard.completion_claim_permitted === true) {
+    assert(openBlockers.length === 0, "completion_claim_permitted true requires zero open blockers");
+    assert(resolvedIds.has("BLOCK-LIM-003"), "BLOCK-LIM-003 must be resolved before completion is permitted");
+    assert(resolvedIds.has("BLOCK-LIM-005"), "BLOCK-LIM-005 must be resolved before completion is permitted");
+    assert(scorecard.ci_guardrails_status === "lim_005_resolved_by_PR_53", "scorecard must record LIM-005 CI guardrails as resolved by PR #53");
+    assert(scorecard.completion_boundary === "current_implemented_intake_slice_only", "scorecard must define the completion boundary");
+    return true;
+  }
+
+  assert(scorecard.completion_claim_permitted === false, "completion_claim_permitted must be a boolean");
+  assert(openIds.has("BLOCK-LIM-003") || openIds.has("BLOCK-LIM-005"), "incomplete scorecard must keep LIM-003 or LIM-005 open");
   return true;
 }
 
@@ -128,8 +136,19 @@ function assertAppendixF(repoRoot) {
     "Appendix F does not mark LIM-004 runtime fail-closed enforcement resolved"
   );
   assert(appendix.includes("### LIM-005"), "Appendix F missing LIM-005 section");
-  assert(appendix.includes("blocks_completion: true"), "Appendix F must still show an open completion blocker");
-  assert(!appendix.includes("why_not_enforced: current implementation includes boundedness and outcome handling, but the general unsupported-probe-family preflight hardening package has not yet been completed"), "Appendix F still contains stale LIM-004 why_not_enforced text");
+  assert(
+    appendix.includes("current_state: resolved for current implemented intake slice"),
+    "Appendix F does not mark LIM-005 resolved for the current implemented slice"
+  );
+  assert(
+    appendix.includes("Open limitations carried forward") && appendix.includes("None for the current implemented intake slice."),
+    "Appendix F must state no open limitations for the current implemented slice"
+  );
+  assert(
+    !appendix.includes("why_not_enforced: current validation is local and artifact-based; CI guardrails have not yet been added for all completion gates"),
+    "Appendix F still contains stale LIM-005 why_not_enforced text"
+  );
+  assert(!appendix.includes("blocks_completion: true"), "Appendix F must not retain current-slice completion blockers after final closure");
 
   return true;
 }
@@ -242,6 +261,8 @@ function assertWorkflow(repoRoot) {
 
   assert(workflow.includes("node tools/ci/guardrails_check.js"), "CI workflow must run guardrails_check.js");
   assert(workflow.includes("node --test"), "CI workflow must run Node test suite");
+  assert(workflow.includes("npm ci"), "CI workflow must install npm dependencies with npm ci");
+  assert(workflow.includes("npx playwright install --with-deps chromium"), "CI workflow must install Playwright Chromium");
   assert(workflow.includes("pull_request:"), "CI workflow must run on pull_request");
   assert(workflow.includes("push:"), "CI workflow must run on push");
 
@@ -251,9 +272,10 @@ function assertWorkflow(repoRoot) {
 function assertTestInventory(repoRoot) {
   const testFiles = listNodeTestFiles(repoRoot);
 
-  assert(testFiles.length >= 25, `expected at least 25 Node test files, found ${testFiles.length}`);
+  assert(testFiles.length >= 26, `expected at least 26 Node test files after LIM-005 guardrails, found ${testFiles.length}`);
 
   const requiredTests = [
+    "tests/ci/guardrails-check.test.js",
     "tests/hardening/preflight-coverage-check.test.js",
     "tests/playwright-intake-fail-closed-routing.test.js",
     "tests/playwright-intake-synthetic-payload.test.js",
