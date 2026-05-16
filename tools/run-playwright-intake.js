@@ -235,22 +235,27 @@ function runUnsupportedCoveragePreflight(payloadPath, outDir) {
         const resolved = resolveProbe(runUnit.assertedconditiontext);
 
         if (!resolved) {
-          probeResult = validateProbeResult({
-            outcome_label: OUTCOME_LABEL.INSUFFICIENT,
-            constraint_class: "",
-            mechanical_note: "No Playwright probe was implemented for this asserted condition.",
-            evidence: {}
-          });
-        } else {
-          const probeRequest = buildProbeInputFromPayload(payload, runUnit, BASE_URL);
-          probeResult = validateProbeResult(
-            await resolved.run(page, probeRequest, {
-              base_url: BASE_URL,
-              context_id: step.context_id
-            })
+          const unsupportedCoverageError = new Error(
+            `UNSUPPORTED_PROBE_FAMILY_REACHED_RUNTIME: ${runUnit.rununitid}`
           );
+          unsupportedCoverageError.code = "UNSUPPORTED_PROBE_FAMILY_REACHED_RUNTIME";
+          unsupportedCoverageError.run_unit_id = runUnit.rununitid;
+          unsupportedCoverageError.asserted_condition_text = runUnit.assertedconditiontext;
+          throw unsupportedCoverageError;
         }
+
+        const probeRequest = buildProbeInputFromPayload(payload, runUnit, BASE_URL);
+        probeResult = validateProbeResult(
+          await resolved.run(page, probeRequest, {
+            base_url: BASE_URL,
+            context_id: step.context_id
+          })
+        );
       } catch (error) {
+        if (error && error.code === "UNSUPPORTED_PROBE_FAMILY_REACHED_RUNTIME") {
+          throw error;
+        }
+
         probeResult = validateProbeResult({
           outcome_label: OUTCOME_LABEL.CONSTRAINED,
           constraint_class: CONSTRAINT_CLASS.HARDCRASH,

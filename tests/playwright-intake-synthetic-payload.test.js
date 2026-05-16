@@ -114,37 +114,62 @@ test("generic runner routes supported heading allegation through registry and re
   assert.equal(Object.prototype.hasOwnProperty.call(result.determination, "run_end_local"), false);
 });
 
-test("generic runner routes unsupported allegation to fail-closed insufficient outcome", (t) => {
-  const html = `
-    <!doctype html>
-    <html lang="en">
-      <body>
-        <main>Simple content</main>
-      </body>
-    </html>
-  `;
-
-  const result = runSyntheticPayload("Color contrast ratio is below minimum on footer links", html);
+test("generic runner blocks unsupported allegation at preflight before Playwright execution", (t) => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "afdm-intake-unsupported-"));
+  const htmlPath = path.join(tempRoot, "site.html");
+  const payloadPath = path.join(tempRoot, "payload.json");
+  const outDir = path.join(tempRoot, "out");
 
   t.after(() => {
-    fs.rmSync(result.tempRoot, { recursive: true, force: true });
+    fs.rmSync(tempRoot, { recursive: true, force: true });
   });
 
-  assert.equal(result.summary.executed_steps, 1);
-  assert.equal(result.observations.length, 1);
-  assert.equal(result.runRecords.length, 1);
-
-  assert.equal(
-    result.observations[0].operator_outcome_label,
-    OUTCOME_LABEL.INSUFFICIENT
+  fs.writeFileSync(
+    htmlPath,
+    `
+      <!doctype html>
+      <html lang="en">
+        <body>
+          <main>Simple content</main>
+        </body>
+      </html>
+    `,
+    "utf8"
   );
-  assert.equal(
-    result.observations[0].operator_mechanical_note,
-    "No Playwright probe was implemented for this asserted condition."
+
+  writeJson(
+    payloadPath,
+    makePayload(
+      "AF-TEST-SYNTHETIC-UNSUPPORTED",
+      "Color contrast ratio is below minimum on footer links",
+      toFileUrl(htmlPath)
+    )
   );
 
-  assert.equal(typeof result.determination.determination_template, "string");
-  assert.ok(result.determination.determination_template.length > 0);
+  assert.throws(
+    () => {
+      execFileSync(process.execPath, [runnerPath, payloadPath, outDir], {
+        cwd: repoRoot,
+        stdio: "pipe"
+      });
+    },
+    (error) => {
+      assert.equal(error.status, 2);
+      return true;
+    }
+  );
+
+  const preflightPath = path.join(outDir, "preflight-classification.json");
+  assert.equal(fs.existsSync(preflightPath), true);
+
+  const classification = JSON.parse(fs.readFileSync(preflightPath, "utf8"));
+  assert.equal(classification.preflight_status, "unsupported_current_coverage");
+  assert.equal(classification.production_intake_runnable, false);
+  assert.equal(classification.classification_basis, "unsupported_probe_family_for_asserted_condition");
+  assert.equal(classification.unsupported_probe_family_count, 1);
+
+  assert.equal(fs.existsSync(path.join(outDir, "run-records.json")), false);
+  assert.equal(fs.existsSync(path.join(outDir, "playwright-observations.json")), false);
 });
 
 test("generic runner routes supported family3 allegation through registry and records observed outcome", (t) => {
