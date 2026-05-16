@@ -3,14 +3,14 @@
   "matter_system": "AFDM Intake CleanRoom",
   "spec_version": "L3-v8",
   "snapshot_date": "2026-05-16",
-  "completion_percent": 99.1,
+  "completion_percent": 100,
   "node_test_status": "pass",
-  "node_test_command": "node --test <all discovered test files>",
-  "node_test_file_count": 25,
+  "node_test_command": "GitHub Actions: node tools/ci/guardrails_check.js and node --test <all discovered test files>",
+  "node_test_file_count": 26,
   "node_test_exit_code": 0,
-  "completion_claim_permitted": false,
-  "completion_claim_reason": "Traceability, golden verification, and runtime fail-closed probe coverage are resolved for the implemented slice, but completion remains blocked by CI guardrail automation and final delivery-package closure.",
-  "traceability_status": "expanded_curated_matrix_with_LIM_004_runtime_hardening_resolved_by_addendum",
+  "completion_claim_permitted": true,
+  "completion_claim_reason": "All known Appendix F blockers for the current implemented intake slice are resolved, CI guardrails are merged, and completion is limited to the current implemented slice.",
+  "traceability_status": "expanded_curated_matrix_with_LIM_004_resolution_addendum_and_CI_guardrails",
   "traceability_row_count": 64,
   "golden_artifact_status": "curated_verification_table_for_D1_through_D13",
   "appendix_d_fixtures_implemented": 13,
@@ -144,16 +144,22 @@
     {
       "file": "delivery_artifacts/intake/limitations_appendix_f.md",
       "present": true,
-      "status": "updated_with_LIM_004_runtime_hardening_resolved"
+      "status": "updated_with_all_current_slice_limitations_resolved"
     },
     {
       "file": "delivery_artifacts/intake/pr_ready_summary.md",
-      "present": true
+      "present": true,
+      "status": "final_completion_package_ready"
     },
     {
       "file": "delivery_artifacts/intake/traceability_lim004_resolution_addendum.md",
       "present": true,
       "status": "lim_004_runtime_hardening_resolution_addendum"
+    },
+    {
+      "file": "delivery_artifacts/intake/audit/completion_scorecard.json",
+      "present": true,
+      "status": "final_current_slice_completion_scorecard"
     }
   ],
   "fixture_files": [
@@ -251,7 +257,7 @@
     {
       "blocker_id": "BLOCK-TESTS",
       "category": "tests",
-      "description": "Prior scorecard test failure status is stale. Local validation passed across 25 test files.",
+      "description": "Full Node test suite passed in GitHub Actions after PR #53 with 26 test files.",
       "blocks_completion": false
     },
     {
@@ -269,26 +275,54 @@
     {
       "blocker_id": "BLOCK-LIM-004",
       "category": "preflight_probe_coverage",
-      "description": "PR #51 resolved the runtime fail-closed blocker by preventing unsupported probe coverage from falling through into external doctrinal labels.",
+      "description": "PR #51 resolved runtime fail-closed unsupported probe coverage and PR #52 updated LIM-004 artifacts.",
       "blocks_completion": false
-    }
-  ],
-  "open_blockers": [
+    },
     {
       "blocker_id": "BLOCK-LIM-003",
       "category": "appendix_f",
-      "description": "Final completion package remains blocked until CI guardrail automation is added and the delivery package is re-scored after CI enforcement.",
-      "blocks_completion": true
+      "description": "Final delivery package artifacts are updated for the current implemented intake slice.",
+      "blocks_completion": false
     },
     {
       "blocker_id": "BLOCK-LIM-005",
       "category": "ci_guardrails",
-      "description": "CI guardrails are still required for tests, template validation, Appendix F blockers, traceability, unsupported coverage fallthrough, context drift, and internal-only artifact leakage.",
-      "blocks_completion": true
+      "description": "PR #53 added CI guardrails, dependency installation, Playwright Chromium installation, and guardrail tests.",
+      "blocks_completion": false
     }
   ],
-  "latest_validation_context": "post_PR_51_rebase_validation",
-  "latest_validation_evidence_file": "pr51-rebased-full-node-test-output-20260516-112727.txt",
+  "open_blockers": [],
+  "latest_validation_context": "post_PR_53_ci_guardrails_merge_validation",
+  "latest_validation_evidence_file": "GitHub Actions PR #53, guardrails and full Node test suite passed",
   "traceability_addendum_file": "delivery_artifacts/intake/traceability_lim004_resolution_addendum.md",
-  "runtime_hardening_status": "lim_004_runtime_fail_closed_resolved"
+  "runtime_hardening_status": "lim_004_runtime_fail_closed_resolved",
+  "ci_guardrails_status": "lim_005_resolved_by_PR_53",
+  "completion_boundary": "current_implemented_intake_slice_only",
+  "ci_files": [
+    {
+      "file": ".github/workflows/ci.yml",
+      "present": true,
+      "status": "runs_guardrails_and_full_node_tests"
+    },
+    {
+      "file": "package.json",
+      "present": true,
+      "status": "declares_playwright_dependency_and_scripts"
+    },
+    {
+      "file": "package-lock.json",
+      "present": true,
+      "status": "locks_ci_dependencies"
+    },
+    {
+      "file": "tools/ci/guardrails_check.js",
+      "present": true,
+      "status": "completion_gate_guardrails"
+    },
+    {
+      "file": "tests/ci/guardrails-check.test.js",
+      "present": true,
+      "status": "guardrail_regression_tests"
+    }
+  ]
 }
