@@ -2,20 +2,23 @@
   "snapshot_type": "completion_audit_snapshot",
   "matter_system": "AFDM Intake CleanRoom",
   "spec_version": "L3-v8",
-  "snapshot_date": "2026-05-07",
-  "completion_percent": 98.6,
+  "snapshot_date": "2026-05-16",
+  "completion_percent": 99.1,
   "node_test_status": "pass",
   "node_test_command": "node --test <all discovered test files>",
   "node_test_file_count": 25,
   "node_test_exit_code": 0,
+  "latest_validation_context": "post_PR_51_rebase_validation",
+  "latest_validation_evidence_file": "pr51-rebased-full-node-test-output-20260516-112727.txt",
   "completion_claim_permitted": false,
-  "completion_claim_reason": "Traceability and golden verification artifacts are now curated for the implemented slice, but completion remains blocked by open preflight/probe coverage hardening and CI guardrail limitations.",
-  "traceability_status": "expanded_curated_matrix",
+  "completion_claim_reason": "Traceability, golden verification, and runtime fail-closed probe coverage are resolved for the implemented slice, but completion remains blocked by CI guardrail automation and final delivery-package closure.",
+  "traceability_status": "expanded_curated_matrix_with_LIM_004_runtime_hardening_resolved",
   "traceability_row_count": 64,
   "golden_artifact_status": "curated_verification_table_for_D1_through_D13",
   "appendix_d_fixtures_implemented": 13,
   "appendix_d_fixtures_scaffolded": 4,
   "appendix_d_fixtures_total": 17,
+  "runtime_hardening_status": "lim_004_runtime_fail_closed_resolved",
   "source_files": [
     { "file": "docs/source-locks/1-10 Layer 1 - Authority and Doctrine.pdf", "present": true },
     { "file": "docs/source-locks/1-10 Layer 2 - Jules.pdf", "present": true },
@@ -39,7 +42,9 @@
     { "file": "src/intake/determination-router.js", "present": true },
     { "file": "src/intake/external-output-validator.js", "present": true },
     { "file": "src/intake/context-profiles.js", "present": true },
-    { "file": "src/intake/intake-manifest.js", "present": true }
+    { "file": "src/intake/intake-manifest.js", "present": true },
+    { "file": "tools/run-playwright-intake.js", "present": true, "status": "runtime_fail_closed_for_unsupported_probe_family" },
+    { "file": "src/intake/families/family2.probe.js", "present": true, "status": "implementation_missing_error_for_unimplemented_family2_subconditions" }
   ],
   "delivery_files": [
     { "file": "delivery_artifacts/intake/change_inventory.md", "present": true },
@@ -47,8 +52,8 @@
     { "file": "delivery_artifacts/intake/test_inventory.md", "present": true },
     { "file": "delivery_artifacts/intake/fixture_inventory.md", "present": true },
     { "file": "delivery_artifacts/intake/golden_artifact_verification.md", "present": true, "status": "curated_verification_table" },
-    { "file": "delivery_artifacts/intake/traceability_matrix.csv", "present": true, "status": "expanded_curated_matrix" },
-    { "file": "delivery_artifacts/intake/limitations_appendix_f.md", "present": true, "status": "updated_with_resolved_and_open_limitations" },
+    { "file": "delivery_artifacts/intake/traceability_matrix.csv", "present": true, "status": "expanded_curated_matrix_with_LIM_004_runtime_hardening_resolved" },
+    { "file": "delivery_artifacts/intake/limitations_appendix_f.md", "present": true, "status": "updated_with_LIM_004_runtime_hardening_resolved" },
     { "file": "delivery_artifacts/intake/pr_ready_summary.md", "present": true }
   ],
   "fixture_files": [
@@ -66,16 +71,16 @@
     { "file": "fixtures/intake/appendix-d/d11_non_alternating_sequencing_failure.json", "present": true, "status": "implemented" },
     { "file": "fixtures/intake/appendix-d/d12_state_persistence_failure.json", "present": true, "status": "implemented" },
     { "file": "fixtures/intake/appendix-d/d13_indirect_signaling_output_failure.json", "present": true, "status": "implemented" },
-    { "file": "fixtures/intake/appendix-d/d14_unbounded_alt_text_insufficiently_specified.json", "present": true, "status": "scaffolded" },
-    { "file": "fixtures/intake/appendix-d/d15_mixed_boundedness_preserves_bounded_execution.json", "present": true, "status": "scaffolded" },
-    { "file": "fixtures/intake/appendix-d/d16_marker_only_not_botmitigation.json", "present": true, "status": "scaffolded" },
-    { "file": "fixtures/intake/appendix-d/d17_true_challenge_wall_botmitigation.json", "present": true, "status": "scaffolded" }
+    { "file": "fixtures/intake/appendix-d/d14_unbounded_alt_text_insufficiently_specified.json", "present": true, "status": "scaffolded_followup" },
+    { "file": "fixtures/intake/appendix-d/d15_mixed_boundedness_preserves_bounded_execution.json", "present": true, "status": "scaffolded_followup" },
+    { "file": "fixtures/intake/appendix-d/d16_marker_only_not_botmitigation.json", "present": true, "status": "scaffolded_followup" },
+    { "file": "fixtures/intake/appendix-d/d17_true_challenge_wall_botmitigation.json", "present": true, "status": "scaffolded_followup" }
   ],
   "resolved_blockers": [
     {
       "blocker_id": "BLOCK-TESTS",
       "category": "tests",
-      "description": "Prior scorecard test failure status is stale. Local validation passed across 25 test files.",
+      "description": "Local validation passed across 25 test files after PR #51 rebase.",
       "blocks_completion": false
     },
     {
@@ -89,19 +94,19 @@
       "category": "appendix_f",
       "description": "Golden artifact verification replaced with curated fixture verification table for D.1-D.13.",
       "blocks_completion": false
+    },
+    {
+      "blocker_id": "BLOCK-LIM-004",
+      "category": "preflight_probe_coverage",
+      "description": "PR #51 resolved the runtime fail-closed blocker by preventing unsupported probe coverage from falling through into external doctrinal labels.",
+      "blocks_completion": false
     }
   ],
   "open_blockers": [
     {
       "blocker_id": "BLOCK-LIM-003",
       "category": "appendix_f",
-      "description": "Final completion package remains blocked until open hardening and CI limitations are closed.",
-      "blocks_completion": true
-    },
-    {
-      "blocker_id": "BLOCK-LIM-004",
-      "category": "preflight_probe_coverage",
-      "description": "Unsupported probe coverage must not fall through into external doctrinal labels.",
+      "description": "Final completion package remains blocked until CI guardrail automation is added and the delivery package is re-scored after CI enforcement.",
       "blocks_completion": true
     },
     {
