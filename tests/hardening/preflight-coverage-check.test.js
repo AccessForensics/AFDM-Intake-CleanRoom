@@ -33,7 +33,7 @@ test("known unsupported hardening matter is classified and stopped", () => {
   assert.match(payload.observed_runtime_mechanical_note, /No Playwright probe was implemented/i);
 });
 
-test("unknown matter does not get stamped supported and does not block by registry", () => {
+test("unknown matter without payload run units does not get stamped supported and does not block by registry", () => {
   const result = runNode(["--matter", "AF-HARDEN-999-UNKNOWN"]);
 
   assert.equal(result.status, 0, result.stderr);
@@ -45,6 +45,81 @@ test("unknown matter does not get stamped supported and does not block by regist
   assert.equal(payload.production_intake_runnable, null);
   assert.equal(payload.classification_basis, "no_observed_runtime_registry_block");
   assert.equal(payload.action, "allow_existing_process_to_decide");
+});
+
+test("unknown json payload with unsupported run unit is classified and stopped before Playwright", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "af-preflight-unsupported-payload-"));
+  try {
+    const matterFilePath = path.join(tempDir, "matter.json");
+    fs.writeFileSync(
+      matterFilePath,
+      JSON.stringify({
+        matter_id: "AF-HARDEN-999-UNKNOWN",
+        run_units: [
+          {
+            rununitid: "RUNUNIT-1",
+            assertedconditiontext: "Color contrast ratio is below minimum on footer links"
+          }
+        ]
+      }, null, 2),
+      "utf8"
+    );
+
+    const result = runNode(["--matter-file", matterFilePath]);
+
+    assert.equal(result.status, 2, result.stderr);
+    assert.equal(result.stderr, "");
+
+    const payload = JSON.parse(result.stdout);
+    assert.equal(payload.matter_id, "AF-HARDEN-999-UNKNOWN");
+    assert.equal(payload.preflight_status, "unsupported_current_coverage");
+    assert.equal(payload.production_intake_runnable, false);
+    assert.equal(payload.classification_basis, "unsupported_probe_family_for_asserted_condition");
+    assert.equal(payload.action, "classify_and_stop");
+    assert.equal(payload.negative_hardening_fixture, false);
+    assert.equal(payload.unsupported_probe_family_count, 1);
+    assert.equal(payload.supported_probe_family_count, 0);
+    assert.equal(payload.unsupported_run_units[0].run_unit_id, "RUNUNIT-1");
+    assert.equal(payload.unsupported_run_units[0].coverage_status, "unsupported_probe_family");
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("unknown json payload with supported run unit is allowed to continue to existing process", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "af-preflight-supported-payload-"));
+  try {
+    const matterFilePath = path.join(tempDir, "matter.json");
+    fs.writeFileSync(
+      matterFilePath,
+      JSON.stringify({
+        matter_id: "AF-HARDEN-998-SUPPORTED",
+        run_units: [
+          {
+            rununitid: "RUNUNIT-1",
+            assertedconditiontext: "Product images lacked alternative text"
+          }
+        ]
+      }, null, 2),
+      "utf8"
+    );
+
+    const result = runNode(["--matter-file", matterFilePath]);
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stderr, "");
+
+    const payload = JSON.parse(result.stdout);
+    assert.equal(payload.matter_id, "AF-HARDEN-998-SUPPORTED");
+    assert.equal(payload.preflight_status, "no_registry_block");
+    assert.equal(payload.production_intake_runnable, true);
+    assert.equal(payload.classification_basis, "payload_run_units_resolve_to_supported_probe_families");
+    assert.equal(payload.supported_probe_family_count, 1);
+    assert.equal(payload.unsupported_probe_family_count, 0);
+    assert.equal(payload.run_unit_coverage[0].coverage_status, "supported_probe_family");
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
 });
 
 test("text matter-file input resolves and blocks known unsupported matter", () => {
@@ -66,13 +141,21 @@ test("text matter-file input resolves and blocks known unsupported matter", () =
   }
 });
 
-test("json matter-file input resolves and blocks known unsupported matter", () => {
+test("json matter-file input resolves and blocks known unsupported matter by registry before coverage classification", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "af-preflight-json-"));
   try {
     const matterFilePath = path.join(tempDir, "matter.json");
     fs.writeFileSync(
       matterFilePath,
-      JSON.stringify({ matter_id: "AF-HARDEN-002-MANE-IMGLINKS" }, null, 2),
+      JSON.stringify({
+        matter_id: "AF-HARDEN-002-MANE-IMGLINKS",
+        run_units: [
+          {
+            rununitid: "RUNUNIT-1",
+            assertedconditiontext: "Product images lacked alternative text"
+          }
+        ]
+      }, null, 2),
       "utf8"
     );
 
@@ -84,6 +167,7 @@ test("json matter-file input resolves and blocks known unsupported matter", () =
     const payload = JSON.parse(result.stdout);
     assert.equal(payload.matter_id, "AF-HARDEN-002-MANE-IMGLINKS");
     assert.equal(payload.preflight_status, "unsupported_current_coverage");
+    assert.equal(payload.classification_basis, "observed_runtime_no_implemented_probe");
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }

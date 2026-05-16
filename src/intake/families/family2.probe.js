@@ -248,12 +248,10 @@ async function runFamily2Probe(page, inputOrText, legacyBaseUrlOrOptions, maybeO
     return probeUnreadLinks(page, request, options);
   }
 
-  return {
-    outcome_label: OUTCOME_LABEL.INSUFFICIENT,
-    constraint_class: "",
-    mechanical_note: "No Playwright probe was implemented for this asserted condition.",
-    evidence: {}
-  };
+  const error = new Error("FAMILY2_PROBE_IMPLEMENTATION_MISSING");
+  error.code = "FAMILY2_PROBE_IMPLEMENTATION_MISSING";
+  error.asserted_condition_text = request.asserted_condition_text;
+  throw error;
 }
 
 module.exports = Object.freeze({

@@ -2,10 +2,15 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 
-const { resolveProbe } = require("../src/intake/probes/index.js");
+const {
+  resolveProbe,
+  classifyProbeCoverageForRunUnits
+} = require("../src/intake/probes/index.js");
+
 const { runLawsuit1Probe } = require("../src/intake/probes/lawsuit1.js");
-const { OUTCOME_LABEL } = require("../src/intake/run-record.js");
 
 class MockPage {
   constructor(options = {}) {
@@ -42,34 +47,76 @@ class MockPage {
   }
 }
 
-function buildRunnerFallback(assertedConditionText) {
-  const resolved = resolveProbe(assertedConditionText);
-
-  if (!resolved) {
-    return {
-      outcome_label: OUTCOME_LABEL.INSUFFICIENT,
-      constraint_class: "",
-      mechanical_note: "No Playwright probe was implemented for this asserted condition.",
-      evidence: {}
-    };
-  }
-
-  return null;
-}
-
-test("registry returns null for unsupported allegation and runner fallback is insufficient", () => {
+test("registry returns null for unsupported allegation and coverage classifier blocks before runtime", () => {
   const allegation = "Color contrast ratio is below minimum on footer links";
   const resolved = resolveProbe(allegation);
 
   assert.equal(resolved, null);
 
-  const fallback = buildRunnerFallback(allegation);
-  assert.deepEqual(fallback, {
-    outcome_label: OUTCOME_LABEL.INSUFFICIENT,
-    constraint_class: "",
-    mechanical_note: "No Playwright probe was implemented for this asserted condition.",
-    evidence: {}
-  });
+  const classification = classifyProbeCoverageForRunUnits([
+    {
+      rununitid: "RUNUNIT-1",
+      assertedconditiontext: allegation
+    }
+  ]);
+
+  assert.equal(classification.preflight_status, "unsupported_current_coverage");
+  assert.equal(classification.production_intake_runnable, false);
+  assert.equal(classification.classification_basis, "unsupported_probe_family_for_asserted_condition");
+  assert.equal(classification.action, "classify_and_stop");
+  assert.equal(classification.unsupported_count, 1);
+  assert.equal(classification.supported_count, 0);
+  assert.equal(classification.unsupported_run_units[0].coverage_status, "unsupported_probe_family");
+});
+
+test("supported allegation resolves to supported probe family coverage", () => {
+  const allegation = "Product images lacked alternative text";
+  const resolved = resolveProbe(allegation);
+
+  assert.ok(resolved);
+  assert.equal(resolved.family, "lawsuit1");
+
+  const classification = classifyProbeCoverageForRunUnits([
+    {
+      rununitid: "RUNUNIT-1",
+      assertedconditiontext: allegation
+    }
+  ]);
+
+  assert.equal(classification.preflight_status, "supported_probe_coverage");
+  assert.equal(classification.production_intake_runnable, true);
+  assert.equal(classification.unsupported_count, 0);
+  assert.equal(classification.supported_count, 1);
+  assert.equal(classification.run_unit_coverage[0].coverage_status, "supported_probe_family");
+});
+
+test("runner source no longer contains unsupported probe fallback as doctrinal insufficiency", () => {
+  const runnerPath = path.join(__dirname, "..", "tools", "run-playwright-intake.js");
+  const runnerText = fs.readFileSync(runnerPath, "utf8");
+
+  assert.doesNotMatch(
+    runnerText,
+    /No Playwright probe was implemented for this asserted condition\./
+  );
+
+  assert.doesNotMatch(
+    runnerText,
+    /outcome_label:\s*OUTCOME_LABEL\.INSUFFICIENT[\s\S]*No Playwright probe was implemented/
+  );
+
+  assert.match(runnerText, /UNSUPPORTED_PROBE_FAMILY_REACHED_RUNTIME/);
+});
+
+test("family2 probe no longer emits no-probe mechanical note for matched but unimplemented subconditions", () => {
+  const family2Path = path.join(__dirname, "..", "src", "intake", "families", "family2.probe.js");
+  const family2Text = fs.readFileSync(family2Path, "utf8");
+
+  assert.doesNotMatch(
+    family2Text,
+    /No Playwright probe was implemented for this asserted condition\./
+  );
+
+  assert.match(family2Text, /FAMILY2_PROBE_IMPLEMENTATION_MISSING/);
 });
 
 test("lawsuit1 direct probe throws strict fail-closed error for unimplemented sub allegation", async () => {
