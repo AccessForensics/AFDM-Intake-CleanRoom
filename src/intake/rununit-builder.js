@@ -10,7 +10,7 @@ function normalizeCandidateText(text) {
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean)
-    .map((line) => line.replace(/^[-*]\s+/, "").replace(/^\d+[.)]\s+/, ""))
+    .map((line) => line.replace(/^[-*]\s*/, "").replace(/^\d+[.)]\s*/, ""))
     .join(" ")
     .replace(/\s+/g, " ")
     .trim();
@@ -19,7 +19,8 @@ function normalizeCandidateText(text) {
 function normalizeAnchorDelimiters(anchorText) {
   return String(anchorText || "")
     .replace(/\r\n/g, "\n")
-    .replace(/`n(?=\s*(?:[-*]|\d+[.)]))/g, "\n");
+    .replace(/`n/g, "\n")
+    .replace(/\\n/g, "\n");
 }
 
 function splitCommaConjunctions(text) {
@@ -63,11 +64,31 @@ function splitAnchorTextIntoCandidates(anchorText) {
 }
 
 function assertAtomicCandidate(candidateText) {
-  const obviousBlend = /;\s*|\s+\/\s+|,\s*(?:and|also|plus|furthermore|moreover)\s+|\s+\band\b\s+/i;
-  const repeatedAssertionVerb =
-    /\b(?:lack(?:s|ed)?|missing|without|did not|does not|fail(?:s|ed)? to|unable to)\b[\s\S]*\band\b[\s\S]*\b(?:lack(?:s|ed)?|missing|without|did not|does not|fail(?:s|ed)? to|unable to)\b/i;
+  const text = String(candidateText || "").trim();
 
-  if (obviousBlend.test(candidateText) || repeatedAssertionVerb.test(candidateText)) {
+  const obviousBlend = /;\s*|\s+\/\s+|,\s*(?:and|also|plus|furthermore|moreover)\s+/i;
+
+  const assertionTerms =
+    "(?:lack(?:s|ed)?|missing|without|did not|does not|fail(?:s|ed)? to|unable to)";
+
+  const issueDescriptorTerms =
+    "(?:lack(?:s|ed)?|missing|inaccessible|unlabeled|unlabelled|unreadable|absent|without|did not|does not|fail(?:s|ed)? to|unable to)";
+
+  const repeatedAssertionVerb = new RegExp(
+    `\\b${assertionTerms}\\b[\\s\\S]*\\band\\b[\\s\\S]*\\b${assertionTerms}\\b`,
+    "i"
+  );
+
+  const pairedIssueDescriptors = new RegExp(
+    `\\b${issueDescriptorTerms}\\b[\\s\\S]*\\band\\b\\s*${issueDescriptorTerms}\\b`,
+    "i"
+  );
+
+  if (
+    obviousBlend.test(text) ||
+    repeatedAssertionVerb.test(text) ||
+    pairedIssueDescriptors.test(text)
+  ) {
     throw new Error(`NON_ATOMIC_ASSERTED_CONDITION: ${candidateText}`);
   }
 }
