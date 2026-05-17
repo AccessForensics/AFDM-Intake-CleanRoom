@@ -93,3 +93,15 @@ test("PR1 regression: buildRunUnitsFromAnchors still rejects bundled assertion v
     /NON_ATOMIC_ASSERTED_CONDITION/
   );
 });
+
+test("PR1 regression: buildRunUnitsFromAnchors rejects paired issue descriptors joined by and", () => {
+  assert.throws(
+    () => buildRunUnitsFromAnchors([
+      Object.freeze({
+        complaintgroupanchorid: "CGA-AND-003",
+        anchortext: "Missing alt text and inaccessible form labels",
+      }),
+    ]),
+    /NON_ATOMIC_ASSERTED_CONDITION/
+  );
+});
