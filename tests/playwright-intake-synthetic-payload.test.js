@@ -20,6 +20,13 @@ function toFileUrl(filePath) {
   return "file:///" + filePath.replace(/\\/g, "/");
 }
 
+function runFixturePayload(payloadPath, outDir) {
+  execFileSync(process.execPath, [runnerPath, payloadPath, outDir, "--allow-file-protocol"], {
+    cwd: repoRoot,
+    stdio: "pipe"
+  });
+}
+
 function makePayload(matterId, assertedConditionText, siteUrl, runUnitOverrides) {
   return {
     matter_id: matterId,
@@ -61,10 +68,7 @@ function runSyntheticPayload(assertedConditionText, html, runUnitOverrides) {
 
   writeJson(payloadPath, payload);
 
-  execFileSync(process.execPath, [runnerPath, payloadPath, outDir], {
-    cwd: repoRoot,
-    stdio: "pipe"
-  });
+  runFixturePayload(payloadPath, outDir);
 
   const summary = JSON.parse(fs.readFileSync(path.join(outDir, "playwright-summary.json"), "utf8"));
   const observations = JSON.parse(fs.readFileSync(path.join(outDir, "playwright-observations.json"), "utf8"));
@@ -148,10 +152,7 @@ test("generic runner blocks unsupported allegation at preflight before Playwrigh
 
   assert.throws(
     () => {
-      execFileSync(process.execPath, [runnerPath, payloadPath, outDir], {
-        cwd: repoRoot,
-        stdio: "pipe"
-      });
+      runFixturePayload(payloadPath, outDir);
     },
     (error) => {
       assert.equal(error.status, 2);
@@ -241,4 +242,54 @@ test("generic runner routes supported family3 allegation through registry and re
   assert.equal(result.observations[0].operator_outcome_label, OUTCOME_LABEL.NOT_OBSERVED);
   assert.equal(typeof result.determination.determination_template, "string");
   assert.ok(result.determination.determination_template.length > 0);
+});
+
+test("PR4 regression: production runner rejects file protocol payloads without explicit fixture flag", (t) => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "afdm-intake-prod-file-reject-"));
+  const htmlPath = path.join(tempRoot, "site.html");
+  const payloadPath = path.join(tempRoot, "payload.json");
+  const outDir = path.join(tempRoot, "out");
+
+  t.after(() => {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  });
+
+  fs.writeFileSync(
+    htmlPath,
+    `
+      <!doctype html>
+      <html lang="en">
+        <body>
+          <h2>Hero</h2>
+          <h5>Footer</h5>
+        </body>
+      </html>
+    `,
+    "utf8"
+  );
+
+  writeJson(
+    payloadPath,
+    makePayload(
+      "AF-TEST-PRODUCTION-FILE-REJECT",
+      "Heading levels were missing",
+      toFileUrl(htmlPath)
+    )
+  );
+
+  assert.throws(
+    () => {
+      execFileSync(process.execPath, [runnerPath, payloadPath, outDir], {
+        cwd: repoRoot,
+        stdio: "pipe"
+      });
+    },
+    (error) => {
+      const stderr = String(error.stderr || "");
+      assert.match(stderr, /PAYLOAD_SOURCE_CASE_SITE_UNSUPPORTED_PROTOCOL_FOR_PRODUCTION/);
+      return true;
+    }
+  );
+
+  assert.equal(fs.existsSync(path.join(outDir, "run-records.json")), false);
 });
