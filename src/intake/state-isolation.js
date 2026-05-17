@@ -1,19 +1,6 @@
 "use strict";
 
-const OUTCOME_LABEL = Object.freeze({
-  CONSTRAINED: "Constrained",
-  INSUFFICIENT: "Insufficiently specified for bounded execution",
-});
-
-const CONSTRAINT_CLASS = Object.freeze({
-  AUTHWALL: "AUTHWALL",
-  BOTMITIGATION: "BOTMITIGATION",
-  GEOBLOCK: "GEOBLOCK",
-  HARDCRASH: "HARDCRASH",
-  NAVIMPEDIMENT: "NAVIMPEDIMENT",
-});
-
-const CONSTRAINT_VALUES = Object.freeze(Object.values(CONSTRAINT_CLASS));
+const { OUTCOME_LABEL, CONSTRAINT_CLASS, CONSTRAINT_VALUES } = require("./run-record.js");
 
 function pad3(value) {
   return String(value).padStart(3, "0");

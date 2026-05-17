@@ -8,26 +8,8 @@ const {
   evaluateMatterProgress,
 } = require("./sufficiency-stop.js");
 
-const OUTCOME_LABEL = Object.freeze({
-  OBSERVED: "Observed as asserted",
-  NOT_OBSERVED: "Not observed as asserted",
-  CONSTRAINED: "Constrained",
-  INSUFFICIENT: "Insufficiently specified for bounded execution",
-});
-
-const MATTER_SCOPE = Object.freeze({
-  DUAL: "dual",
-  DESKTOP_ONLY: "desktop_only",
-  MOBILE_ONLY: "mobile_only",
-});
-
-const CONSTRAINT_CLASS = Object.freeze({
-  AUTHWALL: "AUTHWALL",
-  BOTMITIGATION: "BOTMITIGATION",
-  GEOBLOCK: "GEOBLOCK",
-  HARDCRASH: "HARDCRASH",
-  NAVIMPEDIMENT: "NAVIMPEDIMENT",
-});
+const { OUTCOME_LABEL, CONSTRAINT_CLASS } = require("./run-record.js");
+const { MATTER_SCOPE } = require("./sequencing.js");
 
 function assertMatterScope(value) {
   const safe = String(value || "").trim();
