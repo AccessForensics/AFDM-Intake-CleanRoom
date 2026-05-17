@@ -6,11 +6,14 @@ const { spawnSync } = require("child_process");
 const { chromium } = require("playwright");
 
 const {
-  CONTEXT_ID,
   OUTCOME_LABEL,
   CONSTRAINT_CLASS,
   createRunRecord
 } = require("../src/intake/run-record.js");
+
+const {
+  getContextProfile
+} = require("../src/intake/context-profiles.js");
 
 const {
   evaluateMatterProgress,
@@ -67,21 +70,30 @@ if (!BASE_URL) {
   throw new Error("PAYLOAD_SOURCE_CASE_SITE_REQUIRED");
 }
 
-const CONTEXT_CONFIG = {
-  [CONTEXT_ID.DESKTOP_BASELINE]: {
-    viewport: { width: 1366, height: 900 },
-    isMobile: false,
-    hasTouch: false,
-    deviceScaleFactor: 1
-  },
-  [CONTEXT_ID.MOBILE_BASELINE]: {
-    viewport: { width: 393, height: 852 },
-    isMobile: true,
-    hasTouch: true,
-    deviceScaleFactor: 1
-  }
-};
+function buildPlaywrightContextOptions(contextId) {
+  const profile = getContextProfile(contextId);
 
+  if (
+    !Number.isInteger(profile.viewport_width) ||
+    !Number.isInteger(profile.viewport_height)
+  ) {
+    throw new Error(`CONTEXT_PROFILE_VIEWPORT_INCOMPLETE_FOR_PLAYWRIGHT: ${contextId}`);
+  }
+
+  if (!Number.isInteger(profile.device_scale_factor) || profile.device_scale_factor <= 0) {
+    throw new Error(`CONTEXT_PROFILE_DEVICE_SCALE_FACTOR_INVALID: ${contextId}`);
+  }
+
+  return Object.freeze({
+    viewport: Object.freeze({
+      width: profile.viewport_width,
+      height: profile.viewport_height
+    }),
+    isMobile: profile.is_mobile === true,
+    hasTouch: profile.has_touch === true,
+    deviceScaleFactor: profile.device_scale_factor
+  });
+}
 function nowLocal() {
   return new Date().toISOString();
 }
@@ -206,9 +218,14 @@ function runUnsupportedCoveragePreflight(payloadPath, outDir) {
         throw new Error(`RUN_UNIT_NOT_FOUND: ${step.run_unit_id}`);
       }
 
-      const contextConfig = CONTEXT_CONFIG[step.context_id];
-      if (!contextConfig) {
-        throw new Error(`UNKNOWN_CONTEXT_ID: ${step.context_id}`);
+      let contextConfig;
+      try {
+        contextConfig = buildPlaywrightContextOptions(step.context_id);
+      } catch (error) {
+        if (error && String(error.message || "").startsWith("INVALID_CONTEXT_PROFILE_ID:")) {
+          throw new Error(`UNKNOWN_CONTEXT_ID: ${step.context_id}`);
+        }
+        throw error;
       }
 
       const prefix = [
