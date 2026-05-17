@@ -10,7 +10,7 @@ function normalizeCandidateText(text) {
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean)
-    .map((line) => line.replace(/^[-*]\s+/, "").replace(/^\d+[.)]\s+/, ""))
+    .map((line) => line.replace(/^[-*]\s*/, "").replace(/^\d+[.)]\s*/, ""))
     .join(" ")
     .replace(/\s+/g, " ")
     .trim();
@@ -19,7 +19,8 @@ function normalizeCandidateText(text) {
 function normalizeAnchorDelimiters(anchorText) {
   return String(anchorText || "")
     .replace(/\r\n/g, "\n")
-    .replace(/`n(?=\s*(?:[-*]|\d+[.)]))/g, "\n");
+    .replace(/`n/g, "\n")
+    .replace(/\\n/g, "\n");
 }
 
 function splitCommaConjunctions(text) {
@@ -63,7 +64,7 @@ function splitAnchorTextIntoCandidates(anchorText) {
 }
 
 function assertAtomicCandidate(candidateText) {
-  const obviousBlend = /;\s*|\s+\/\s+|,\s*(?:and|also|plus|furthermore|moreover)\s+|\s+\band\b\s+/i;
+  const obviousBlend = /;\s*|\s+\/\s+|,\s*(?:and|also|plus|furthermore|moreover)\s+/i;
   const repeatedAssertionVerb =
     /\b(?:lack(?:s|ed)?|missing|without|did not|does not|fail(?:s|ed)? to|unable to)\b[\s\S]*\band\b[\s\S]*\b(?:lack(?:s|ed)?|missing|without|did not|does not|fail(?:s|ed)? to|unable to)\b/i;
 

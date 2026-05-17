@@ -54,3 +54,42 @@ test("buildRunUnitsFromAnchors returns atomic run units for split compound alleg
   assert.equal(runUnits[0].assertedconditiontext, "Product images lacked alternative text");
   assert.equal(runUnits[1].assertedconditiontext, "the search fields lack a label.");
 });
+
+test("PR1 regression: splitAnchorTextIntoCandidates handles literal newline encodings and squashed bullets", () => {
+  const candidates = splitAnchorTextIntoCandidates(
+    "-Product images lacked alternative text`n*Search fields lack a label\\n1.Footer links opened new windows without prior warning"
+  );
+
+  assert.deepEqual(candidates, [
+    "Product images lacked alternative text",
+    "Search fields lack a label",
+    "Footer links opened new windows without prior warning",
+  ]);
+});
+
+test("PR1 regression: buildRunUnitsFromAnchors permits natural and phrasing inside one atomic assertion", () => {
+  const runUnits = buildRunUnitsFromAnchors([
+    Object.freeze({
+      complaintgroupanchorid: "CGA-AND-001",
+      anchortext: "Keyboard and screen reader users were unable to operate the checkout menu.",
+    }),
+  ]);
+
+  assert.equal(runUnits.length, 1);
+  assert.equal(
+    runUnits[0].assertedconditiontext,
+    "Keyboard and screen reader users were unable to operate the checkout menu."
+  );
+});
+
+test("PR1 regression: buildRunUnitsFromAnchors still rejects bundled assertion verbs joined by and", () => {
+  assert.throws(
+    () => buildRunUnitsFromAnchors([
+      Object.freeze({
+        complaintgroupanchorid: "CGA-AND-002",
+        anchortext: "Product images lacked alternative text and search fields lack a label.",
+      }),
+    ]),
+    /NON_ATOMIC_ASSERTED_CONDITION/
+  );
+});

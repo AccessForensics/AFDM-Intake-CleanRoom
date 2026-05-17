@@ -20,7 +20,10 @@ function loadTemplateSpec(repoRoot = process.cwd()) {
 function normalizeSpecForMatching(text) {
   return String(text || "")
     .replace(/\r\n/g, "\n")
-    .replace(/\\([_[\]\\-])/g, "$1")
+    .replace(/\\_/g, "_")
+    .replace(/\\\[/g, "[")
+    .replace(/\\\]/g, "]")
+    .replace(/\\\-/g, "-")
     .replace(/\*\*/g, "");
 }
 
