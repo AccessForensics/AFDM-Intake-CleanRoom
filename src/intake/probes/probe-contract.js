@@ -6,7 +6,8 @@ const {
   CONSTRAINT_VALUES
 } = require("../run-record.js");
 
-const ALLOWED_PROTOCOLS = Object.freeze(new Set(["http:", "https:", "file:"]));
+const PRODUCTION_PROTOCOLS = Object.freeze(new Set(["http:", "https:"]));
+const FIXTURE_PROTOCOLS = Object.freeze(new Set(["http:", "https:", "file:"]));
 
 function safeTrim(value) {
   return String(value || "").trim();
@@ -30,7 +31,11 @@ function countSentences(text) {
     .filter(Boolean).length;
 }
 
-function assertAllowedUrl(value, fieldName) {
+function resolveAllowedProtocols(allowFileProtocol) {
+  return allowFileProtocol === true ? FIXTURE_PROTOCOLS : PRODUCTION_PROTOCOLS;
+}
+
+function assertAllowedUrl(value, fieldName, allowFileProtocol = false) {
   const safe = safeTrim(value);
 
   if (!safe) {
@@ -44,15 +49,24 @@ function assertAllowedUrl(value, fieldName) {
     throw new Error(`${fieldName || "URL"}_INVALID: ${safe}`);
   }
 
-  if (!ALLOWED_PROTOCOLS.has(parsed.protocol)) {
+  if (parsed.protocol === "file:" && allowFileProtocol !== true) {
+    throw new Error(`${fieldName || "URL"}_UNSUPPORTED_PROTOCOL_FOR_PRODUCTION: ${parsed.protocol}`);
+  }
+
+  const allowedProtocols = resolveAllowedProtocols(allowFileProtocol);
+  if (!allowedProtocols.has(parsed.protocol)) {
     throw new Error(`${fieldName || "URL"}_UNSUPPORTED_PROTOCOL: ${parsed.protocol}`);
   }
 
   return parsed.toString();
 }
 
-function normalizeProbeRequest(input, fallbackBaseUrl) {
-  const normalizedFallbackUrl = assertAllowedUrl(fallbackBaseUrl, "BASE_URL");
+function normalizeProbeRequest(input, fallbackBaseUrl, allowFileProtocol = false) {
+  const normalizedFallbackUrl = assertAllowedUrl(
+    fallbackBaseUrl,
+    "BASE_URL",
+    allowFileProtocol
+  );
 
   if (input && typeof input === "object" && !Array.isArray(input)) {
     return Object.freeze({
@@ -69,7 +83,8 @@ function normalizeProbeRequest(input, fallbackBaseUrl) {
       ),
       target_url: assertAllowedUrl(
         pickFirstNonEmpty(input.target_url, normalizedFallbackUrl),
-        "TARGET_URL"
+        "TARGET_URL",
+        allowFileProtocol
       ),
       target_page_hint: pickFirstNonEmpty(
         input.target_page_hint,
@@ -116,19 +131,26 @@ function normalizeProbeInput(inputOrText, legacyBaseUrlOrOptions, maybeOptions) 
       ? legacyBaseUrlOrOptions
       : pickFirstNonEmpty(options.base_url, options.baseUrl, options.target_url);
 
+  const allowFileProtocol =
+    options.allowFileProtocol === true ||
+    options.allow_file_protocol === true ||
+    options.fixtureMode === true ||
+    options.fixture_mode === true;
+
   const normalizedOptions = Object.freeze(
     Object.assign({}, options, {
-      base_url: assertAllowedUrl(fallbackBaseUrl, "BASE_URL")
+      allowFileProtocol,
+      base_url: assertAllowedUrl(fallbackBaseUrl, "BASE_URL", allowFileProtocol)
     })
   );
 
   return Object.freeze({
-    request: normalizeProbeRequest(inputOrText, normalizedOptions.base_url),
+    request: normalizeProbeRequest(inputOrText, normalizedOptions.base_url, allowFileProtocol),
     options: normalizedOptions
   });
 }
 
-function buildProbeInputFromPayload(payload, runUnit, baseUrl) {
+function buildProbeInputFromPayload(payload, runUnit, baseUrl, allowFileProtocol = false) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     throw new Error("PAYLOAD_OBJECT_REQUIRED");
   }
@@ -153,7 +175,8 @@ function buildProbeInputFromPayload(payload, runUnit, baseUrl) {
       target_element_hint: runUnit.target_element_hint,
       baseline_scope: runUnit.baseline_scope || payload.matter_scope
     },
-    baseUrl
+    baseUrl,
+    allowFileProtocol
   );
 }
 

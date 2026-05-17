@@ -41,7 +41,7 @@ const {
 } = require("../src/intake/external-output-validator.js");
 
 function usage() {
-  console.error("Usage: node tools/run-playwright-intake.js <payload-json-path> <output-dir>");
+  console.error("Usage: node tools/run-playwright-intake.js <payload-json-path> <output-dir> [--allow-file-protocol]");
   process.exit(1);
 }
 
@@ -51,6 +51,7 @@ if (process.argv.length < 4) {
 
 const payloadPath = path.resolve(process.argv[2]);
 const outDir = path.resolve(process.argv[3]);
+const allowFileProtocol = process.argv.includes("--allow-file-protocol");
 
 if (!fs.existsSync(payloadPath)) {
   throw new Error(`PAYLOAD_NOT_FOUND: ${payloadPath}`);
@@ -63,7 +64,8 @@ fs.mkdirSync(artifactsDir, { recursive: true });
 const payload = JSON.parse(fs.readFileSync(payloadPath, "utf8"));
 const BASE_URL = assertAllowedUrl(
   payload && payload.source_case && payload.source_case.site,
-  "PAYLOAD_SOURCE_CASE_SITE"
+  "PAYLOAD_SOURCE_CASE_SITE",
+  allowFileProtocol
 );
 
 if (!BASE_URL) {
@@ -261,11 +263,17 @@ function runUnsupportedCoveragePreflight(payloadPath, outDir) {
           throw unsupportedCoverageError;
         }
 
-        const probeRequest = buildProbeInputFromPayload(payload, runUnit, BASE_URL);
+        const probeRequest = buildProbeInputFromPayload(
+          payload,
+          runUnit,
+          BASE_URL,
+          allowFileProtocol
+        );
         probeResult = validateProbeResult(
           await resolved.run(page, probeRequest, {
             base_url: BASE_URL,
-            context_id: step.context_id
+            context_id: step.context_id,
+            allowFileProtocol
           })
         );
       } catch (error) {

@@ -58,3 +58,37 @@ test("validateProbeResult preserves valid result shape", () => {
   );
   assert.deepEqual(result.evidence, { challenge_kind: "test" });
 });
+
+test("PR4 regression: assertAllowedUrl allows http and https in production mode", () => {
+  assert.equal(assertAllowedUrl("http://example.com", "TARGET_URL"), "http://example.com/");
+  assert.equal(assertAllowedUrl("https://example.com", "TARGET_URL"), "https://example.com/");
+});
+
+test("PR4 regression: assertAllowedUrl rejects file protocol in production mode", () => {
+  assert.throws(
+    () => assertAllowedUrl("file:///tmp/test.html", "TARGET_URL"),
+    /TARGET_URL_UNSUPPORTED_PROTOCOL_FOR_PRODUCTION/
+  );
+});
+
+test("PR4 regression: assertAllowedUrl allows file protocol only when explicitly permitted for fixtures", () => {
+  assert.equal(
+    assertAllowedUrl("file:///tmp/test.html", "TARGET_URL", true),
+    "file:///tmp/test.html"
+  );
+});
+
+test("PR4 regression: normalizeFamily3ProbeInput rejects file protocol unless fixture mode is explicit", () => {
+  assert.throws(
+    () => normalizeFamily3ProbeInput("Search fields lack a label.", "file:///tmp/test.html"),
+    /BASE_URL_UNSUPPORTED_PROTOCOL_FOR_PRODUCTION/
+  );
+
+  const request = normalizeFamily3ProbeInput(
+    "Search fields lack a label.",
+    "file:///tmp/test.html",
+    true
+  );
+
+  assert.equal(request.target_url, "file:///tmp/test.html");
+});
