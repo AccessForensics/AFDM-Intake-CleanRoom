@@ -2,6 +2,8 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const {
   SPEC_VERSION,
@@ -177,5 +179,64 @@ test("manifest requires structured internal timing metadata", () => {
       internal_timing_metadata: "timing",
     }),
     /INTERNAL_TIMING_METADATA_OBJECT_REQUIRED/
+  );
+});
+
+test("PR2 regression: runner derives Playwright context options from canonical context profiles", () => {
+  const runnerPath = path.join(__dirname, "..", "tools", "run-playwright-intake.js");
+  const runnerText = fs.readFileSync(runnerPath, "utf8");
+
+  assert.doesNotMatch(
+    runnerText,
+    /\bCONTEXT_CONFIG\b/,
+    "Runner must not retain a hardcoded CONTEXT_CONFIG object"
+  );
+
+  assert.doesNotMatch(
+    runnerText,
+    /viewport:\s*\{\s*width:\s*1366/,
+    "Runner must not hardcode the desktop baseline viewport width"
+  );
+
+  assert.doesNotMatch(
+    runnerText,
+    /viewport:\s*\{\s*width:\s*393/,
+    "Runner must not hardcode the mobile baseline viewport width"
+  );
+
+  assert.match(
+    runnerText,
+    /require\("\.\.\/src\/intake\/context-profiles\.js"\)/,
+    "Runner must import canonical context profiles"
+  );
+
+  assert.match(
+    runnerText,
+    /getContextProfile\(contextId\)/,
+    "Runner must resolve the profile by context id"
+  );
+
+  assert.match(
+    runnerText,
+    /profile\.viewport_width/,
+    "Runner must map viewport width from the canonical profile"
+  );
+
+  assert.match(
+    runnerText,
+    /profile\.viewport_height/,
+    "Runner must map viewport height from the canonical profile"
+  );
+
+  assert.match(
+    runnerText,
+    /profile\.device_scale_factor/,
+    "Runner must map device scale factor from the canonical profile"
+  );
+
+  assert.match(
+    runnerText,
+    /CONTEXT_PROFILE_VIEWPORT_INCOMPLETE_FOR_PLAYWRIGHT/,
+    "Runner must fail closed if a canonical profile is not executable as a Playwright context"
   );
 });
