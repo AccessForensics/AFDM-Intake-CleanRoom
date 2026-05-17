@@ -68,10 +68,7 @@ function runSyntheticPayload(assertedConditionText, html, runUnitOverrides) {
 
   writeJson(payloadPath, payload);
 
-  execFileSync(process.execPath, [runnerPath, payloadPath, outDir], {
-    cwd: repoRoot,
-    stdio: "pipe"
-  });
+  runFixturePayload(payloadPath, outDir);
 
   const summary = JSON.parse(fs.readFileSync(path.join(outDir, "playwright-summary.json"), "utf8"));
   const observations = JSON.parse(fs.readFileSync(path.join(outDir, "playwright-observations.json"), "utf8"));
@@ -155,10 +152,7 @@ test("generic runner blocks unsupported allegation at preflight before Playwrigh
 
   assert.throws(
     () => {
-      execFileSync(process.execPath, [runnerPath, payloadPath, outDir], {
-        cwd: repoRoot,
-        stdio: "pipe"
-      });
+      runFixturePayload(payloadPath, outDir);
     },
     (error) => {
       assert.equal(error.status, 2);
