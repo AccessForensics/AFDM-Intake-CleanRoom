@@ -1,11 +1,6 @@
 "use strict";
 
-const OUTCOME_LABEL = Object.freeze({
-  OBSERVED: "Observed as asserted",
-  NOT_OBSERVED: "Not observed as asserted",
-  CONSTRAINED: "Constrained",
-  INSUFFICIENT: "Insufficiently specified for bounded execution",
-});
+const { OUTCOME_LABEL } = require("./run-record.js");
 
 const STOP_BASIS = Object.freeze({
   SUFFICIENCY_REACHED: "sufficiency_reached",

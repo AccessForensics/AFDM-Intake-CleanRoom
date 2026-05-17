@@ -7,12 +7,7 @@ const NOTE_BASIS = Object.freeze({
   DETERMINATION_MOBILE_ELIGIBLE_DESKTOP_CONSTRAINED: "determination_mobile_eligible_desktop_constrained",
 });
 
-const OUTCOME_LABEL = Object.freeze({
-  OBSERVED: "Observed as asserted",
-  NOT_OBSERVED: "Not observed as asserted",
-  CONSTRAINED: "Constrained",
-  INSUFFICIENT: "Insufficiently specified for bounded execution",
-});
+const { OUTCOME_LABEL } = require("./run-record.js");
 
 const NOTE_BASIS_VALUES = Object.freeze(Object.values(NOTE_BASIS));
 const PER_RUN_NOTE_ALLOWED_OUTCOMES = Object.freeze(
