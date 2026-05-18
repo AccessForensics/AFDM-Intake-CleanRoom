@@ -240,102 +240,108 @@ function runUnsupportedCoveragePreflight(payloadPath, outDir) {
       const runStartLocal = nowLocal();
       const runStartEpoch = nowMs();
 
-      const context = await browser.newContext({
-        viewport: contextConfig.viewport,
-        isMobile: contextConfig.isMobile,
-        hasTouch: contextConfig.hasTouch,
-        deviceScaleFactor: contextConfig.deviceScaleFactor
-      });
+      let context = null;
 
-      const page = await context.newPage();
-
-      let probeResult;
       try {
-        const resolved = resolveProbe(runUnit.assertedconditiontext);
-
-        if (!resolved) {
-          const unsupportedCoverageError = new Error(
-            `UNSUPPORTED_PROBE_FAMILY_REACHED_RUNTIME: ${runUnit.rununitid}`
-          );
-          unsupportedCoverageError.code = "UNSUPPORTED_PROBE_FAMILY_REACHED_RUNTIME";
-          unsupportedCoverageError.run_unit_id = runUnit.rununitid;
-          unsupportedCoverageError.asserted_condition_text = runUnit.assertedconditiontext;
-          throw unsupportedCoverageError;
-        }
-
-        const probeRequest = buildProbeInputFromPayload(
-          payload,
-          runUnit,
-          BASE_URL,
-          allowFileProtocol
-        );
-        probeResult = validateProbeResult(
-          await resolved.run(page, probeRequest, {
-            base_url: BASE_URL,
-            context_id: step.context_id,
-            allowFileProtocol
-          })
-        );
-      } catch (error) {
-        if (error && error.code === "UNSUPPORTED_PROBE_FAMILY_REACHED_RUNTIME") {
-          throw error;
-        }
-
-        probeResult = validateProbeResult({
-          outcome_label: OUTCOME_LABEL.CONSTRAINED,
-          constraint_class: CONSTRAINT_CLASS.HARDCRASH,
-          mechanical_note: "Playwright execution failed during bounded step execution.",
-          evidence: { error: String((error && error.stack) || error) }
+        context = await browser.newContext({
+          viewport: contextConfig.viewport,
+          isMobile: contextConfig.isMobile,
+          hasTouch: contextConfig.hasTouch,
+          deviceScaleFactor: contextConfig.deviceScaleFactor
         });
+
+        const page = await context.newPage();
+
+        let probeResult;
+        try {
+          const resolved = resolveProbe(runUnit.assertedconditiontext);
+
+          if (!resolved) {
+            const unsupportedCoverageError = new Error(
+              `UNSUPPORTED_PROBE_FAMILY_REACHED_RUNTIME: ${runUnit.rununitid}`
+            );
+            unsupportedCoverageError.code = "UNSUPPORTED_PROBE_FAMILY_REACHED_RUNTIME";
+            unsupportedCoverageError.run_unit_id = runUnit.rununitid;
+            unsupportedCoverageError.asserted_condition_text = runUnit.assertedconditiontext;
+            throw unsupportedCoverageError;
+          }
+
+          const probeRequest = buildProbeInputFromPayload(
+            payload,
+            runUnit,
+            BASE_URL,
+            allowFileProtocol
+          );
+          probeResult = validateProbeResult(
+            await resolved.run(page, probeRequest, {
+              base_url: BASE_URL,
+              context_id: step.context_id,
+              allowFileProtocol
+            })
+          );
+        } catch (error) {
+          if (error && error.code === "UNSUPPORTED_PROBE_FAMILY_REACHED_RUNTIME") {
+            throw error;
+          }
+
+          probeResult = validateProbeResult({
+            outcome_label: OUTCOME_LABEL.CONSTRAINED,
+            constraint_class: CONSTRAINT_CLASS.HARDCRASH,
+            mechanical_note: "Playwright execution failed during bounded step execution.",
+            evidence: { error: String((error && error.stack) || error) }
+          });
+        }
+
+        const artifactPaths = await saveArtifacts(page, prefix);
+
+        const runEndLocal = nowLocal();
+        const runEndEpoch = nowMs();
+
+        const nextRunRecord = createRunRecord({
+          runIndex: runRecords.length + 1,
+          matter_id: payload.matter_id,
+          complaint_group_anchor_id: runUnit.complaintgroupanchorid,
+          run_unit_id: runUnit.rununitid,
+          context_id: step.context_id,
+          outcome_label: probeResult.outcome_label,
+          constraint_class: probeResult.constraint_class || "",
+          mechanical_note: probeResult.mechanical_note || "",
+          run_start_local: runStartLocal,
+          run_start_epoch_ms: runStartEpoch,
+          run_end_local: runEndLocal,
+          run_end_epoch_ms: runEndEpoch
+        });
+
+        const appendResult = appendRunIfPermitted(runRecords, nextRunRecord);
+        runRecords = appendResult.run_records;
+
+        observations.push({
+          step_index: i + 1,
+          matter_id: payload.matter_id,
+          complaint_group_anchor_id: runUnit.complaintgroupanchorid,
+          run_unit_id: runUnit.rununitid,
+          asserted_condition_text: runUnit.assertedconditiontext,
+          context_id: step.context_id,
+          operator_outcome_label: probeResult.outcome_label,
+          operator_constraint_class: probeResult.constraint_class || "",
+          operator_mechanical_note: probeResult.mechanical_note || "",
+          operator_notes_internal_only: JSON.stringify(probeResult.evidence || {}, null, 2),
+          evidence_screenshot_path: artifactPaths.pngPath,
+          evidence_html_path: artifactPaths.htmlPath,
+          run_start_local: runStartLocal,
+          run_start_epoch_ms: runStartEpoch,
+          run_end_local: runEndLocal,
+          run_end_epoch_ms: runEndEpoch
+        });
+
+        console.log(
+          `[${runRecords.length}] ${step.context_id} ${runUnit.rununitid} -> ${probeResult.outcome_label} ${probeResult.constraint_class || ""} | stop_basis=${appendResult.progress.stop_basis || "not_stopped"}`
+        );
+      } finally {
+        if (context) {
+          await context.close();
+        }
       }
-
-      const artifactPaths = await saveArtifacts(page, prefix);
-
-      const runEndLocal = nowLocal();
-      const runEndEpoch = nowMs();
-
-      const nextRunRecord = createRunRecord({
-        runIndex: runRecords.length + 1,
-        matter_id: payload.matter_id,
-        complaint_group_anchor_id: runUnit.complaintgroupanchorid,
-        run_unit_id: runUnit.rununitid,
-        context_id: step.context_id,
-        outcome_label: probeResult.outcome_label,
-        constraint_class: probeResult.constraint_class || "",
-        mechanical_note: probeResult.mechanical_note || "",
-        run_start_local: runStartLocal,
-        run_start_epoch_ms: runStartEpoch,
-        run_end_local: runEndLocal,
-        run_end_epoch_ms: runEndEpoch
-      });
-
-      const appendResult = appendRunIfPermitted(runRecords, nextRunRecord);
-      runRecords = appendResult.run_records;
-
-      observations.push({
-        step_index: i + 1,
-        matter_id: payload.matter_id,
-        complaint_group_anchor_id: runUnit.complaintgroupanchorid,
-        run_unit_id: runUnit.rununitid,
-        asserted_condition_text: runUnit.assertedconditiontext,
-        context_id: step.context_id,
-        operator_outcome_label: probeResult.outcome_label,
-        operator_constraint_class: probeResult.constraint_class || "",
-        operator_mechanical_note: probeResult.mechanical_note || "",
-        operator_notes_internal_only: JSON.stringify(probeResult.evidence || {}, null, 2),
-        evidence_screenshot_path: artifactPaths.pngPath,
-        evidence_html_path: artifactPaths.htmlPath,
-        run_start_local: runStartLocal,
-        run_start_epoch_ms: runStartEpoch,
-        run_end_local: runEndLocal,
-        run_end_epoch_ms: runEndEpoch
-      });
-
-      await context.close();
-
-      console.log(
-        `[${runRecords.length}] ${step.context_id} ${runUnit.rununitid} -> ${probeResult.outcome_label} ${probeResult.constraint_class || ""} | stop_basis=${appendResult.progress.stop_basis || "not_stopped"}`
-      );
     }
   } finally {
     await browser.close();
