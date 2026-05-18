@@ -1,14 +1,18 @@
 {
-  "private": true,
-  "name": "afdm-intake-cleanroom",
-  "version": "0.0.0",
-  "description": "AFDM Intake CleanRoom validation and CI guardrails",
-  "scripts": {
-    "guardrails": "node tools/ci/guardrails_check.js",
-    "test": "node --test"
-  },
-  "dependencies": {
-    "playwright": "^1.56.0"
-  },
-  "devDependencies": {}
+    "private":  true,
+    "name":  "afdm-intake-cleanroom",
+    "version":  "0.0.0",
+    "description":  "AFDM Intake CleanRoom validation and CI guardrails",
+    "scripts":  {
+                    "guardrails":  "node tools/ci/guardrails_check.js",
+                    "test":  "node --test",
+                    "prep:payloads":  "node tools/prepare-intake-payloads.js",
+                    "batch:intake":  "node tools/run-intake-batch.js"
+                },
+    "dependencies":  {
+                         "playwright":  "^1.56.0"
+                     },
+    "devDependencies":  {
+
+                        }
 }
