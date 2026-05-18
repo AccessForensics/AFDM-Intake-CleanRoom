@@ -292,7 +292,32 @@ function runUnsupportedCoveragePreflight(payloadPath, outDir) {
           });
         }
 
-        const artifactPaths = await saveArtifacts(page, prefix);
+        let artifactPaths = { pngPath: "", htmlPath: "" };
+        try {
+          artifactPaths = await saveArtifacts(page, prefix);
+        } catch (artifactError) {
+          const artifactErrorEvidence = {
+            artifact_capture_error: String((artifactError && artifactError.stack) || artifactError)
+          };
+
+          if (probeResult.constraint_class === CONSTRAINT_CLASS.HARDCRASH) {
+            probeResult = validateProbeResult({
+              outcome_label: probeResult.outcome_label,
+              constraint_class: probeResult.constraint_class,
+              mechanical_note:
+                probeResult.mechanical_note ||
+                "Playwright execution failed during bounded step execution.",
+              evidence: Object.assign({}, probeResult.evidence || {}, artifactErrorEvidence)
+            });
+          } else {
+            probeResult = validateProbeResult({
+              outcome_label: OUTCOME_LABEL.CONSTRAINED,
+              constraint_class: CONSTRAINT_CLASS.HARDCRASH,
+              mechanical_note: "Playwright execution failed during artifact capture.",
+              evidence: artifactErrorEvidence
+            });
+          }
+        }
 
         const runEndLocal = nowLocal();
         const runEndEpoch = nowMs();
