@@ -137,3 +137,25 @@ test("sha256 helper returns deterministic digest", () => {
   fs.writeFileSync(filePath, body, "utf8");
   assert.equal(sha256File(filePath), sha256Text(body));
 });
+
+test("PDF import ignores repo placeholder files and hidden dotfiles", () => {
+  const root = makeTempDir();
+  const incomingDir = path.join(root, "incoming");
+  const stagedDir = path.join(root, "lawsuit_pdfs");
+  const rejectedDir = path.join(root, "rejected");
+  const manifestPath = path.join(root, "manifest.json");
+
+  fs.mkdirSync(incomingDir, { recursive: true });
+  fs.writeFileSync(path.join(incomingDir, ".gitkeep"), "", "utf8");
+  fs.writeFileSync(path.join(incomingDir, ".DS_Store"), "ignored", "utf8");
+  fs.writeFileSync(path.join(incomingDir, "Thumbs.db"), "ignored", "utf8");
+  fs.writeFileSync(path.join(incomingDir, ".hidden.pdf"), "%PDF-1.7\nignored hidden pdf\n%%EOF\n", "utf8");
+
+  const manifest = importPdfs({ incomingDir, stagedDir, rejectedDir, manifestPath, move: false });
+
+  assert.equal(manifest.counts.staged, 0);
+  assert.equal(manifest.counts.rejected, 0);
+  assert.equal(manifest.counts.skipped_duplicate, 0);
+  assert.equal(manifest.rows.length, 0);
+});
+
