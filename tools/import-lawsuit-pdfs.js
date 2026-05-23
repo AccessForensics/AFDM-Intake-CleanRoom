@@ -129,6 +129,17 @@ function makeUniquePath(dirPath, fileName) {
   return candidate;
 }
 
+function shouldIgnoreIncomingFile(fileName) {
+  const baseName = path.basename(fileName);
+
+  return (
+    baseName === ".gitkeep" ||
+    baseName === ".DS_Store" ||
+    baseName === "Thumbs.db" ||
+    baseName.startsWith(".")
+  );
+}
+
 function collectExistingHashes(stagedDir) {
   const hashes = new Map();
   if (!fs.existsSync(stagedDir)) return hashes;
@@ -174,6 +185,7 @@ function importPdfs(options) {
   let skippedDuplicate = 0;
 
   for (const sourceName of fs.readdirSync(options.incomingDir).sort()) {
+    if (shouldIgnoreIncomingFile(sourceName)) continue;
     const sourcePath = path.join(options.incomingDir, sourceName);
     const stat = fs.statSync(sourcePath);
     if (!stat.isFile()) continue;
