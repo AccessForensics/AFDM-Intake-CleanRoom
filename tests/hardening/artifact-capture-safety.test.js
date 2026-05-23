@@ -17,14 +17,14 @@ test("PR6 regression: runner guards artifact capture so screenshot or HTML failu
 
   assert.match(
     runnerText,
-    /let\s+artifactPaths\s*=\s*\{\s*pngPath:\s*"",\s*htmlPath:\s*""\s*\};/,
-    "Runner must initialize empty artifact paths before attempting artifact capture."
+    /let\s+artifactPaths\s*=\s*\{\s*pngPath:\s*"",\s*htmlPath:\s*"",\s*metadataPath:\s*"",\s*manifestPath:\s*"",\s*elementGeometryPath:\s*""\s*\};/,
+    "Runner must initialize empty artifact and Capture v2 paths before attempting artifact capture."
   );
 
   assert.match(
     runnerText,
-    /try\s*\{\s*artifactPaths\s*=\s*await\s+saveArtifacts\(page,\s*prefix\);\s*\}\s*catch\s*\(artifactError\)/,
-    "Runner must wrap saveArtifacts in a try/catch block."
+    /try\s*\{\s*artifactPaths\s*=\s*await\s+saveArtifacts\(page,\s*prefix,\s*contextConfig\);\s*\}\s*catch\s*\(artifactError\)/,
+    "Runner must wrap Capture v2 saveArtifacts in a try/catch block and pass contextConfig."
   );
 
   assert.match(
@@ -43,6 +43,30 @@ test("PR6 regression: runner guards artifact capture so screenshot or HTML failu
     runnerText,
     /artifact_capture_error/,
     "Runner must preserve artifact capture failure details as internal evidence."
+  );
+
+  assert.match(
+    runnerText,
+    /artifact_capture_error_record_error/,
+    "Runner must preserve artifact-error-record write failures as internal evidence."
+  );
+
+  assert.match(
+    runnerText,
+    /evidence_screenshot_metadata_path:\s*artifactPaths\.metadataPath/,
+    "Runner must preserve Capture v2 screenshot metadata path as internal evidence."
+  );
+
+  assert.match(
+    runnerText,
+    /evidence_screenshot_manifest_path:\s*artifactPaths\.manifestPath/,
+    "Runner must preserve Capture v2 screenshot manifest path as internal evidence."
+  );
+
+  assert.match(
+    runnerText,
+    /evidence_element_geometry_path:\s*artifactPaths\.elementGeometryPath/,
+    "Runner must preserve Capture v2 element geometry path as internal evidence."
   );
 
   assert.doesNotMatch(
@@ -65,5 +89,27 @@ test("PR6 regression: runner keeps PR5 per-run context cleanup while adding arti
     runnerText,
     /finally\s*\{\s*if\s*\(context\)\s*\{\s*await\s+context\.close\(\);/,
     "Runner must retain PR5 per-run context finally cleanup."
+  );
+});
+
+test("Capture v2 regression: runner installs URL safety on the actual per-run context", () => {
+  const runnerText = readRunnerSource();
+
+  assert.match(
+    runnerText,
+    /await\s+installRequestSafetyRoutes\(context,\s*\{\s*allowFileProtocol\s*\}\);\s*const page = await context\.newPage\(\);/,
+    "Runner must install route-level URL safety before creating the page in the per-run context."
+  );
+
+  assert.match(
+    runnerText,
+    /await\s+assertUrlMayBeFetched\(BASE_URL,\s*\{\s*allowFileProtocol\s*\}\);/,
+    "Runner must keep early URL safety before Playwright launch."
+  );
+
+  assert.match(
+    runnerText,
+    /deviceScaleFactor:\s*contextConfig\.deviceScaleFactor/,
+    "Runner must preserve locked context profile DPR instead of forcing a global DPR."
   );
 });
