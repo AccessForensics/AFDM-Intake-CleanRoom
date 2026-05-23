@@ -40,6 +40,17 @@ const {
   assertExternalOutputMayBeReleased
 } = require("../src/intake/external-output-validator.js");
 
+const {
+  captureScreenshotArtifactsV2,
+  writeJsonFileAtomic,
+  writeUtf8FileAtomic
+} = require("../src/intake/artifact-capture-v2.js");
+
+const {
+  assertUrlMayBeFetched,
+  installRequestSafetyRoutes
+} = require("../src/intake/url-safety.js");
+
 function usage() {
   console.error("Usage: node tools/run-playwright-intake.js <payload-json-path> <output-dir> [--allow-file-protocol]");
   process.exit(1);
@@ -116,12 +127,23 @@ function sanitizeFilePart(value) {
   return String(value || "").replace(/[^a-zA-Z0-9._-]/g, "_");
 }
 
-async function saveArtifacts(page, prefix) {
-  const pngPath = path.join(artifactsDir, prefix + ".png");
+async function saveArtifacts(page, prefix, expectedContext) {
   const htmlPath = path.join(artifactsDir, prefix + ".html");
-  await page.screenshot({ path: pngPath, fullPage: true });
-  fs.writeFileSync(htmlPath, await page.content(), "utf8");
-  return { pngPath, htmlPath };
+  const screenshotArtifacts = await captureScreenshotArtifactsV2(page, {
+    artifactsDir,
+    prefix,
+    expectedContext
+  });
+
+  writeUtf8FileAtomic(htmlPath, await page.content());
+
+  return {
+    pngPath: screenshotArtifacts.pngPath,
+    htmlPath,
+    metadataPath: screenshotArtifacts.metadataPath,
+    manifestPath: screenshotArtifacts.manifestPath,
+    elementGeometryPath: screenshotArtifacts.elementGeometryPath
+  };
 }
 
 // BEGIN INTERNAL PREFLIGHT COVERAGE GATE
@@ -202,6 +224,7 @@ function runUnsupportedCoveragePreflight(payloadPath, outDir) {
     return;
   }
   // END INTERNAL PREFLIGHT COVERAGE GATE INVOCATION
+  await assertUrlMayBeFetched(BASE_URL, { allowFileProtocol });
   const browser = await chromium.launch({ headless: true });
   const observations = [];
   let runRecords = [];
@@ -247,8 +270,12 @@ function runUnsupportedCoveragePreflight(payloadPath, outDir) {
           viewport: contextConfig.viewport,
           isMobile: contextConfig.isMobile,
           hasTouch: contextConfig.hasTouch,
-          deviceScaleFactor: contextConfig.deviceScaleFactor
+          deviceScaleFactor: contextConfig.deviceScaleFactor,
+          bypassCSP: false,
+          ignoreHTTPSErrors: false
         });
+
+        await installRequestSafetyRoutes(context, { allowFileProtocol });
 
         const page = await context.newPage();
 
@@ -292,13 +319,28 @@ function runUnsupportedCoveragePreflight(payloadPath, outDir) {
           });
         }
 
-        let artifactPaths = { pngPath: "", htmlPath: "" };
+        let artifactPaths = { pngPath: "", htmlPath: "", metadataPath: "", manifestPath: "", elementGeometryPath: "" };
         try {
-          artifactPaths = await saveArtifacts(page, prefix);
+          artifactPaths = await saveArtifacts(page, prefix, contextConfig);
         } catch (artifactError) {
           const artifactErrorEvidence = {
             artifact_capture_error: String((artifactError && artifactError.stack) || artifactError)
           };
+
+
+          try {
+            const artifactErrorPath = path.join(artifactsDir, prefix + ".artifact-error.json");
+            writeJsonFileAtomic(artifactErrorPath, {
+              capture_version: "AFDM_CAPTURE_V2",
+              error_type: "artifact_capture_error",
+              error: artifactErrorEvidence.artifact_capture_error
+            });
+            artifactErrorEvidence.artifact_capture_error_path = artifactErrorPath;
+          } catch (artifactErrorWriteError) {
+            artifactErrorEvidence.artifact_capture_error_record_error = String(
+              (artifactErrorWriteError && artifactErrorWriteError.stack) || artifactErrorWriteError
+            );
+          }
 
           if (probeResult.constraint_class === CONSTRAINT_CLASS.HARDCRASH) {
             probeResult = validateProbeResult({
@@ -353,6 +395,9 @@ function runUnsupportedCoveragePreflight(payloadPath, outDir) {
           operator_notes_internal_only: JSON.stringify(probeResult.evidence || {}, null, 2),
           evidence_screenshot_path: artifactPaths.pngPath,
           evidence_html_path: artifactPaths.htmlPath,
+          evidence_screenshot_metadata_path: artifactPaths.metadataPath,
+          evidence_screenshot_manifest_path: artifactPaths.manifestPath,
+          evidence_element_geometry_path: artifactPaths.elementGeometryPath,
           run_start_local: runStartLocal,
           run_start_epoch_ms: runStartEpoch,
           run_end_local: runEndLocal,

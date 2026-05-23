@@ -67,7 +67,8 @@ function safeTrim(value) {
 
 function safeMatterId(value) {
   const safe = safeTrim(value)
-    .replace(/[^a-zA-Z0-9._-]/g, "_")
+    .replace(/[^a-zA-Z0-9]+/g, "_")
+    .replace(/_+/g, "_")
     .replace(/^_+|_+$/g, "")
     .toUpperCase();
 
