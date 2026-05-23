@@ -124,9 +124,11 @@ function writeCsv(filePath, rows) {
 }
 
 function runGuardrails(repoRoot) {
+  const guardrailsScript = path.join(repoRoot, "tools", "ci", "guardrails_check.js");
+
   const result = spawnSync(
-    process.platform === "win32" ? "npm.cmd" : "npm",
-    ["run", "guardrails"],
+    process.execPath,
+    [guardrailsScript],
     {
       cwd: repoRoot,
       encoding: "utf8"
@@ -141,8 +143,12 @@ function runGuardrails(repoRoot) {
     process.stderr.write(result.stderr);
   }
 
+  if (result.error) {
+    throw new Error(`Guardrails process failed before batch execution: ${result.error.message}`);
+  }
+
   if (result.status !== 0) {
-    throw new Error("Guardrails failed before batch execution.");
+    throw new Error(`Guardrails failed before batch execution with exit code ${result.status}.`);
   }
 }
 
