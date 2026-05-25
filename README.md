@@ -16,6 +16,34 @@ Its purpose is narrow and locked:
 
 This repository is not a compliance audit tool, defect inventory, remediation guide, certification system, legal-opinion engine, or full-execution repo.
 
+<!-- AFDM ZIP START HERE BLOCK:BEGIN -->
+## ZIP Download Setup
+
+If this project was downloaded from GitHub using **Code > Download ZIP**, the folder contains source files only.
+
+A ZIP download does **not** include:
+
+- `node_modules`
+- `.git`
+- installed npm packages
+- local dependency cache
+- Git branch or pull metadata
+
+Before running intake from a fresh ZIP folder, run:
+
+```powershell
+.\START_HERE_AFTER_ZIP_DOWNLOAD.ps1
+```
+
+That script installs dependencies, verifies required modules, runs guardrails, runs the test suite, and creates the PDF drop folder at:
+
+```text
+intake_work\incoming_pdfs
+```
+
+Only drop lawsuit PDFs into the intake folder after the setup script passes.
+<!-- AFDM ZIP START HERE BLOCK:END -->
+
 ## Controlling Authority
 
 This repo is governed only by the current intake authority set:
