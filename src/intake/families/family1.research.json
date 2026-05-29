@@ -4,6 +4,8 @@
   "summary": "Complaint patterns involving headings, skip links, linked-image purpose, new-window warnings, linked-image alternative text, and menu state announcements.",
   "core_phrase_patterns": [
     "heading hierarchy was not properly defined",
+    "heading hierarchy on the website was not properly defined",
+    "missing heading level 1",
     "heading levels were missing",
     "skip to content link was not implemented",
     "interactive images used as links did not describe the content of the link target",
