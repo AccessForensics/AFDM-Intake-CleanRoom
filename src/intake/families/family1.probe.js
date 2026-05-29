@@ -264,6 +264,21 @@ async function probeMenuStateAnnouncement(page, request, options) {
   });
 }
 
+function matchesHeadingStructureAssertion(text) {
+  return (
+    (
+      text.includes("heading hierarchy") &&
+      (
+        text.includes("not properly defined") ||
+        text.includes("missing heading level") ||
+        text.includes("heading level 1")
+      )
+    ) ||
+    text.includes("heading hierarchy was not properly defined") ||
+    text.includes("heading levels were missing")
+  );
+}
+
 async function runFamily1Probe(page, inputOrText, legacyBaseUrlOrOptions, maybeOptions) {
   const normalized = normalizeProbeInput(inputOrText, legacyBaseUrlOrOptions, maybeOptions);
   const request = normalized.request;
@@ -279,7 +294,7 @@ async function runFamily1Probe(page, inputOrText, legacyBaseUrlOrOptions, maybeO
     };
   }
 
-  if (text.includes("heading hierarchy was not properly defined") || text.includes("heading levels were missing")) {
+  if (matchesHeadingStructureAssertion(text)) {
     return probeHeadingStructure(page, request, options);
   }
 
