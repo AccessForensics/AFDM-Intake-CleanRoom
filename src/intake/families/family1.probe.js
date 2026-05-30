@@ -279,6 +279,38 @@ function matchesHeadingStructureAssertion(text) {
   );
 }
 
+function matchesImageLinkPurposeAssertion(text) {
+  return (
+    text.includes("interactive images used as links did not describe the content of the link target") ||
+    text.includes("interactive images used as links did not describe the link target") ||
+    text.includes("image links did not describe the content of the link target") ||
+    (
+      text.includes("image links") &&
+      text.includes("did not describe") &&
+      text.includes("link target")
+    )
+  );
+}
+
+function matchesLinkedImageAltTextAssertion(text) {
+  return (
+    text.includes("product images lacked alternative text") ||
+    text.includes("product image links lacked alternative text") ||
+    text.includes("linked images lacked alternative text") ||
+    text.includes("social media links did not have appropriate alternative text") ||
+    (
+      text.includes("links") &&
+      text.includes("alternative text") &&
+      (
+        text.includes("social media") ||
+        text.includes("product image") ||
+        text.includes("linked image") ||
+        text.includes("image link")
+      )
+    )
+  );
+}
+
 async function runFamily1Probe(page, inputOrText, legacyBaseUrlOrOptions, maybeOptions) {
   const normalized = normalizeProbeInput(inputOrText, legacyBaseUrlOrOptions, maybeOptions);
   const request = normalized.request;
@@ -302,7 +334,7 @@ async function runFamily1Probe(page, inputOrText, legacyBaseUrlOrOptions, maybeO
     return probeSkipLink(page, request, options);
   }
 
-  if (text.includes("interactive images used as links did not describe the content of the link target")) {
+  if (matchesImageLinkPurposeAssertion(text)) {
     return probeImageLinkPurpose(page, request, options);
   }
 
@@ -310,7 +342,7 @@ async function runFamily1Probe(page, inputOrText, legacyBaseUrlOrOptions, maybeO
     return probeNewWindowWarning(page, request, options);
   }
 
-  if (text.includes("product images lacked alternative text")) {
+  if (matchesLinkedImageAltTextAssertion(text)) {
     return probeAltText(page, request, options);
   }
 

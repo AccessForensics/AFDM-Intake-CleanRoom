@@ -9,8 +9,13 @@
     "heading levels were missing",
     "skip to content link was not implemented",
     "interactive images used as links did not describe the content of the link target",
+    "interactive images used as links did not describe the link target",
+    "image links did not describe the content of the link target",
     "links opened new windows without prior warning",
     "product images lacked alternative text",
+    "product image links lacked alternative text",
+    "linked images lacked alternative text",
+    "social media links did not have appropriate alternative text",
     "navigation sub-menus with drop-down lists did not announce collapsed state",
     "navigation sub-menus with drop-down lists did not announce expanded state"
   ]
