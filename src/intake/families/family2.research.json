@@ -1,10 +1,17 @@
 {
   "family_id": "family_2_popups_and_links",
   "family_name": "Popups and Link Readability",
-  "summary": "Complaint patterns involving popup link readability, cursor-only popup dismissal, and unreadable links on the website.",
+  "summary": "Complaint patterns involving popup link readability, cursor-only popup dismissal, unreadable links on the website, and accessibility-interface focus-trap allegations.",
   "core_phrase_patterns": [
     "advertisement pop up links",
     "use of the cursor to close the advertisement",
-    "fails to read links on the website"
+    "fails to read links on the website",
+    "accessibe overlay makes it impossible for some screen reader users to access the digital platform",
+    "accessibility interface",
+    "screen readers become stuck after closing the accessibility interface",
+    "cannot tab back nor forward",
+    "cannot tab back or forward",
+    "navigate the digital platform in a predictable manner",
+    "accessibility statement"
   ]
 }
