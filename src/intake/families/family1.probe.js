@@ -111,6 +111,120 @@ async function probeSkipLink(page, request, options) {
   });
 }
 
+async function probeEmptyLinks(page, request, options) {
+  return withChallengeGate(page, request, options, async () => {
+    const data = await page.evaluate(() => {
+      function getLinkName(a) {
+        const imageAlts = Array.from(a.querySelectorAll("img"))
+          .map((img) => (img.getAttribute("alt") || "").trim())
+          .filter(Boolean)
+          .join(" ");
+
+        return [
+          a.innerText || a.textContent || "",
+          a.getAttribute("aria-label") || "",
+          a.getAttribute("title") || "",
+          imageAlts
+        ].join(" ").trim().replace(/\s+/g, " ");
+      }
+
+      const links = Array.from(document.querySelectorAll("a")).slice(0, 300).map((a) => ({
+        href: (a.getAttribute("href") || "").trim(),
+        name: getLinkName(a),
+        role: (a.getAttribute("role") || "").trim()
+      }));
+
+      const empty = links.filter((row) => row.href && !row.name);
+
+      return {
+        linkCount: links.length,
+        emptyCount: empty.length,
+        samples: empty.slice(0, 10)
+      };
+    });
+
+    if (data.linkCount === 0) {
+      return {
+        outcome_label: OUTCOME_LABEL.INSUFFICIENT,
+        constraint_class: "",
+        mechanical_note: "No bounded link surface was located for empty-link testing.",
+        evidence: data
+      };
+    }
+
+    return {
+      outcome_label: data.emptyCount > 0 ? OUTCOME_LABEL.OBSERVED : OUTCOME_LABEL.NOT_OBSERVED,
+      constraint_class: "",
+      mechanical_note: "",
+      evidence: data
+    };
+  });
+}
+
+async function probeRedundantAdjacentLinks(page, request, options) {
+  return withChallengeGate(page, request, options, async () => {
+    const data = await page.evaluate(() => {
+      function getLinkName(a) {
+        const imageAlts = Array.from(a.querySelectorAll("img"))
+          .map((img) => (img.getAttribute("alt") || "").trim())
+          .filter(Boolean)
+          .join(" ");
+
+        return [
+          a.innerText || a.textContent || "",
+          a.getAttribute("aria-label") || "",
+          a.getAttribute("title") || "",
+          imageAlts
+        ].join(" ").trim().replace(/\s+/g, " ");
+      }
+
+      const links = Array.from(document.querySelectorAll("a[href]")).slice(0, 300).map((a) => ({
+        href: (a.href || a.getAttribute("href") || "").trim(),
+        rawHref: (a.getAttribute("href") || "").trim(),
+        name: getLinkName(a)
+      }));
+
+      const redundantPairs = [];
+      for (let i = 1; i < links.length; i += 1) {
+        const previous = links[i - 1];
+        const current = links[i];
+
+        if (previous.href && current.href && previous.href === current.href) {
+          redundantPairs.push({
+            index: i - 1,
+            href: current.href,
+            previousName: previous.name,
+            currentName: current.name,
+            previousRawHref: previous.rawHref,
+            currentRawHref: current.rawHref
+          });
+        }
+      }
+
+      return {
+        linkCount: links.length,
+        redundantPairCount: redundantPairs.length,
+        samples: redundantPairs.slice(0, 10)
+      };
+    });
+
+    if (data.linkCount < 2) {
+      return {
+        outcome_label: OUTCOME_LABEL.INSUFFICIENT,
+        constraint_class: "",
+        mechanical_note: "No bounded adjacent-link surface was located for redundant-link testing.",
+        evidence: data
+      };
+    }
+
+    return {
+      outcome_label: data.redundantPairCount > 0 ? OUTCOME_LABEL.OBSERVED : OUTCOME_LABEL.NOT_OBSERVED,
+      constraint_class: "",
+      mechanical_note: "",
+      evidence: data
+    };
+  });
+}
 async function probeImageLinkPurpose(page, request, options) {
   return withChallengeGate(page, request, options, async () => {
     const data = await page.evaluate(() => {
@@ -279,6 +393,35 @@ function matchesHeadingStructureAssertion(text) {
   );
 }
 
+function matchesEmptyLinkAssertion(text) {
+  return (
+    text.includes("empty links that contain no text") ||
+    text.includes("empty links contain no text") ||
+    (
+      text.includes("empty links") &&
+      (
+        text.includes("contain no text") ||
+        text.includes("function or purpose of the link") ||
+        text.includes("not be presented to the user")
+      )
+    )
+  );
+}
+
+function matchesRedundantAdjacentLinkAssertion(text) {
+  return (
+    text.includes("redundant links where adjacent links go to the same url address") ||
+    text.includes("adjacent links go to the same url address") ||
+    (
+      text.includes("redundant links") &&
+      (
+        text.includes("same url address") ||
+        text.includes("additional navigation") ||
+        text.includes("repetition")
+      )
+    )
+  );
+}
 function matchesImageLinkPurposeAssertion(text) {
   return (
     text.includes("interactive images used as links did not describe the content of the link target") ||
@@ -332,6 +475,14 @@ async function runFamily1Probe(page, inputOrText, legacyBaseUrlOrOptions, maybeO
 
   if (text.includes("skip to content link was not implemented")) {
     return probeSkipLink(page, request, options);
+  }
+
+  if (matchesEmptyLinkAssertion(text)) {
+    return probeEmptyLinks(page, request, options);
+  }
+
+  if (matchesRedundantAdjacentLinkAssertion(text)) {
+    return probeRedundantAdjacentLinks(page, request, options);
   }
 
   if (matchesImageLinkPurposeAssertion(text)) {

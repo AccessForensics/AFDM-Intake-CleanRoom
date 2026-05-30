@@ -197,3 +197,126 @@ test("family1 linked-image alt text probe returns observed when linked image lac
 
   assert.equal(result.outcome_label, OUTCOME_LABEL.OBSERVED);
 });
+
+test("family1 matcher resolves empty-link Young wording", function () {
+  const text = "Empty Links That Contain No Text causing the function or purpose of the link to not be presented to the user.";
+  const result = classifyFamily1(text);
+
+  assert.equal(matchesFamily1(text), true);
+  assert.equal(result.matched, true);
+  assert.equal(result.family_id, "family_1_structural_integrity");
+});
+
+test("preflight coverage resolves empty-link Young assertion to lawsuit1", function () {
+  const coverage = classifyProbeCoverageForRunUnits([
+    buildRunUnit({
+      rununitid: "AF-FIXTURE-002-RU-EMPTY-LINKS-REPAIRED-01",
+      assertedconditiontext: "Empty Links That Contain No Text causing the function or purpose of the link to not be presented to the user.",
+      target_element_hint: "links with no discernible text or accessible name"
+    })
+  ]);
+
+  assert.equal(coverage.preflight_status, "supported_probe_coverage");
+  assert.equal(coverage.production_intake_runnable, true);
+  assert.equal(coverage.unsupported_count, 0);
+  assert.equal(coverage.run_unit_coverage[0].supported_probe_family, "lawsuit1");
+});
+
+test("family1 empty-link probe returns observed when link has href but no accessible name", async function () {
+  const page = buildMockPage({
+    linkCount: 1,
+    emptyCount: 1,
+    samples: [
+      {
+        href: "/contact",
+        name: "",
+        role: ""
+      }
+    ]
+  });
+
+  const result = await runFamily1Probe(
+    page,
+    buildRunUnit({
+      assertedconditiontext: "Empty Links That Contain No Text causing the function or purpose of the link to not be presented to the user.",
+      target_element_hint: "links with no discernible text or accessible name"
+    }),
+    {
+      detectEnvironmentChallenge: async function detectEnvironmentChallenge() {
+        return { challengeDetected: false, evidence: {} };
+      }
+    }
+  );
+
+  assert.equal(result.outcome_label, OUTCOME_LABEL.OBSERVED);
+});
+
+test("family1 matcher resolves redundant adjacent link Young wording", function () {
+  const text = "Redundant Links where adjacent links go to the same URL address which results in additional navigation and repetition for keyboard and screen-reader users;";
+  const result = classifyFamily1(text);
+
+  assert.equal(matchesFamily1(text), true);
+  assert.equal(result.matched, true);
+  assert.equal(result.family_id, "family_1_structural_integrity");
+});
+
+test("preflight coverage resolves redundant adjacent link Young assertion to lawsuit1", function () {
+  const coverage = classifyProbeCoverageForRunUnits([
+    buildRunUnit({
+      rununitid: "AF-FIXTURE-002-RU-REDUNDANT-LINKS-REPAIRED-01",
+      assertedconditiontext: "Redundant Links where adjacent links go to the same URL address which results in additional navigation and repetition for keyboard and screen-reader users;",
+      target_element_hint: "adjacent or repeated links leading to the same target"
+    })
+  ]);
+
+  assert.equal(coverage.preflight_status, "supported_probe_coverage");
+  assert.equal(coverage.production_intake_runnable, true);
+  assert.equal(coverage.unsupported_count, 0);
+  assert.equal(coverage.run_unit_coverage[0].supported_probe_family, "lawsuit1");
+});
+
+test("family1 redundant adjacent link probe returns observed when adjacent links share the same href", async function () {
+  const page = buildMockPage({
+    linkCount: 2,
+    redundantPairCount: 1,
+    samples: [
+      {
+        index: 0,
+        href: "https://example.test/listing",
+        previousName: "Listing image",
+        currentName: "Listing details",
+        previousRawHref: "/listing",
+        currentRawHref: "/listing"
+      }
+    ]
+  });
+
+  const result = await runFamily1Probe(
+    page,
+    buildRunUnit({
+      assertedconditiontext: "Redundant Links where adjacent links go to the same URL address which results in additional navigation and repetition for keyboard and screen-reader users;",
+      target_element_hint: "adjacent or repeated links leading to the same target"
+    }),
+    {
+      detectEnvironmentChallenge: async function detectEnvironmentChallenge() {
+        return { challengeDetected: false, evidence: {} };
+      }
+    }
+  );
+
+  assert.equal(result.outcome_label, OUTCOME_LABEL.OBSERVED);
+});
+
+test("family1 keeps vague image text alternative wording unsupported", function () {
+  const coverage = classifyProbeCoverageForRunUnits([
+    buildRunUnit({
+      rununitid: "AF-FIXTURE-002-RU-LINKED-IMAGE-ALT-REPAIRED-01",
+      assertedconditiontext: "Image text alternative allegation",
+      target_element_hint: "linked images or image links missing alternative text"
+    })
+  ]);
+
+  assert.equal(coverage.preflight_status, "unsupported_current_coverage");
+  assert.equal(coverage.production_intake_runnable, false);
+  assert.equal(coverage.unsupported_count, 1);
+});
