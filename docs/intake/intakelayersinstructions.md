@@ -137,10 +137,32 @@ This unified spec must not claim artifacts, parameters, label sets, stop rules, 
 Internal intake records must not contain:
 
 - evaluative fields
+
 - intent signals
+
 - strength indicators
+
 - probability indicators
+
 - outcome-leaning metadata
+
+- requester identity
+
+- requesting party role
+
+- represented party
+
+- opposing party
+
+- conflict status
+
+- engagement-side information
+
+- advocacy-purpose metadata
+
+- settlement-positioning metadata
+
+- liability-positioning metadata
 
 ## 2.4 Outcome categories must remain neutral
 
@@ -163,6 +185,10 @@ Internal intake record terminology must not frame entries as:
 This section governs internal record structure and metadata discipline.
 
 External-facing vocabulary restrictions are governed by Section 3.
+
+Administrative engagement metadata may exist outside AFDM intake records for client intake, conflict review, billing, or matter administration.
+
+Administrative engagement metadata must remain separate from AFDM intake records and must not alter AFDM execution behavior, intake run records, RUN_UNIT records, outcome labels, context records, mechanical notes, sufficiency logic, constraint classification, or external intake determinations.
 
 ## 2.7 Conflict rule
 
@@ -216,16 +242,28 @@ It does not characterize, evaluate, assign responsibility, imply motive, suggest
 The following terms are prohibited in all external-facing intake output, along with functional equivalents:
 
 - pass
+
 - fail
+
 - compliant
+
 - non-compliant
+
 - violation
+
 - audit, as intake purpose
+
 - remediation, as intake purpose
+
 - certification
+
 - guarantee
+
 - blame posture
+
 - adversarial posture
+
+External-facing intake output must also reject party-posture framing, including plaintiff-advocacy framing, defense-advocacy framing, rebuttal framing, liability-positioning framing, settlement-leverage framing, or party-positioning framing.
 
 ## 3.3 Definition of blame posture or adversarial posture
 
@@ -241,6 +279,8 @@ Such framing is prohibited in intake output.
 ## 3.4 Governing principle
 
 If a term characterizes the site, the claim, or either party, rather than recording a mechanically observed state under bounded parameters, it is prohibited whether or not it appears on the explicit banned list.
+
+Party-posture framing is also prohibited whether or not it appears on the explicit banned list. This includes plaintiff-advocacy framing, defense-advocacy framing, rebuttal framing, liability-positioning framing, settlement-leverage framing, or party-positioning framing.
 
 ## 3.5 Locked scope anchor terms, external outputs only, mandatory use
 
@@ -715,12 +755,20 @@ Any permitted note must be exactly one mechanical sentence stating the blocking 
 Permitted notes must contain:
 
 - no legal terms
+
 - no evaluative language
+
 - no blame language
+
 - no speculation
+
 - no motive framing
+
 - no severity framing
+
 - no probability framing
+
+- no party-posture framing prohibited by Section 3
 
 ## 9.6 Locked constraint_class enum set
 
