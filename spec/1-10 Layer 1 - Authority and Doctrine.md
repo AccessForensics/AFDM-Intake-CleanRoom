@@ -8,6 +8,9 @@ Version: L1-v1 - Human authority reference for intake feasibility gating.
 ## **How to use this document**
 
 This is the first-read authority document for AF intake. It explains what intake is, what it is not, what is locked, why those locks exist, how intake reaches a determination, and what must never be disclosed externally.
+
+This document governs the ADA website accessibility intake application of the claim-bounded technical record engine. It does not define every possible future application of the engine.
+
 Use this document to answer:
 
 * what intake is supposed to do
@@ -27,6 +30,8 @@ Use this document to answer:
 
 Intake is a bounded feasibility gate. It determines whether the matter qualifies for full forensic execution under controlled browser contexts, using only the complaint or demand materials provided as the scope anchor.
 
+Intake execution is party-neutral. Requester identity, requester role, represented party, opposing party, litigation side, advocacy purpose, settlement posture, expected result, or preferred narrative must not alter scope, RUN_UNIT normalization, context selection, sequencing, sufficiency, outcome labels, notes, constraints, or external determination language.
+
 ## **1.2 What intake is not**
 
 Intake is not:
@@ -41,9 +46,15 @@ Intake is not:
 
 * a legal opinion
 
+* plaintiff advocacy
+
+* defense advocacy
+
 ## **1.3 Intake output boundary**
 
 Intake outputs eligibility only. Intake does not disclose internal depth, internal selection detail, counts, run volume, or internal sequencing.
+
+Requester identity, requester role, represented party, opposing party, conflict status, engagement-side information, advocacy-purpose metadata, settlement-positioning metadata, and liability-positioning metadata must not appear in external-facing intake output.
 
 ## **1.4 Locked nondisclosure posture, external outputs**
 
@@ -81,15 +92,19 @@ External-facing intake outputs must not imply any of the prohibited internal det
 
 * or similar statements that signal internal execution depth
 
+External-facing intake output must also not imply party advocacy, party preference, party positioning, settlement leverage, liability posture, or claim-strength posture.
+
 ## **1.6 Intake is not a disguised merits process**
 
-Intake is a feasibility gate only. It does not become a disguised assessment, a partial audit, a remediation posture, or an external narrative about site quality, claim strength, or party conduct.
+Intake is a feasibility gate only. It does not become a disguised assessment, a partial audit, a remediation posture, a party-advocacy workflow, a rebuttal workflow, a liability-positioning workflow, a settlement-positioning workflow, or an external narrative about site quality, claim strength, party conduct, motive, or responsibility.
 
 # **SECTION 2: AUTHORITY, SOURCE OF TRUTH, AND DRIFT CONTROL \[LOCKED\]**
 
 ## **2.1 AFDM as the implemented intake system**
 
 AFDM is the implemented automated execution system that performs intake runs and emits intake artifacts. "AFDM repository behavior" means the actual outputs, labels, record fields, parameter locks, and constraint handling produced by the current implemented system.  AFDM intake record schemas, field contracts, and validation rules are defined in Layer 3 and must not be narrowed, expanded, or paraphrased at this layer.
+
+AFDM intake behavior for this doctrine is party-neutral. Engagement administration may exist outside AFDM intake records, but it must not alter AFDM execution behavior or external intake determinations.
 
 ## **2.2 AFDM repository behavior is the source of truth**
 
@@ -104,6 +119,15 @@ Intake records must not contain:
 * strength indicators
 * probability signals
 * outcome-leaning metadata
+* requester identity
+* requesting party role
+* represented party
+* opposing party
+* conflict status
+* engagement-side information
+* advocacy-purpose metadata
+* settlement-positioning metadata
+* liability-positioning metadata
 
 ## **2.4 Outcome categories must remain neutral**
 
@@ -112,6 +136,9 @@ Outcome categories and record fields must not imply:
 * compliance posture
 * liability posture
 * likelihood posture
+* party posture
+* advocacy posture
+* settlement posture
 
 ## **2.5 Record terminology discipline**
 
@@ -120,18 +147,25 @@ Record terminology must not frame entries as:
 * findings
 * violations
 * assessments
+* rebuttals
+* defenses
+* admissions
+* concessions
+* merits determinations
 
 ## **2.6 Scope note**
 
 This section governs internal record structure and metadata discipline. External-facing vocabulary restrictions are governed by Section 3\.
 
+Administrative engagement metadata may exist outside AFDM intake records for client intake, conflict review, billing, or matter administration. Administrative engagement metadata must remain separate from AFDM intake records and must not alter AFDM execution behavior, intake run records, RUN_UNIT records, outcome labels, context records, mechanical notes, sufficiency logic, constraint classification, or external intake determinations.
+
 ## **2.7 Conflict rule**
 
-If doctrine text conflicts with implemented AFDM behavior, runtime AFDM behavior governs what the system actually did. This does not authorize silent drift. Any identified conflict between doctrine text and implemented behavior must be surfaced and corrected through governance; operators must not resolve conflicts by improvising new fields, labels, or procedures.
+If doctrine text conflicts with implemented AFDM behavior, runtime AFDM behavior governs what the system actually did. This does not authorize silent drift. Any identified conflict between doctrine text and implemented behavior must be surfaced and corrected through governance; operators must not resolve conflicts by improvising new fields, labels, procedures, requester-role logic, litigation-side logic, or advocacy-purpose logic.
 
 ## **2.8 Drift control**
 
-Any identified conflict or ambiguity between doctrine text and implemented behavior must be corrected in the doctrine text before the next release of the intake runner. Operators must not resolve conflicts by improvising new fields, labels, or procedures.
+Any identified conflict or ambiguity between doctrine text and implemented behavior must be corrected in the doctrine text before the next release of the intake runner. Operators must not resolve conflicts by improvising new fields, labels, procedures, requester-role logic, litigation-side logic, or advocacy-purpose logic.
 
 ## **2.9 No improvisation rule**
 
@@ -144,17 +178,22 @@ Operators must not cure doctrinal ambiguity by inventing:
 * new scope logic
 * new context logic
 * new procedures
+* requester-role logic
+* litigation-side logic
+* advocacy-purpose logic
   If the implementation and doctrine diverge, governance must correct the doctrine. Operators do not get to patch doctrine by practice.
 
 ## **2.10 Why this section is hard-edged**
 
 This section exists to stop doctrine from drifting into fiction and to stop operations from drifting into improvisation. If AFDM does not support it, doctrine must not pretend it does. If AFDM behaves differently, the doctrine must be corrected through governance, not operator creativity.
 
+It also preserves the separation between the mechanical technical record and party posture, requester identity, litigation strategy, and administrative engagement data.
+
 # **SECTION 3: MECHANICAL OBSERVER LANGUAGE \[LOCKED\]**
 
 ## **3.1 Mechanical neutrality**
 
-Intake language is mechanically neutral. It records observed state under bounded execution parameters. It does not characterize, evaluate, assign responsibility, imply motive, or imply intent.
+Intake language is mechanically neutral. It records observed state under bounded execution parameters. It does not characterize, evaluate, assign responsibility, imply motive, imply intent, favor a party, oppose a party, or frame the record as advocacy.
 
 ## **3.2 Locked banned framing, principle-governed**
 
@@ -172,13 +211,17 @@ The following terms are prohibited in all external-facing intake output. In addi
 * any blame posture
 * any adversarial posture
 
+External-facing intake output must also reject party-posture framing, including plaintiff-advocacy framing, defense-advocacy framing, rebuttal framing, liability-positioning framing, settlement-leverage framing, or party-positioning framing.
+
 ## **3.3 Definition of blame posture or adversarial posture**
 
-"Blame posture or adversarial posture" means any language that assigns fault, implies intent, suggests wrongdoing, or frames either party as acting improperly. Intake output must not contain such framing.
+"Blame posture or adversarial posture" means any language that assigns fault, implies intent, suggests wrongdoing, frames either party as acting improperly, frames the record as favoring a party, frames the record as attacking a party, frames the record as defending a party, validates a party's position, invalidates a party's position, pressures a party, or characterizes party conduct. Intake output must not contain such framing.
 
 ## **3.4 Governing principle**
 
 If a term characterizes the site, the claim, or either party, rather than recording a mechanically observed state under bounded parameters, it is prohibited whether or not it appears on the banned list.
+
+Party-posture framing is also prohibited whether or not it appears on the banned list. This includes plaintiff-advocacy framing, defense-advocacy framing, rebuttal framing, liability-positioning framing, settlement-leverage framing, or party-positioning framing.
 
 ## **3.5 Locked scope anchor terms, external outputs only, mandatory use**
 
@@ -189,6 +232,8 @@ External-facing intake output must use the following exact terms when describing
 * "bounded execution parameters"
 * "Replicated Desktop Browser Context"
 * "Replicated Mobile Browser Context"
+
+"Complaint or demand materials provided" is a scope-anchor term. It is not a requester-side, party-side, advocacy-side, or litigation-side term.
 
 ## **3.6 Locked burden rule**
 
@@ -244,7 +289,7 @@ Intake must not auto-collapse such runs into BOTMITIGATION solely because a chal
 
 ## **3.7 Why this section is strict**
 
-This section is not about style preferences. It exists to prevent intake from becoming argumentative, evaluative, or suggestive through wording. Intake records bounded execution state. It does not narrate fault, motive, strength, or legal posture.
+This section is not about style preferences. It exists to prevent intake from becoming argumentative, evaluative, suggestive, plaintiff-sided, defense-sided, settlement-oriented, or advocacy-oriented through wording. Intake records bounded execution state. It does not narrate fault, motive, strength, legal posture, party posture, liability posture, or settlement posture.
 
 # **SECTION 4: INTAKE DETERMINATION TEMPLATES \[LOCKED\]**
 
@@ -300,6 +345,8 @@ The determination line must not include modifiers or hedging, for example:
 
 * or similar phrasing
 
+The determination line must not imply plaintiff-side support, defense-side support, party preference, advocacy purpose, settlement leverage, liability posture, or claim-strength posture.
+
 ## **4.3 Peer-baseline eligibility and constraint guardrails**
 
 Dual-baseline eligibility is expressed only through Template 1\.
@@ -318,13 +365,15 @@ Template 5 is permitted only when Desktop baseline is in scope and Desktop basel
 
 "Mobile-preferred," "Desktop-preferred," and "partial eligibility" determinations are prohibited.
 
+Requester identity, requester role, represented party, opposing party, litigation side, advocacy purpose, settlement posture, expected result, or preferred narrative must not affect template selection.
+
 ## **4.4 Determination rigidity rule**
 
-The determination line is a locked output surface. It must not be expanded, softened, explained, or supplemented with informal gloss that signals internal depth or internal reasoning.
+The determination line is a locked output surface. It must not be expanded, softened, explained, or supplemented with informal gloss that signals internal depth, internal reasoning, party posture, advocacy purpose, settlement posture, liability posture, or claim-strength posture.
 
 ## **4.5 Why Section 4 is rigid**
 
-This is the most externally exposed intake output. If this section drifts, internal execution depth, sufficiency proximity, and internal path selection start leaking through wording even when the labels look controlled.
+This is the most externally exposed intake output. If this section drifts, internal execution depth, sufficiency proximity, internal path selection, party posture, and advocacy framing start leaking through wording even when the labels look controlled.
 
 ## **4.6 Constraint-driven ineligibility routing**
 
@@ -455,6 +504,8 @@ Permitted derivation sources include named URLs, named products, named sections,
 
 Operators must not invent a target surface, substitute a preferred page, or create boundedness that does not exist in the submitted materials.
 
+Requester identity, requester role, represented party, opposing party, litigation side, advocacy purpose, settlement posture, expected result, or preferred narrative must not create boundedness that is not present in the complaint or demand materials provided.
+
 # **SECTION 7: OUTCOME LABEL SET AND DEFINITIONS \[LOCKED\]**
 
 ## **7.1 Locked outcome label set**
@@ -511,11 +562,15 @@ Each run must produce exactly one outcome label from this locked set.
 
 Outcome labels control sufficiency, stop logic, traceability, and downstream determination behavior. If labels drift, intake logic drifts with them.
 
+Outcome labels must not become plaintiff-side labels, defense-side labels, settlement labels, advocacy labels, liability labels, or claim-strength labels.
+
 # **SECTION 8: EXECUTION CONTEXT RIGOR \[LOCKED\]**
 
 ## **8.1 Contexts are parameter locks, not suggestions**
 
-Replicated Desktop Browser Context and Replicated Mobile Browser Context are fixed emulation profiles. Desktop and Mobile are parameter locks, not descriptive labels. Operators must not resize live browser windows or dev tools panels to approximate these contexts. Contexts are instantiated only through explicit viewport and environment parameters in a controlled browser automation environment.
+Replicated Desktop Browser Context and Replicated Mobile Browser Context are fixed emulation profiles for the ADA website accessibility intake application. Desktop and Mobile are parameter locks, not descriptive labels. Operators must not resize live browser windows or dev tools panels to approximate these contexts. Contexts are instantiated only through explicit viewport and environment parameters in a controlled browser automation environment.
+
+Future non-ADA or non-website applications require their own governed context profiles and must not silently reuse these context rules as global execution doctrine.
 
 ## **8.2 Replicated Desktop Browser Context, locked baseline**
 
@@ -553,9 +608,13 @@ Where one baseline is feasible and the peer baseline is blocked under controlled
 
 Generic accessibility phrasing must not be treated as Desktop-only by default. For generic website accessibility allegations, both Replicated Desktop Browser Context and Replicated Mobile Browser Context must be brought into scope unless the submitted materials expressly cabin the asserted condition to one baseline only.
 
+Requester identity, requester role, represented party, opposing party, litigation side, advocacy purpose, settlement posture, expected result, or preferred narrative must not alter peer-baseline scope treatment.
+
 ## **8.5 Reflow separation**
 
 Reflow testing under WCAG 1.4.10 is operationally separate from baseline intake capture. Baseline viewport parameters are not derived from reflow math.
+
+This reflow separation is part of the ADA website accessibility intake application and must not be treated as a global rule for future applications without governance.
 
 ## **8.6 Reflow primary method**
 
@@ -590,11 +649,13 @@ Neither reflow method alters the locked Desktop or Mobile baselines defined abov
 
 This section exists to prevent approximation. Intake contexts are locked parameter sets, not operator impressions of what Desktop or Mobile probably means.
 
+Context selection must come from locked scope and peer-baseline rules, not requester preference, litigation posture, advocacy purpose, expected outcome, or preferred narrative.
+
 # **SECTION 9: MECHANICAL NOTE DISCIPLINE AND CONSTRAINT CLASSIFICATION \[LOCKED\]**
 
 ## **9.1 Purpose of notes**
 
-Notes exist solely to prevent drift and preserve mechanical clarity when an attempted run cannot be bounded or is blocked. Notes must not create narrative and must not introduce evaluative framing.
+Notes exist solely to prevent drift and preserve mechanical clarity when an attempted run cannot be bounded or is blocked. Notes must not create narrative, introduce evaluative framing, explain strategy, characterize party conduct, support advocacy, or state legal meaning.
 
 ## **9.2 Note permission gate**
 
@@ -613,6 +674,11 @@ Notes are permitted only when:
 * any statement about sufficiency reached or not reached
 * any statement about run ordering, context ordering, or interleaving decisions
 * any attempt to explain, defend, or argue outcome selection
+* any plaintiff-support framing
+* any defense-support framing
+* any settlement-leverage framing
+* any party conduct characterization
+* any liability or non-liability framing
 
 ## **9.4 Mechanical sentence rule**
 
@@ -627,6 +693,7 @@ Permitted notes must contain:
 * no blame language
 * no speculation
 * no motive, severity, or probability framing
+* no party-posture framing prohibited by Section 3
 
 ## **9.6 Locked constraint\_class enum set**
 
@@ -668,6 +735,8 @@ When both Desktop and Mobile contexts are in scope for the matter, intake runs m
 
 When both baselines are in scope but one baseline is blocked under controlled parameters, runs in the constrained baseline must still be attempted in their alternating slots. Each such attempt must produce a distinct run with an applicable Constrained outcome and constraint\_class, and consumes a run slot. The alternating sequence does not skip or collapse because one baseline is constrained.
 
+Run sequence must not be reordered, clustered, skipped, or manipulated by requester identity, requester role, represented party, opposing party, litigation side, advocacy purpose, settlement posture, expected result, preferred narrative, or party preference.
+
 ## **10.2 Clean-state isolation between every run**
 
 Between every run, the prior execution state must not carry forward.
@@ -689,4 +758,4 @@ Each run must record internal timestamps sufficient to show sequencing and separ
 
 ## **10.6 Why this section exists**
 
-This section prevents sequencing manipulation, state carry-forward, and time-based rhetorical leakage. Intake must remain mechanically sequenced, clean-state isolated, and externally nondisclosive.
+This section prevents sequencing manipulation, state carry-forward, and time-based rhetorical leakage. Intake must remain mechanically sequenced, clean-state isolated, party-neutral, and externally nondisclosive.
