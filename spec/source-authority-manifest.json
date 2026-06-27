@@ -1,0 +1,12 @@
+{
+  "generated_at": "2026-06-27",
+  "governed_template_filename": "1-8 Intake Templates.md",
+  "deprecated_template_filename": "AFintaketemplates1-8.md",
+  "governed_authority_files": [
+    "spec/1-10 Layer Instructions.md",
+    "spec/1-10 Layer 1 - Authority and Doctrine.md",
+    "spec/1-10 Layer 2 - Jules.md",
+    "spec/1-10 Layer 3 - Machine-Bindable Specs.md",
+    "spec/1-8 Intake Templates.md"
+  ]
+}
