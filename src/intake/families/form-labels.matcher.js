@@ -1,6 +1,6 @@
 "use strict";
 
-const research = require("./family3.research.json");
+const research = require("./form-labels.research.json");
 
 function normalizeText(value) {
   return String(value || "")
@@ -66,7 +66,7 @@ function findVariantIds(text) {
   return unique(variantIds);
 }
 
-function classifyFamily3(assertedConditionText) {
+function classifyFormLabels(assertedConditionText) {
   const normalized = normalizeText(assertedConditionText);
   const matchedPatterns = includesAny(normalized, research.core_phrase_patterns);
   const matchedCopyPastePatterns = includesAny(normalized, research.copy_paste_patterns);
@@ -86,8 +86,8 @@ function classifyFamily3(assertedConditionText) {
 
   return Object.freeze({
     matched,
-    family_id: matched ? research.family_id : "",
-    family_name: matched ? research.family_name : "",
+    probe_group_id: matched ? research.probe_group_id : "",
+    probe_group_name: matched ? research.probe_group_name : "",
     normalized_text: normalized,
     matched_patterns: unique(matchedPatterns),
     matched_copy_paste_patterns: unique(matchedCopyPastePatterns),
@@ -98,12 +98,12 @@ function classifyFamily3(assertedConditionText) {
   });
 }
 
-function matchesFamily3(assertedConditionText) {
-  return classifyFamily3(assertedConditionText).matched;
+function matchesFormLabels(assertedConditionText) {
+  return classifyFormLabels(assertedConditionText).matched;
 }
 
 module.exports = Object.freeze({
   normalizeText,
-  classifyFamily3,
-  matchesFamily3
+  classifyFormLabels,
+  matchesFormLabels
 });

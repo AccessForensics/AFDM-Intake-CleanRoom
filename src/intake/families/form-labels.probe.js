@@ -1,9 +1,9 @@
 "use strict";
 
 const { OUTCOME_LABEL, CONSTRAINT_CLASS } = require("../run-record.js");
-const { classifyFamily3, normalizeText } = require("./family3.matcher.js");
+const { classifyFormLabels, normalizeText } = require("./form-labels.matcher.js");
 const { normalizeProbeInput } = require("../probes/probe-contract.js");
-const research = require("./family3.research.json");
+const research = require("./form-labels.research.json");
 
 const DEFAULT_BOUNDED_RULES = Object.freeze({
   maxControlsPerScope: Number.isInteger(research && research.bounded_probe_rules && research.bounded_probe_rules.max_controls_per_scope)
@@ -165,7 +165,7 @@ function buildFailure(control) {
   });
 }
 
-function evaluateFamily3Snapshot(snapshot, runUnit, options) {
+function evaluateFormLabelsSnapshot(snapshot, runUnit, options) {
   const scoped = scopeControls(snapshot, runUnit, options);
 
   if (scoped.status === "no_controls") {
@@ -185,7 +185,7 @@ function evaluateFamily3Snapshot(snapshot, runUnit, options) {
     return buildResult(
       OUTCOME_LABEL.INSUFFICIENT,
       "",
-      "The allegation could not be bounded to a target control or page region under Family 3 rules.",
+      "The allegation could not be bounded to a target control or page region under form-label rules.",
       {
         target_url: safeTrim(runUnit && runUnit.target_url),
         hint_tokens: scoped.hint_tokens,
@@ -221,7 +221,7 @@ async function safeGoto(page, targetUrl) {
   }
 }
 
-async function captureFamily3Snapshot(page, options) {
+async function captureFormLabelsSnapshot(page, options) {
   const rules = resolveBoundedRules(options);
 
   return page.evaluate((payload) => {
@@ -305,20 +305,20 @@ async function captureFamily3Snapshot(page, options) {
   }, { maxRawControls: rules.maxRawControls });
 }
 
-async function runFamily3Probe(page, inputOrText, legacyBaseUrlOrOptions, maybeOptions) {
+async function runFormLabelsProbe(page, inputOrText, legacyBaseUrlOrOptions, maybeOptions) {
   const normalized = normalizeProbeInput(inputOrText, legacyBaseUrlOrOptions, maybeOptions);
   const request = normalized.request;
   const options = normalized.options;
 
-  const classification = classifyFamily3(request && request.asserted_condition_text);
+  const classification = classifyFormLabels(request && request.asserted_condition_text);
 
   if (!classification.matched) {
     return buildResult(
       OUTCOME_LABEL.INSUFFICIENT,
       "",
-      "The allegation did not match Family 3 form-label execution rules.",
+      "The allegation did not match form-label execution rules.",
       {
-        family_id: "",
+        probe_group_id: "",
         target_url: safeTrim(request && request.target_url)
       }
     );
@@ -328,9 +328,9 @@ async function runFamily3Probe(page, inputOrText, legacyBaseUrlOrOptions, maybeO
     return buildResult(
       OUTCOME_LABEL.INSUFFICIENT,
       "",
-      "No target URL was available for bounded Family 3 execution.",
+      "No target URL was available for bounded form-label execution.",
       {
-        family_id: classification.family_id
+        probe_group_id: classification.probe_group_id
       }
     );
   }
@@ -356,8 +356,8 @@ async function runFamily3Probe(page, inputOrText, legacyBaseUrlOrOptions, maybeO
       );
     }
 
-    const snapshot = await captureFamily3Snapshot(page, options);
-    return evaluateFamily3Snapshot(snapshot, request, options);
+    const snapshot = await captureFormLabelsSnapshot(page, options);
+    return evaluateFormLabelsSnapshot(snapshot, request, options);
   } catch (error) {
     return buildResult(
       OUTCOME_LABEL.CONSTRAINED,
@@ -374,7 +374,7 @@ module.exports = Object.freeze({
   OUTCOME_LABEL,
   CONSTRAINT_CLASS,
   buildHintTokens,
-  evaluateFamily3Snapshot,
-  captureFamily3Snapshot,
-  runFamily3Probe
+  evaluateFormLabelsSnapshot,
+  captureFormLabelsSnapshot,
+  runFormLabelsProbe
 });

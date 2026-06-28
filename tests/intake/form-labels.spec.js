@@ -3,20 +3,20 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { classifyFamily3, matchesFamily3 } = require("../../src/intake/families/family3.matcher.js");
+const { classifyFormLabels, matchesFormLabels } = require("../../src/intake/families/form-labels.matcher.js");
 const {
   OUTCOME_LABEL,
   CONSTRAINT_CLASS,
-  evaluateFamily3Snapshot,
-  runFamily3Probe
-} = require("../../src/intake/families/family3.probe.js");
+  evaluateFormLabelsSnapshot,
+  runFormLabelsProbe
+} = require("../../src/intake/families/form-labels.probe.js");
 
 function buildRunUnit(overrides) {
   return Object.assign(
     {
       matter_id: "AF-TEST-0001",
       run_unit_id: "RU-001",
-      family_id: "family_3_form_labels",
+      probe_group_id: "form_labels_accessible_names",
       asserted_condition_text: "search fields lack a label",
       target_url: "https://example.com/search",
       target_page_hint: "search page",
@@ -41,27 +41,27 @@ function buildMockPage(snapshot) {
   };
 }
 
-test("family3 matcher matches exact Family 3 phrase", function () {
-  assert.equal(matchesFamily3("Search fields lack a label."), true);
+test("form-label matcher matches exact label allegation", function () {
+  assert.equal(matchesFormLabels("Search fields lack a label."), true);
 });
 
-test("family3 matcher matches heuristic combination", function () {
-  const result = classifyFamily3("The search input field is missing an accessible name.");
+test("form-label matcher matches heuristic combination", function () {
+  const result = classifyFormLabels("The search input field is missing an accessible name.");
   assert.equal(result.matched, true);
-  assert.equal(result.family_id, "family_3_form_labels");
+  assert.equal(result.probe_group_id, "form_labels_accessible_names");
 });
 
-test("family3 matcher does not match unrelated allegation", function () {
-  const result = classifyFamily3("The site has low color contrast on buttons.");
+test("form-label matcher does not match unrelated allegation", function () {
+  const result = classifyFormLabels("The site has low color contrast on buttons.");
   assert.equal(result.matched, false);
 });
 
-test("family3 snapshot evaluation returns insufficient when no controls are present", function () {
-  const result = evaluateFamily3Snapshot({ controls: [] }, buildRunUnit(), {});
+test("form-label snapshot evaluation returns insufficient when no controls are present", function () {
+  const result = evaluateFormLabelsSnapshot({ controls: [] }, buildRunUnit(), {});
   assert.equal(result.outcome_label, OUTCOME_LABEL.INSUFFICIENT);
 });
 
-test("family3 snapshot evaluation returns observed when scoped target control lacks accessible name", function () {
+test("form-label snapshot evaluation returns observed when scoped target control lacks accessible name", function () {
   const snapshot = {
     controls: [
       {
@@ -79,12 +79,12 @@ test("family3 snapshot evaluation returns observed when scoped target control la
     ]
   };
 
-  const result = evaluateFamily3Snapshot(snapshot, buildRunUnit(), {});
+  const result = evaluateFormLabelsSnapshot(snapshot, buildRunUnit(), {});
   assert.equal(result.outcome_label, OUTCOME_LABEL.OBSERVED);
   assert.equal(result.evidence.failure_count, 1);
 });
 
-test("family3 snapshot evaluation returns not observed when scoped target control has accessible name", function () {
+test("form-label snapshot evaluation returns not observed when scoped target control has accessible name", function () {
   const snapshot = {
     controls: [
       {
@@ -102,12 +102,12 @@ test("family3 snapshot evaluation returns not observed when scoped target contro
     ]
   };
 
-  const result = evaluateFamily3Snapshot(snapshot, buildRunUnit(), {});
+  const result = evaluateFormLabelsSnapshot(snapshot, buildRunUnit(), {});
   assert.equal(result.outcome_label, OUTCOME_LABEL.NOT_OBSERVED);
   assert.equal(result.evidence.failure_count, 0);
 });
 
-test("family3 snapshot evaluation returns insufficient when hint cannot be bounded", function () {
+test("form-label snapshot evaluation returns insufficient when hint cannot be bounded", function () {
   const snapshot = {
     controls: [
       {
@@ -125,7 +125,7 @@ test("family3 snapshot evaluation returns insufficient when hint cannot be bound
     ]
   };
 
-  const result = evaluateFamily3Snapshot(
+  const result = evaluateFormLabelsSnapshot(
     snapshot,
     buildRunUnit({
       target_element_hint: "quantity selector",
@@ -137,10 +137,10 @@ test("family3 snapshot evaluation returns insufficient when hint cannot be bound
   assert.equal(result.outcome_label, OUTCOME_LABEL.INSUFFICIENT);
 });
 
-test("family3 probe returns constrained on bot challenge", async function () {
+test("form-label probe returns constrained on bot challenge", async function () {
   const page = buildMockPage({ controls: [] });
 
-  const result = await runFamily3Probe(page, buildRunUnit(), {
+  const result = await runFormLabelsProbe(page, buildRunUnit(), {
     detectEnvironmentChallenge: async function detectEnvironmentChallenge() {
       return { challengeDetected: true, evidence: { challenge_kind: "test" } };
     }
@@ -150,13 +150,13 @@ test("family3 probe returns constrained on bot challenge", async function () {
   assert.equal(result.constraint_class, CONSTRAINT_CLASS.BOTMITIGATION);
 });
 
-test("family3 probe returns insufficient when target_url is missing", async function () {
+test("form-label probe returns insufficient when target_url is missing", async function () {
   const page = buildMockPage({ controls: [] });
-  const result = await runFamily3Probe(page, buildRunUnit({ target_url: "" }), {});
+  const result = await runFormLabelsProbe(page, buildRunUnit({ target_url: "" }), {});
   assert.equal(result.outcome_label, OUTCOME_LABEL.INSUFFICIENT);
 });
 
-test("family3 probe returns hardcrash constrained when snapshot capture fails", async function () {
+test("form-label probe returns hardcrash constrained when snapshot capture fails", async function () {
   const page = {
     goto: async function goto() {
       return undefined;
@@ -169,7 +169,7 @@ test("family3 probe returns hardcrash constrained when snapshot capture fails", 
     }
   };
 
-  const result = await runFamily3Probe(page, buildRunUnit(), {});
+  const result = await runFormLabelsProbe(page, buildRunUnit(), {});
   assert.equal(result.outcome_label, OUTCOME_LABEL.CONSTRAINED);
   assert.equal(result.constraint_class, CONSTRAINT_CLASS.HARDCRASH);
 });

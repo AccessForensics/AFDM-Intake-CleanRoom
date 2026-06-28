@@ -42,14 +42,14 @@ class MockPage {
   }
 }
 
-test("resolveProbe selects lawsuit1 family for heading allegation", () => {
+test("resolveProbe selects lawsuit1 probe for heading allegation", () => {
   const resolved = resolveProbe("Heading levels were missing");
-  assert.equal(resolved.family, "lawsuit1");
+  assert.equal(resolved.probe_id, "lawsuit1");
 });
 
-test("resolveProbe selects lawsuit2 family for popup allegation", () => {
+test("resolveProbe selects lawsuit2 probe for popup allegation", () => {
   const resolved = resolveProbe("Screen reader fails to read advertisement pop up links");
-  assert.equal(resolved.family, "lawsuit2");
+  assert.equal(resolved.probe_id, "lawsuit2");
 });
 
 test("resolveProbe returns null for unsupported allegation", () => {
