@@ -1,328 +1,39 @@
 {
   "snapshot_type": "completion_audit_snapshot",
   "matter_system": "AFDM Intake CleanRoom",
-  "spec_version": "L3-v8",
-  "snapshot_date": "2026-05-16",
-  "completion_percent": 100,
-  "node_test_status": "pass",
-  "node_test_command": "GitHub Actions: node tools/ci/guardrails_check.js and node --test <all discovered test files>",
-  "node_test_file_count": 26,
-  "node_test_exit_code": 0,
-  "completion_claim_permitted": true,
-  "completion_claim_reason": "All known Appendix F blockers for the current implemented intake slice are resolved, CI guardrails are merged, and completion is limited to the current implemented slice.",
-  "traceability_status": "expanded_curated_matrix_with_LIM_004_resolution_addendum_and_CI_guardrails",
-  "traceability_row_count": 64,
-  "golden_artifact_status": "curated_verification_table_for_D1_through_D13",
-  "appendix_d_fixtures_implemented": 13,
-  "appendix_d_fixtures_scaffolded": 4,
-  "appendix_d_fixtures_total": 17,
-  "source_files": [
-    {
-      "file": "docs/source-locks/1-10 Layer 1 - Authority and Doctrine.pdf",
-      "present": true
-    },
-    {
-      "file": "docs/source-locks/1-10 Layer 2 - Jules.pdf",
-      "present": true
-    },
-    {
-      "file": "docs/source-locks/1-10 Layer 3 - Machine-Bindable Specs.pdf",
-      "present": true
-    },
-    {
-      "file": "docs/source-locks/1-10 Layer Instructions.pdf",
-      "present": true
-    },
-    {
-      "file": "spec/AFintaketemplates1-8.md",
-      "present": true
-    },
-    {
-      "file": "agent.md",
-      "present": true
-    },
-    {
-      "file": ".gitignore",
-      "present": true
-    },
-    {
-      "file": ".env.example",
-      "present": true
-    }
+  "snapshot_date": "2026-06-27",
+  "completion_claim_permitted": false,
+  "completion_claim_reason": "Source-authority alignment is not complete until the five governed source bodies are mirrored into spec and validation passes against the governed filename set.",
+  "governed_template_filename": "1-8 Intake Templates.md",
+  "deprecated_template_filename": "AFintaketemplates1-8.md",
+  "source_files_required": [
+    {"file": "spec/1-10 Layer Instructions.md", "required": true},
+    {"file": "spec/1-10 Layer 1 - Authority and Doctrine.md", "required": true},
+    {"file": "spec/1-10 Layer 2 - Jules.md", "required": true},
+    {"file": "spec/1-10 Layer 3 - Machine-Bindable Specs.md", "required": true},
+    {"file": "spec/1-8 Intake Templates.md", "required": true},
+    {"file": "spec/source-authority-manifest.json", "required": true}
   ],
-  "runtime_files": [
+  "open_blockers": [
     {
-      "file": "src/intake/enums.js",
-      "present": true
+      "blocker_id": "BLOCK-SOURCE-001",
+      "category": "source_authority",
+      "description": "Mirror the five governed uploaded source bodies into spec and verify them against the source manifest.",
+      "blocks_completion": true
     },
     {
-      "file": "src/intake/template-validator.js",
-      "present": true
+      "blocker_id": "BLOCK-SOURCE-002",
+      "category": "template_filename_migration",
+      "description": "Remove or archive governed-source dependence on AFintaketemplates1-8.md and migrate active runtime/test references to 1-8 Intake Templates.md.",
+      "blocks_completion": true
     },
     {
-      "file": "src/intake/complaint-normalizer.js",
-      "present": true
-    },
-    {
-      "file": "src/intake/rununit-builder.js",
-      "present": true
-    },
-    {
-      "file": "src/intake/run-record.js",
-      "present": true
-    },
-    {
-      "file": "src/intake/sequencing.js",
-      "present": true
-    },
-    {
-      "file": "src/intake/mechanical-note-rule.js",
-      "present": true
-    },
-    {
-      "file": "src/intake/state-isolation.js",
-      "present": true
-    },
-    {
-      "file": "src/intake/sufficiency-stop.js",
-      "present": true
-    },
-    {
-      "file": "src/intake/determination-router.js",
-      "present": true
-    },
-    {
-      "file": "src/intake/external-output-validator.js",
-      "present": true
-    },
-    {
-      "file": "src/intake/context-profiles.js",
-      "present": true
-    },
-    {
-      "file": "src/intake/intake-manifest.js",
-      "present": true
-    },
-    {
-      "file": "tools/run-playwright-intake.js",
-      "present": true,
-      "status": "runtime_fail_closed_for_unsupported_probe_family"
-    },
-    {
-      "file": "src/intake/families/family2.probe.js",
-      "present": true,
-      "status": "implementation_missing_error_for_unimplemented_family2_subconditions"
-    }
-  ],
-  "delivery_files": [
-    {
-      "file": "delivery_artifacts/intake/change_inventory.md",
-      "present": true
-    },
-    {
-      "file": "delivery_artifacts/intake/implementation_inventory.md",
-      "present": true
-    },
-    {
-      "file": "delivery_artifacts/intake/test_inventory.md",
-      "present": true
-    },
-    {
-      "file": "delivery_artifacts/intake/fixture_inventory.md",
-      "present": true
-    },
-    {
-      "file": "delivery_artifacts/intake/golden_artifact_verification.md",
-      "present": true,
-      "status": "curated_verification_table"
-    },
-    {
-      "file": "delivery_artifacts/intake/traceability_matrix.csv",
-      "present": true,
-      "status": "expanded_curated_matrix"
-    },
-    {
-      "file": "delivery_artifacts/intake/limitations_appendix_f.md",
-      "present": true,
-      "status": "updated_with_all_current_slice_limitations_resolved"
-    },
-    {
-      "file": "delivery_artifacts/intake/pr_ready_summary.md",
-      "present": true,
-      "status": "final_completion_package_ready"
-    },
-    {
-      "file": "delivery_artifacts/intake/traceability_lim004_resolution_addendum.md",
-      "present": true,
-      "status": "lim_004_runtime_hardening_resolution_addendum"
-    },
-    {
-      "file": "delivery_artifacts/intake/audit/completion_scorecard.json",
-      "present": true,
-      "status": "final_current_slice_completion_scorecard"
-    }
-  ],
-  "fixture_files": [
-    {
-      "file": "fixtures/intake/appendix-d-fixtures.json",
-      "present": true
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d1_desktop_only_eligible.json",
-      "present": true,
-      "status": "implemented"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d2_desktop_and_mobile_eligible.json",
-      "present": true,
-      "status": "implemented"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d3_desktop_eligible_mobile_constrained.json",
-      "present": true,
-      "status": "implemented"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d4_mobile_only_eligible.json",
-      "present": true,
-      "status": "implemented"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d5_mobile_eligible_desktop_constrained.json",
-      "present": true,
-      "status": "implemented"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d6_not_eligible_generic.json",
-      "present": true,
-      "status": "implemented"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d7_not_eligible_botmitigation.json",
-      "present": true,
-      "status": "implemented"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d8_not_eligible_constraints_other.json",
-      "present": true,
-      "status": "implemented"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d9_note_gated_constrained_run.json",
-      "present": true,
-      "status": "implemented"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d10_invalid_note_on_observed_run.json",
-      "present": true,
-      "status": "implemented"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d11_non_alternating_sequencing_failure.json",
-      "present": true,
-      "status": "implemented"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d12_state_persistence_failure.json",
-      "present": true,
-      "status": "implemented"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d13_indirect_signaling_output_failure.json",
-      "present": true,
-      "status": "implemented"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d14_unbounded_alt_text_insufficiently_specified.json",
-      "present": true,
-      "status": "scaffolded_followup"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d15_mixed_boundedness_preserves_bounded_execution.json",
-      "present": true,
-      "status": "scaffolded_followup"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d16_marker_only_not_botmitigation.json",
-      "present": true,
-      "status": "scaffolded_followup"
-    },
-    {
-      "file": "fixtures/intake/appendix-d/d17_true_challenge_wall_botmitigation.json",
-      "present": true,
-      "status": "scaffolded_followup"
-    }
-  ],
-  "resolved_blockers": [
-    {
-      "blocker_id": "BLOCK-TESTS",
+      "blocker_id": "BLOCK-VALIDATION-001",
       "category": "tests",
-      "description": "Full Node test suite passed in GitHub Actions after PR #53 with 26 test files.",
-      "blocks_completion": false
-    },
-    {
-      "blocker_id": "BLOCK-LIM-001",
-      "category": "appendix_f",
-      "description": "Traceability matrix expanded into curated doctrine-to-implementation evidence matrix.",
-      "blocks_completion": false
-    },
-    {
-      "blocker_id": "BLOCK-LIM-002",
-      "category": "appendix_f",
-      "description": "Golden artifact verification replaced with curated fixture verification table for D.1-D.13.",
-      "blocks_completion": false
-    },
-    {
-      "blocker_id": "BLOCK-LIM-004",
-      "category": "preflight_probe_coverage",
-      "description": "PR #51 resolved runtime fail-closed unsupported probe coverage and PR #52 updated LIM-004 artifacts.",
-      "blocks_completion": false
-    },
-    {
-      "blocker_id": "BLOCK-LIM-003",
-      "category": "appendix_f",
-      "description": "Final delivery package artifacts are updated for the current implemented intake slice.",
-      "blocks_completion": false
-    },
-    {
-      "blocker_id": "BLOCK-LIM-005",
-      "category": "ci_guardrails",
-      "description": "PR #53 added CI guardrails, dependency installation, Playwright Chromium installation, and guardrail tests.",
-      "blocks_completion": false
+      "description": "Run the relevant validation and test suite after source mirroring and filename migration are complete.",
+      "blocks_completion": true
     }
   ],
-  "open_blockers": [],
-  "latest_validation_context": "post_PR_53_ci_guardrails_merge_validation",
-  "latest_validation_evidence_file": "GitHub Actions PR #53, guardrails and full Node test suite passed",
-  "traceability_addendum_file": "delivery_artifacts/intake/traceability_lim004_resolution_addendum.md",
-  "runtime_hardening_status": "lim_004_runtime_fail_closed_resolved",
-  "ci_guardrails_status": "lim_005_resolved_by_PR_53",
-  "completion_boundary": "current_implemented_intake_slice_only",
-  "ci_files": [
-    {
-      "file": ".github/workflows/ci.yml",
-      "present": true,
-      "status": "runs_guardrails_and_full_node_tests"
-    },
-    {
-      "file": "package.json",
-      "present": true,
-      "status": "declares_playwright_dependency_and_scripts"
-    },
-    {
-      "file": "package-lock.json",
-      "present": true,
-      "status": "locks_ci_dependencies"
-    },
-    {
-      "file": "tools/ci/guardrails_check.js",
-      "present": true,
-      "status": "completion_gate_guardrails"
-    },
-    {
-      "file": "tests/ci/guardrails-check.test.js",
-      "present": true,
-      "status": "guardrail_regression_tests"
-    }
-  ]
+  "resolved_blockers": [],
+  "completion_boundary": "source_alignment_pass_only"
 }
