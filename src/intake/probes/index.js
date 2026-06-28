@@ -44,7 +44,7 @@ function resolveProbe(assertedConditionText) {
   const text = normalizeText(assertedConditionText);
   for (const entry of PROBE_REGISTRY) {
     if (entry.matches(text)) {
-      return Object.freeze({ probe_id: entry.id, run: buildRegistryRunner(entry.run) });
+      return Object.freeze({ probe_id: entry.id, family: entry.id, run: buildRegistryRunner(entry.run) });
     }
   }
   return null;
