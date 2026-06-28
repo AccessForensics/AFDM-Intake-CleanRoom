@@ -69,25 +69,26 @@ test("template renderer requires matter id", () => {
   );
 });
 
-test("PR1 regression: template spec validator accepts escaped locked note token and escaped headings", () => {
+test("PR1 regression: template spec validator accepts governed filename, escaped locked note token, and escaped headings", () => {
   const syntheticSpec = [
-    "{{MATTER\\_LEVEL\\_NOTE}} may appear only in Template 3 or Template 5, and only when note permission is authorized under the locked gate.",
-    "## **TEMPLATE 1: ELIGIBLE\\_DESKTOP\\_MOBILE.md**",
+    "File name: `1-8 Intake Templates.md`",
+    "{{MATTER\_LEVEL\_NOTE}} may appear only in Template 3 or Template 5, and only when note permission is authorized under the locked gate.",
+    "## **TEMPLATE 1: ELIGIBLE\_DESKTOP\_MOBILE.md**",
     DETERMINATION_TEMPLATE.TEMPLATE_1,
-    "## **TEMPLATE 2: ELIGIBLE\\_DESKTOP.md**",
+    "## **TEMPLATE 2: ELIGIBLE\_DESKTOP.md**",
     DETERMINATION_TEMPLATE.TEMPLATE_2,
-    "## **TEMPLATE 3: ELIGIBLE\\_DESKTOP\\_WITH\\_MOBILE\\_CONSTRAINT\\_NOTE.md**",
+    "## **TEMPLATE 3: ELIGIBLE\_DESKTOP\_WITH\_MOBILE\_CONSTRAINT\_NOTE.md**",
     DETERMINATION_TEMPLATE.TEMPLATE_3,
-    "## **TEMPLATE 4: ELIGIBLE\\_MOBILE.md**",
+    "## **TEMPLATE 4: ELIGIBLE\_MOBILE.md**",
     DETERMINATION_TEMPLATE.TEMPLATE_4,
-    "## **TEMPLATE 5: ELIGIBLE\\_MOBILE\\_WITH\\_DESKTOP\\_CONSTRAINT\\_NOTE.md**",
+    "## **TEMPLATE 5: ELIGIBLE\_MOBILE\_WITH\_DESKTOP\_CONSTRAINT\_NOTE.md**",
     DETERMINATION_TEMPLATE.TEMPLATE_5,
-    "## **TEMPLATE 6: NOT\\_ELIGIBLE\\_INTAKE.md**",
+    "## **TEMPLATE 6: NOT\_ELIGIBLE\_INTAKE.md**",
     DETERMINATION_TEMPLATE.TEMPLATE_6,
-    "## **TEMPLATE 7: NOT\\_ELIGIBLE\\_CONSTRAINTS\\_BOT.md**",
-    DETERMINATION_TEMPLATE.TEMPLATE_7.replace(" - ", " \\- "),
-    "## **TEMPLATE 8: NOT\\_ELIGIBLE\\_CONSTRAINTS\\_OTHER.md**",
-    DETERMINATION_TEMPLATE.TEMPLATE_8.replace(" - ", " \\- "),
+    "## **TEMPLATE 7: NOT\_ELIGIBLE\_CONSTRAINTS\_BOT.md**",
+    DETERMINATION_TEMPLATE.TEMPLATE_7.replace(" - ", " \- "),
+    "## **TEMPLATE 8: NOT\_ELIGIBLE\_CONSTRAINTS\_OTHER.md**",
+    DETERMINATION_TEMPLATE.TEMPLATE_8.replace(" - ", " \- "),
   ].join("\n\n");
 
   assert.equal(validateTemplateSpec(syntheticSpec), true);

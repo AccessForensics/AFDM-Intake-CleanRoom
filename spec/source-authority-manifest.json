@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-06-27",
+  "governed_template_filename": "1-8 Intake Templates.md",
+  "deprecated_template_filename": "AFintaketemplates1-8.md",
+  "governed_authority_files": [
+    "spec/1-10 Layer Instructions.md",
+    "spec/1-10 Layer 1 - Authority and Doctrine.md",
+    "spec/1-10 Layer 2 - Jules.md",
+    "spec/1-10 Layer 3 - Machine-Bindable Specs.md",
+    "spec/1-8 Intake Templates.md"
+  ],
+  "uploaded_source_sha256": {
+    "1-10 Layer Instructions.md": "5a3072cfc7f40c6b090def444bc7d093c94368d0ccda1840f5abf24d735f795e",
+    "1-10 Layer 1 - Authority and Doctrine.md": "2f820cc2d5ab0e0ef507f1be0b61b93ec70d1be9e652178c9c964b2b151fa9d6",
+    "1-10 Layer 2 - Jules.md": "a39302a3fd924cd22f33b266a9db447432805139fd51be4eda800894d8239b50",
+    "1-10 Layer 3 - Machine-Bindable Specs.md": "804ba7c7e04e66fca0dfa09923381df69c8dbc3ca90b88859a51ee9c067de672",
+    "1-8 Intake Templates.md": "23bd9964c8b5bb0bb1f9f74c7c93b910155173b7fa6cc07e67d0f0eb738e9910"
+  },
+  "source_body_mirroring_status": "partial",
+  "source_body_mirroring_note": "This branch aligns filenames, runtime paths, manifests, and audit gates. The full uploaded source bodies must be mirrored and verified against uploaded_source_sha256 before source completion is claimed."
+}

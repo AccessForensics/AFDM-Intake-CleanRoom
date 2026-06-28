@@ -12,15 +12,19 @@ Athena and superpowers may be used as supervisory workflow systems, but they are
 
 Jules must build intake behavior from these files in this repository:
 
-- `docs/source-locks/1-10 Layer 1 - Authority and Doctrine.pdf`
-- `docs/source-locks/1-10 Layer 2 - Jules.pdf`
-- `docs/source-locks/1-10 Layer 3 - Machine-Bindable Specs.pdf`
-- `docs/source-locks/1-10 Layer Instructions.pdf`
-- `spec/AFintaketemplates1-8.md`
+- `spec/1-10 Layer Instructions.md`
+- `spec/1-10 Layer 1 - Authority and Doctrine.md`
+- `spec/1-10 Layer 2 - Jules.md`
+- `spec/1-10 Layer 3 - Machine-Bindable Specs.md`
+- `spec/1-8 Intake Templates.md`
 
 These files are the authoritative source set for this clean-room intake build.
 
-If any instruction, template wording, enum, schema rule, validation rule, or routing rule is not present in those files, Jules must not invent it.
+The governed template filename is `1-8 Intake Templates.md`.
+
+The prior filename `AFintaketemplates1-8.md` is deprecated wherever the governed template filename is required.
+
+If any instruction, template wording, enum, schema rule, validation rule, or routing rule is not present in the governed files, Jules must not invent it.
 
 If any source text appears to assume access to prior AFDM implementation behavior that is not present in this repository, Jules must not guess, reconstruct, or silently substitute that missing behavior. Jules must treat that as a blocker and surface it explicitly.
 
@@ -38,9 +42,7 @@ If Athena or superpowers suggest any behavior that conflicts with the governing 
 
 Intake is a bounded feasibility gate only.
 
-Jules must implement intake only to answer this question:
-
-Is this matter eligible for full forensic execution under controlled Desktop and or Mobile browser contexts, based solely on the complaint or demand materials provided?
+Jules must implement intake only to answer whether a matter is eligible for full technical record build under controlled Desktop and Mobile browser contexts, based solely on the complaint or demand materials provided.
 
 Jules must not implement intake as any of the following:
 
@@ -57,7 +59,7 @@ Jules must not implement intake as any of the following:
 
 ## 4. Locked determination surface
 
-Jules must implement exactly the eight locked intake determination templates defined in the governing source files and in `spec/AFintaketemplates1-8.md`.
+Jules must implement exactly the eight locked intake determination templates defined in the governing source files.
 
 No additional templates are allowed.
 
@@ -65,7 +67,7 @@ No paraphrase of the determination line is allowed.
 
 No synonym replacement is allowed.
 
-No `scan` substitution is allowed unless the governing source files are formally updated to permit it.
+No scan substitution is allowed unless the governing source files are formally updated to permit it.
 
 Jules must preserve the locked determination wording exactly.
 
@@ -83,8 +85,6 @@ Jules must not place matter-level notes in Templates 1, 2, 4, 6, 7, or 8.
 
 ## 6. Scope and baseline rules
 
-Jules must implement the current locked peer-baseline model from the governing files.
-
 Desktop and Mobile are peer baselines.
 
 For generic website accessibility allegations, both Replicated Desktop Browser Context and Replicated Mobile Browser Context must be brought into scope unless the complaint or demand materials expressly cabin the asserted condition to one baseline only.
@@ -98,8 +98,8 @@ Jules must use the locked viewport and context parameters defined by the governi
 Jules must implement the locked intake model for:
 
 - complaint-anchored normalization
-- one RUNUNIT equals one asserted website condition
-- one run equals one RUNUNIT under one context
+- one run unit equals one asserted website condition
+- one run equals one run unit under one context
 - four locked outcome labels only
 - run cap
 - sufficiency threshold
@@ -124,38 +124,45 @@ Jules must not expose internal timing, counts, sequencing, or internal execution
 Jules must operate inside the following supervision loop for non-trivial intake work.
 
 ### Phase A, startup and containment
+
 - Athena `/start`
 - superpowers `using-superpowers`
 - superpowers `using-git-worktrees`
 
 ### Phase B, requirements interrogation and planning
+
 - Athena `spec-driven-dev`
 - superpowers `brainstorming`
 - superpowers `writing-plans`
 - Athena `red-team-review` on the plan before coding
 
 ### Phase C, implementation
+
 - Jules performs the bounded implementation task
 - superpowers `subagent-driven-development`
 - superpowers `executing-plans`
 - superpowers `test-driven-development`
 
 ### Phase D, review and challenge
+
 - superpowers `requesting-code-review`
 - Athena `/audit`
 - Athena `red-team-review`
 
 ### Phase E, debugging if anything fails
+
 - superpowers `systematic-debugging`
 - Athena `/diagnose`
 
 ### Phase F, milestone-level pressure
+
 - Athena `/research` when doctrine or source interpretation is unclear
 - Athena `/ultrathink` for hard reasoning problems
 - Athena `/416-agent-swarm` for milestone-level adversarial review when the task is large enough to justify it
 - superpowers `dispatching-parallel-agents` only after the plan is locked and task boundaries are explicit
 
 ### Phase G, completion gate
+
 - superpowers `verification-before-completion`
 - Athena `/audit`
 - Athena `red-team-review`
@@ -190,7 +197,7 @@ At minimum, this includes:
 - required validators present
 - required delivery artifacts present when applicable
 - traceability from doctrine to implementation
-- no silent substitution for missing legacy behavior
+- no silent substitution for missing behavior
 
 If a requirement cannot yet be implemented, Jules must not improvise. Jules must surface the gap explicitly as a blocker or limitation.
 

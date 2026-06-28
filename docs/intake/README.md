@@ -1,38 +1,24 @@
 # Intake Authority Bundle
 
-This directory is the in-repo intake authority and completion-reference surface for AFDM Intake Clean Room.
+This directory records the current intake authority references for AFDM Intake Clean Room.
 
-## Purpose
+## Current governed authority files
 
-It exists to reduce drift between:
-- the locked intake authority set,
-- the implemented runner and validators,
-- the hardening test surface,
-- the explicit completion artifacts required to claim intake is done.
+- `spec/1-10 Layer Instructions.md`
+- `spec/1-10 Layer 1 - Authority and Doctrine.md`
+- `spec/1-10 Layer 2 - Jules.md`
+- `spec/1-10 Layer 3 - Machine-Bindable Specs.md`
+- `spec/1-8 Intake Templates.md`
 
-## Copied authority files
+The governed template filename is `1-8 Intake Templates.md`.
 
-- No authority files were copied because none of the expected source files were present at repo root during this patch run.
+The prior filename `AFintaketemplates1-8.md` is deprecated wherever the governed filename is required.
 
-## Missing expected authority files at repo root during this patch run
+## Source snapshot
 
-- `1-10 Layer Instructions.pdf`
-- `1-10 Layer 1 - Authority and Doctrine.pdf`
-- `1-10 Layer 2 - Jules.pdf`
-- `1-10 Layer 3 - Machine-Bindable Specs.pdf`
-- `AFintaketemplates1-8.pdf`
-- `AFintaketemplates1-8.md`
-
-## Repo-authored completion surfaces
-
-- `authority_bundle_manifest.json`
-- `traceability_matrix.md`
-- `limitations_appendix_f.md`
-- `README.md`
+The source snapshot for this update is recorded in `spec/source-authority-manifest.json`.
 
 ## Notes
 
 - This directory does not invent new doctrine.
-- This bundle records only what was available at repo root during the patch run.
-- Completion claims should rely on both the authority bundle and the current implemented test and runner surfaces.
-
+- Completion claims should rely on the current authority files, the manifest, and the implemented tests and runner surfaces.

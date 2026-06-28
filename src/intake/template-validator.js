@@ -8,12 +8,33 @@ const {
   NOTE_ALLOWED_TEMPLATES,
 } = require("./enums.js");
 
+const GOVERNED_TEMPLATE_FILENAME = "1-8 Intake Templates.md";
+const DEPRECATED_TEMPLATE_FILENAME = "AFintaketemplates1-8.md";
+
 function getSpecTemplatePath(repoRoot = process.cwd()) {
-  return path.join(repoRoot, "spec", "AFintaketemplates1-8.md");
+  const override = process.env.AFDM_INTAKE_SPEC_PATH;
+  if (override && override.trim()) {
+    return path.resolve(repoRoot, override.trim());
+  }
+  return path.join(repoRoot, "spec", GOVERNED_TEMPLATE_FILENAME);
 }
 
 function loadTemplateSpec(repoRoot = process.cwd()) {
   const target = getSpecTemplatePath(repoRoot);
+  if (!fs.existsSync(target)) {
+    const legacyTarget = path.join(repoRoot, "spec", DEPRECATED_TEMPLATE_FILENAME);
+    if (fs.existsSync(legacyTarget)) {
+      throw new Error(
+        `GOVERNED_TEMPLATE_FILE_MISSING: expected ${GOVERNED_TEMPLATE_FILENAME}, found deprecated ${DEPRECATED_TEMPLATE_FILENAME}`
+      );
+    }
+    throw new Error(`GOVERNED_TEMPLATE_FILE_MISSING: ${target}`);
+  }
+  if (path.basename(target) === DEPRECATED_TEMPLATE_FILENAME) {
+    throw new Error(
+      `DEPRECATED_TEMPLATE_FILENAME: ${DEPRECATED_TEMPLATE_FILENAME}`
+    );
+  }
   return fs.readFileSync(target, "utf8").replace(/^\uFEFF/, "");
 }
 
@@ -31,20 +52,24 @@ function validateTemplateSpec(text) {
   const body = String(text || "");
   const normalizedBody = normalizeSpecForMatching(body);
 
+  if (!normalizedBody.includes(`File name: \`${GOVERNED_TEMPLATE_FILENAME}\``)) {
+    throw new Error("TEMPLATE_SPEC_MISSING_GOVERNED_FILENAME");
+  }
+
   const noteRulePattern =
-    /\{\{MATTER_LEVEL_NOTE\}\}\s+may appear only in Template 3 or Template 5\b/;
+    /`?\{\{MATTER_LEVEL_NOTE\}\}`?\s+may appear only in Template 3 or Template 5\b/;
   if (!noteRulePattern.test(normalizedBody)) {
     throw new Error("TEMPLATE_SPEC_MISSING_INTERNAL_NOTE_RULE");
   }
 
   for (let templateNumber = 1; templateNumber <= 8; templateNumber += 1) {
     const headingPattern = new RegExp(
-      `(^|\\n)##\\s+TEMPLATE\\s+${templateNumber}:`,
+      `(^|\\n)#{1,6}\\s+TEMPLATE\\s+${templateNumber}:`,
       "m"
     );
     if (!headingPattern.test(normalizedBody)) {
       throw new Error(
-        `TEMPLATE_SPEC_MISSING_HEADING: ## TEMPLATE ${templateNumber}:`
+        `TEMPLATE_SPEC_MISSING_HEADING: # TEMPLATE ${templateNumber}:`
       );
     }
   }
@@ -112,5 +137,7 @@ module.exports = Object.freeze({
   validateTemplateSpec,
   renderTemplate,
   getSpecTemplatePath,
+  GOVERNED_TEMPLATE_FILENAME,
+  DEPRECATED_TEMPLATE_FILENAME,
   DETERMINATION_TEMPLATE,
 });

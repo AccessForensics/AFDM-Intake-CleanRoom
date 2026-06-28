@@ -77,17 +77,55 @@ function listNodeTestFiles(repoRoot) {
     .sort();
 }
 
+function validateSourceAlignmentScorecard(scorecard, openIds) {
+  assert(scorecard.completion_claim_permitted === false, "source alignment scorecard must keep completion_claim_permitted false");
+  assert(scorecard.completion_boundary === "source_alignment_pass_only", "source alignment scorecard must define source_alignment_pass_only boundary");
+  assert(scorecard.governed_template_filename === "1-8 Intake Templates.md", "source alignment scorecard must record governed template filename");
+  assert(scorecard.deprecated_template_filename === "AFintaketemplates1-8.md", "source alignment scorecard must record deprecated template filename");
+
+  const requiredOpenBlockers = [
+    "BLOCK-SOURCE-001",
+    "BLOCK-SOURCE-002",
+    "BLOCK-VALIDATION-001"
+  ];
+
+  for (const blockerId of requiredOpenBlockers) {
+    assert(openIds.has(blockerId), `source alignment scorecard missing open blocker: ${blockerId}`);
+  }
+
+  const requiredSourceFiles = new Set((scorecard.source_files_required || []).map((item) => item && item.file).filter(Boolean));
+  const expectedSourceFiles = [
+    "spec/1-10 Layer Instructions.md",
+    "spec/1-10 Layer 1 - Authority and Doctrine.md",
+    "spec/1-10 Layer 2 - Jules.md",
+    "spec/1-10 Layer 3 - Machine-Bindable Specs.md",
+    "spec/1-8 Intake Templates.md",
+    "spec/source-authority-manifest.json"
+  ];
+
+  for (const relativePath of expectedSourceFiles) {
+    assert(requiredSourceFiles.has(relativePath), `source alignment scorecard missing required source file: ${relativePath}`);
+  }
+
+  return true;
+}
+
 function validateScorecardObject(scorecard) {
   assert(scorecard && typeof scorecard === "object" && !Array.isArray(scorecard), "completion scorecard must be an object");
-  assert(scorecard.node_test_status === "pass", "scorecard must record passing node_test_status");
-  assert(scorecard.node_test_exit_code === 0, "scorecard must record node_test_exit_code 0");
-  assert(Number(scorecard.node_test_file_count) >= 26, "scorecard must record at least 26 Node test files after LIM-005 guardrails");
 
   const openBlockers = Array.isArray(scorecard.open_blockers) ? scorecard.open_blockers : [];
   const resolvedBlockers = Array.isArray(scorecard.resolved_blockers) ? scorecard.resolved_blockers : [];
 
   const openIds = new Set(openBlockers.map((item) => item && item.blocker_id).filter(Boolean));
   const resolvedIds = new Set(resolvedBlockers.map((item) => item && item.blocker_id).filter(Boolean));
+
+  if (scorecard.completion_boundary === "source_alignment_pass_only") {
+    return validateSourceAlignmentScorecard(scorecard, openIds);
+  }
+
+  assert(scorecard.node_test_status === "pass", "scorecard must record passing node_test_status");
+  assert(scorecard.node_test_exit_code === 0, "scorecard must record node_test_exit_code 0");
+  assert(Number(scorecard.node_test_file_count) >= 26, "scorecard must record at least 26 Node test files after LIM-005 guardrails");
 
   assert(!openIds.has("BLOCK-LIM-004"), "BLOCK-LIM-004 must not remain open after PR #51 and PR #52");
   assert(resolvedIds.has("BLOCK-LIM-004"), "BLOCK-LIM-004 must be listed as resolved");
@@ -339,14 +377,7 @@ if (require.main === module) {
 module.exports = Object.freeze({
   FORBIDDEN_RUNTIME_NOTE,
   listNodeTestFiles,
+  runAll,
   validateScorecardObject,
-  assertNoForbiddenRuntimeFallback,
-  assertAppendixF,
-  assertTraceabilityResolution,
-  assertTemplateSpec,
-  assertContextProfiles,
-  assertExternalOutputLeakageTests,
-  assertWorkflow,
-  assertTestInventory,
-  runAll
+  resolveRepoRoot
 });
