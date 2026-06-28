@@ -64,7 +64,7 @@ function validateTemplateSpec(text) {
 
   for (let templateNumber = 1; templateNumber <= 8; templateNumber += 1) {
     const headingPattern = new RegExp(
-      `(^|\\n)#\\s+TEMPLATE\\s+${templateNumber}:`,
+      `(^|\\n)#{1,6}\\s+TEMPLATE\\s+${templateNumber}:`,
       "m"
     );
     if (!headingPattern.test(normalizedBody)) {
