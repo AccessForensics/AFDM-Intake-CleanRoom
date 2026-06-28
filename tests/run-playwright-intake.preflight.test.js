@@ -10,20 +10,34 @@ const path = require("node:path");
 const repoRoot = path.resolve(__dirname, "..");
 const runnerPath = path.join(repoRoot, "tools", "run-playwright-intake.js");
 
-test("runner stops at intake edge for known unsupported current coverage matter", () => {
+test("runner stops at intake edge for unsupported probe coverage before Playwright execution", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "af-runner-preflight-"));
   try {
     const payloadPath = path.join(tempDir, "payload.json");
     const outDir = path.join(tempDir, "out");
 
     const payload = {
-      matter_id: "AF-HARDEN-001-MANE-SKIP",
+      matter_id: "AF-UNSUPPORTED-PROBE-001",
       matter_scope: "dual",
       source_case: {
-        site: "https://heymane.com"
+        site: "https://example.com"
       },
-      run_units: [],
-      sequencing_plan: []
+      run_units: [
+        {
+          rununitid: "RUNUNIT-1",
+          complaintgroupanchorid: "CGA-1",
+          assertedconditiontext: "An unsupported asserted condition for preflight coverage",
+          target_url: "https://example.com",
+          target_page_hint: "footer",
+          target_element_hint: "footer links"
+        }
+      ],
+      sequencing_plan: [
+        {
+          run_unit_id: "RUNUNIT-1",
+          context_id: "desktop_baseline"
+        }
+      ]
     };
 
     fs.writeFileSync(payloadPath, JSON.stringify(payload, null, 2), "utf8");
@@ -41,8 +55,10 @@ test("runner stops at intake edge for known unsupported current coverage matter"
     assert.equal(fs.existsSync(classificationPath), true);
 
     const classification = JSON.parse(fs.readFileSync(classificationPath, "utf8"));
-    assert.equal(classification.matter_id, "AF-HARDEN-001-MANE-SKIP");
+    assert.equal(classification.matter_id, "AF-UNSUPPORTED-PROBE-001");
     assert.equal(classification.preflight_status, "unsupported_current_coverage");
+    assert.equal(classification.production_intake_runnable, false);
+    assert.equal(classification.unsupported_probe_family_count, 1);
 
     assert.equal(fs.existsSync(path.join(outDir, "run-records.json")), false);
     assert.equal(fs.existsSync(path.join(outDir, "determination-record.json")), false);
