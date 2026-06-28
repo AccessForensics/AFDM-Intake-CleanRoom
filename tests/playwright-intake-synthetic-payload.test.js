@@ -173,7 +173,7 @@ test("generic runner blocks unsupported allegation at preflight before Playwrigh
   assert.equal(fs.existsSync(path.join(outDir, "playwright-observations.json")), false);
 });
 
-test("generic runner routes supported family3 allegation through registry and records observed outcome", (t) => {
+test("generic runner routes supported form-label allegation through registry and records observed outcome", (t) => {
   const html = `
     <!doctype html>
     <html lang="en">
@@ -208,7 +208,7 @@ test("generic runner routes supported family3 allegation through registry and re
   assert.ok(result.determination.determination_template.length > 0);
 });
 
-test("generic runner routes supported family3 allegation through registry and records not observed outcome", (t) => {
+test("generic runner routes supported form-label allegation through registry and records not observed outcome", (t) => {
   const html = `
     <!doctype html>
     <html lang="en">
