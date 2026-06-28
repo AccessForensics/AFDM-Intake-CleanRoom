@@ -2,7 +2,6 @@
 
 const fs = require("fs");
 const path = require("path");
-const { spawnSync } = require("child_process");
 const { chromium } = require("playwright");
 
 const {
@@ -25,7 +24,8 @@ const {
 } = require("../src/intake/determination-router.js");
 
 const {
-  resolveProbe
+  resolveProbe,
+  classifyProbeCoverageForRunUnits
 } = require("../src/intake/probes/index.js");
 
 const {
@@ -107,6 +107,7 @@ function buildPlaywrightContextOptions(contextId) {
     deviceScaleFactor: profile.device_scale_factor
   });
 }
+
 function nowLocal() {
   return new Date().toISOString();
 }
@@ -146,28 +147,12 @@ async function saveArtifacts(page, prefix, expectedContext) {
   };
 }
 
-// BEGIN INTERNAL PREFLIGHT COVERAGE GATE
-function runUnsupportedCoveragePreflight(payloadPath, outDir) {
-  const scriptPath = path.resolve(__dirname, "..", "scripts", "hardening", "preflight-coverage-check.js");
+function runUnsupportedCoveragePreflight(payloadObject, outputDir) {
+  const classification = classifyProbeCoverageForRunUnits(
+    Array.isArray(payloadObject && payloadObject.run_units) ? payloadObject.run_units : []
+  );
 
-  if (!fs.existsSync(scriptPath)) {
-    throw new Error(`PREFLIGHT_DEPENDENCY_MISSING: ${scriptPath}`);
-  }
-
-  const result = spawnSync(process.execPath, [scriptPath, "--matter-file", payloadPath], {
-    encoding: "utf8",
-    timeout: 30000
-  });
-
-  if (result.error) {
-    throw result.error;
-  }
-
-  if (typeof result.status !== "number") {
-    throw new Error("PREFLIGHT_EXECUTION_FAILED: missing exit status");
-  }
-
-  if (result.status === 0) {
+  if (classification.production_intake_runnable === true) {
     return {
       blocked: false,
       exitCode: 0,
@@ -176,54 +161,29 @@ function runUnsupportedCoveragePreflight(payloadPath, outDir) {
     };
   }
 
-  if (result.status === 2) {
-    const stdoutText = String(result.stdout || "").trim();
-    if (!stdoutText) {
-      throw new Error("PREFLIGHT_OUTPUT_PARSE_FAILED: empty stdout for blocked matter");
-    }
+  const artifactPath = path.join(outputDir, "preflight-classification.json");
+  fs.mkdirSync(outputDir, { recursive: true });
+  fs.writeFileSync(artifactPath, JSON.stringify(Object.assign({
+    matter_id: payloadObject && payloadObject.matter_id || ""
+  }, classification), null, 2), "utf8");
 
-    let classification;
-    try {
-      classification = JSON.parse(stdoutText);
-    } catch (error) {
-      throw new Error(`PREFLIGHT_OUTPUT_PARSE_FAILED: ${error.message}`);
-    }
-
-    if (!classification || classification.preflight_status !== "unsupported_current_coverage") {
-      throw new Error("PREFLIGHT_OUTPUT_INVALID: blocked result did not return unsupported_current_coverage");
-    }
-
-    const artifactPath = path.join(outDir, "preflight-classification.json");
-    fs.mkdirSync(outDir, { recursive: true });
-    fs.writeFileSync(artifactPath, JSON.stringify(classification, null, 2), "utf8");
-
-    return {
-      blocked: true,
-      exitCode: 2,
-      classification,
-      artifactPath
-    };
-  }
-
-  const stderrText = String(result.stderr || "").trim();
-  const stdoutText = String(result.stdout || "").trim();
-  throw new Error(
-    `PREFLIGHT_EXECUTION_FAILED: exit=${result.status}; stderr=${stderrText}; stdout=${stdoutText}`
-  );
+  return {
+    blocked: true,
+    exitCode: 2,
+    classification,
+    artifactPath
+  };
 }
-// END INTERNAL PREFLIGHT COVERAGE GATE
 
 (async () => {
-  // BEGIN INTERNAL PREFLIGHT COVERAGE GATE INVOCATION
-  const preflight = runUnsupportedCoveragePreflight(payloadPath, outDir);
+  const preflight = runUnsupportedCoveragePreflight(payload, outDir);
   if (preflight.blocked) {
     console.log("Preflight classification: unsupported_current_coverage");
-    console.log(`Matter: ${preflight.classification.matter_id}`);
     console.log(`Artifact: ${preflight.artifactPath}`);
     process.exitCode = preflight.exitCode;
     return;
   }
-  // END INTERNAL PREFLIGHT COVERAGE GATE INVOCATION
+
   await assertUrlMayBeFetched(BASE_URL, { allowFileProtocol });
   const browser = await chromium.launch({ headless: true });
   const observations = [];
@@ -262,7 +222,6 @@ function runUnsupportedCoveragePreflight(payloadPath, outDir) {
 
       const runStartLocal = nowLocal();
       const runStartEpoch = nowMs();
-
       let context = null;
 
       try {
@@ -276,7 +235,6 @@ function runUnsupportedCoveragePreflight(payloadPath, outDir) {
         });
 
         await installRequestSafetyRoutes(context, { allowFileProtocol });
-
         const page = await context.newPage();
 
         let probeResult;
@@ -327,7 +285,6 @@ function runUnsupportedCoveragePreflight(payloadPath, outDir) {
             artifact_capture_error: String((artifactError && artifactError.stack) || artifactError)
           };
 
-
           try {
             const artifactErrorPath = path.join(artifactsDir, prefix + ".artifact-error.json");
             writeJsonFileAtomic(artifactErrorPath, {
@@ -346,9 +303,7 @@ function runUnsupportedCoveragePreflight(payloadPath, outDir) {
             probeResult = validateProbeResult({
               outcome_label: probeResult.outcome_label,
               constraint_class: probeResult.constraint_class,
-              mechanical_note:
-                probeResult.mechanical_note ||
-                "Playwright execution failed during bounded step execution.",
+              mechanical_note: probeResult.mechanical_note || "Playwright execution failed during bounded step execution.",
               evidence: Object.assign({}, probeResult.evidence || {}, artifactErrorEvidence)
             });
           } else {
