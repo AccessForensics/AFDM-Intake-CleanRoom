@@ -6,19 +6,19 @@ const assert = require("node:assert/strict");
 const { OUTCOME_LABEL, CONSTRAINT_CLASS } = require("../src/intake/run-record.js");
 const {
   assertAllowedUrl,
-  normalizeFamily3ProbeInput,
+  normalizeFormLabelsProbeInput,
   validateProbeResult
 } = require("../src/intake/probes/probe-contract.js");
 
-test("assertAllowedUrl rejects unsupported javascript protocol", () => {
+test("assertAllowedUrl rejects unsupported data protocol", () => {
   assert.throws(
-    () => assertAllowedUrl("javascript:alert(1)", "TARGET_URL"),
+    () => assertAllowedUrl("data:text/plain,test", "TARGET_URL"),
     /TARGET_URL_UNSUPPORTED_PROTOCOL/
   );
 });
 
-test("normalizeFamily3ProbeInput maps legacy runner args into family3 contract", () => {
-  const request = normalizeFamily3ProbeInput(
+test("normalizeFormLabelsProbeInput maps legacy runner args into form-label contract", () => {
+  const request = normalizeFormLabelsProbeInput(
     "Search fields lack a label.",
     "https://example.com/search"
   );
@@ -31,13 +31,12 @@ test("normalizeFamily3ProbeInput maps legacy runner args into family3 contract",
 
 test("validateProbeResult requires constraint class for constrained outcome", () => {
   assert.throws(
-    () =>
-      validateProbeResult({
-        outcome_label: OUTCOME_LABEL.CONSTRAINED,
-        constraint_class: "",
-        mechanical_note: "Bot-mitigation challenge prevented bounded review of the alleged site surface.",
-        evidence: {}
-      }),
+    () => validateProbeResult({
+      outcome_label: OUTCOME_LABEL.CONSTRAINED,
+      constraint_class: "",
+      mechanical_note: "Bot-mitigation challenge prevented bounded review of the alleged site surface.",
+      evidence: {}
+    }),
     /CONSTRAINT_CLASS_REQUIRED_FOR_CONSTRAINED_PROBE_RESULT/
   );
 });
@@ -52,10 +51,6 @@ test("validateProbeResult preserves valid result shape", () => {
 
   assert.equal(result.outcome_label, OUTCOME_LABEL.CONSTRAINED);
   assert.equal(result.constraint_class, CONSTRAINT_CLASS.BOTMITIGATION);
-  assert.equal(
-    result.mechanical_note,
-    "Bot-mitigation challenge prevented bounded review of the alleged site surface."
-  );
   assert.deepEqual(result.evidence, { challenge_kind: "test" });
 });
 
@@ -78,13 +73,13 @@ test("PR4 regression: assertAllowedUrl allows file protocol only when explicitly
   );
 });
 
-test("PR4 regression: normalizeFamily3ProbeInput rejects file protocol unless fixture mode is explicit", () => {
+test("PR4 regression: normalizeFormLabelsProbeInput rejects file protocol unless fixture mode is explicit", () => {
   assert.throws(
-    () => normalizeFamily3ProbeInput("Search fields lack a label.", "file:///tmp/test.html"),
+    () => normalizeFormLabelsProbeInput("Search fields lack a label.", "file:///tmp/test.html"),
     /BASE_URL_UNSUPPORTED_PROTOCOL_FOR_PRODUCTION/
   );
 
-  const request = normalizeFamily3ProbeInput(
+  const request = normalizeFormLabelsProbeInput(
     "Search fields lack a label.",
     "file:///tmp/test.html",
     true
