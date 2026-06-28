@@ -147,9 +147,18 @@ async function saveArtifacts(page, prefix, expectedContext) {
   };
 }
 
+function addPreflightCompatibilityFields(classification) {
+  return Object.assign({}, classification, {
+    supported_probe_family_count: classification.supported_count,
+    unsupported_probe_family_count: classification.unsupported_count
+  });
+}
+
 function runUnsupportedCoveragePreflight(payloadObject, outputDir) {
-  const classification = classifyProbeCoverageForRunUnits(
-    Array.isArray(payloadObject && payloadObject.run_units) ? payloadObject.run_units : []
+  const classification = addPreflightCompatibilityFields(
+    classifyProbeCoverageForRunUnits(
+      Array.isArray(payloadObject && payloadObject.run_units) ? payloadObject.run_units : []
+    )
   );
 
   if (classification.production_intake_runnable === true) {
