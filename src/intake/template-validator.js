@@ -57,7 +57,7 @@ function validateTemplateSpec(text) {
   }
 
   const noteRulePattern =
-    /\{\{MATTER_LEVEL_NOTE\}\}\s+may appear only in Template 3 or Template 5\b/;
+    /`?\{\{MATTER_LEVEL_NOTE\}\}`?\s+may appear only in Template 3 or Template 5\b/;
   if (!noteRulePattern.test(normalizedBody)) {
     throw new Error("TEMPLATE_SPEC_MISSING_INTERNAL_NOTE_RULE");
   }
