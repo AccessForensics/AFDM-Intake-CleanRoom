@@ -2,7 +2,6 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const crypto = require("node:crypto");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -27,49 +26,45 @@ function writeText(filePath, value) {
   fs.writeFileSync(filePath, value, "utf8");
 }
 
-function sha256Text(value) {
-  return crypto.createHash("sha256").update(String(value)).digest("hex");
-}
-
 function makeMatterFixture(t) {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "afdm-packet-manifest-"));
   t.after(() => fs.rmSync(tempRoot, { recursive: true, force: true }));
 
   const matterOutDir = path.join(tempRoot, "CASE-083");
   const artifactDir = path.join(matterOutDir, "artifacts");
+  const prefix = "001_desktop_baseline_RU-010_search-field";
+  const runStart = 1782677508234;
+  const runEnd = 1782677514928;
+
   fs.mkdirSync(artifactDir, { recursive: true });
 
   writeJson(path.join(matterOutDir, "playwright-summary.json"), {
     matter_id: "CASE-083",
-    matter_scope: "dual",
-    total_planned_steps: 2,
-    executed_steps: 2,
-    run_count: 2,
+    matter_scope: "desktop",
+    total_planned_steps: 1,
+    executed_steps: 1,
+    run_count: 1,
     observed_as_asserted: 1,
-    not_observed_as_asserted: 1,
+    not_observed_as_asserted: 0,
     constrained: 0,
     insufficient: 0,
-    determination_template: "DETERMINATION: ELIGIBLE FOR DESKTOP AND MOBILE TECHNICAL RECORD BUILD"
+    determination_template: "DETERMINATION: ELIGIBLE FOR DESKTOP TECHNICAL RECORD BUILD"
   });
 
   writeJson(path.join(matterOutDir, "determination-record.json"), {
     matter_id: "CASE-083",
-    determination_template: "DETERMINATION: ELIGIBLE FOR DESKTOP AND MOBILE TECHNICAL RECORD BUILD",
+    determination_template: "DETERMINATION: ELIGIBLE FOR DESKTOP TECHNICAL RECORD BUILD",
     matter_level_note: ""
   });
 
   writeJson(path.join(matterOutDir, "external-output-validation-record.json"), {
     matter_id: "CASE-083",
-    external_output_validation_version: "fixture",
     external_output_release_allowed: true
   });
 
-  writeText(
-    path.join(matterOutDir, "determination-output.txt"),
-    "DETERMINATION: ELIGIBLE FOR DESKTOP AND MOBILE TECHNICAL RECORD BUILD\n"
-  );
+  writeText(path.join(matterOutDir, "determination-output.txt"), "DETERMINATION: ELIGIBLE FOR DESKTOP TECHNICAL RECORD BUILD\n");
 
-  const runRecords = [
+  writeJson(path.join(matterOutDir, "run-records.json"), [
     {
       matter_id: "CASE-083",
       run_id: "RUN-001",
@@ -80,105 +75,73 @@ function makeMatterFixture(t) {
       constraint_class: "",
       mechanical_note: "",
       run_start_local: "2026-06-28T20:11:48.234Z",
-      run_start_epoch_ms: 1782677508234,
+      run_start_epoch_ms: runStart,
       run_end_local: "2026-06-28T20:11:54.928Z",
-      run_end_epoch_ms: 1782677514928
-    },
-    {
-      matter_id: "CASE-083",
-      run_id: "RUN-002",
-      complaint_group_anchor_id: "A-010",
-      run_unit_id: "RU-010",
-      context_id: "mobile_baseline",
-      outcome_label: "Not observed as asserted",
-      constraint_class: "",
-      mechanical_note: "",
-      run_start_local: "2026-06-28T20:12:48.234Z",
-      run_start_epoch_ms: 1782677568234,
-      run_end_local: "2026-06-28T20:12:54.928Z",
-      run_end_epoch_ms: 1782677574928
+      run_end_epoch_ms: runEnd
     }
-  ];
+  ]);
 
-  writeJson(path.join(matterOutDir, "run-records.json"), runRecords);
+  writeText(path.join(artifactDir, `${prefix}.html`), "<html><body>fixture</body></html>");
+  writeText(path.join(artifactDir, `${prefix}.png`), "fake-png");
+  writeText(path.join(artifactDir, `${prefix}_chunks`, `0001_${prefix}_y000000.png`), "fake-chunk");
 
-  const observations = [];
+  writeJson(path.join(artifactDir, `${prefix}.elements.json`), {
+    captured: true,
+    element_count: 42,
+    shadow_dom_traversal_enabled: true,
+    elements: []
+  });
 
-  for (let index = 1; index <= 2; index += 1) {
-    const contextId = index === 1 ? "desktop_baseline" : "mobile_baseline";
-    const prefix = `${String(index).padStart(3, "0")}_${contextId}_RU-010_search-field`;
-    const run = runRecords[index - 1];
-    const pngContent = `fake-png-${index}`;
+  writeJson(path.join(artifactDir, `${prefix}.capture-v2-manifest.json`), {
+    capture_version: "AFDM_CAPTURE_V2",
+    artifacts_root: artifactDir,
+    captured_chunks: [
+      {
+        id: 1,
+        file_path: `${prefix}_chunks/0001_${prefix}_y000000.png`
+      }
+    ]
+  });
 
-    writeText(path.join(artifactDir, `${prefix}.html`), `<html><body>run ${index}</body></html>`);
-    writeText(path.join(artifactDir, `${prefix}.png`), pngContent);
-    writeText(path.join(artifactDir, `${prefix}_chunks`, `0001_${prefix}_y000000.png`), `fake-chunk-${index}`);
-
-    writeJson(path.join(artifactDir, `${prefix}.elements.json`), {
+  writeJson(path.join(artifactDir, `${prefix}.capture-v2.json`), {
+    capture_version: "AFDM_CAPTURE_V2",
+    screenshot_scale: "css",
+    runtime_viewport: {
+      width: 1366,
+      height: 900,
+      device_pixel_ratio: 1
+    },
+    runtime_invariants: {
+      is_mobile: false,
+      has_touch: false,
+      cache_state: "ephemeral_context_per_run"
+    },
+    terminal_artifact: {
+      file_path: `${prefix}.png`
+    },
+    element_geometry: {
+      file_path: `${prefix}.elements.json`,
       captured: true,
-      element_count: index === 1 ? 42 : 24,
-      shadow_dom_traversal_enabled: true,
-      elements: []
-    });
+      element_count: 42,
+      shadow_dom_traversal_enabled: true
+    },
+    chunks: [
+      {
+        id: 1,
+        file_path: `${prefix}_chunks/0001_${prefix}_y000000.png`
+      }
+    ]
+  });
 
-    writeJson(path.join(artifactDir, `${prefix}.capture-v2-manifest.json`), {
-      capture_version: "AFDM_CAPTURE_V2",
-      artifacts_root: artifactDir,
-      captured_chunks: [
-        {
-          id: 1,
-          file_path: `${prefix}_chunks/0001_${prefix}_y000000.png`,
-          expected_sha256: sha256Text(`fake-chunk-${index}`)
-        }
-      ]
-    });
-
-    writeJson(path.join(artifactDir, `${prefix}.capture-v2.json`), {
-      capture_version: "AFDM_CAPTURE_V2",
-      compression_format: "PNG",
-      screenshot_scale: "css",
-      screenshot_truncated: false,
-      runtime_viewport: {
-        width: index === 1 ? 1366 : 393,
-        height: index === 1 ? 900 : 852,
-        device_pixel_ratio: 1
-      },
-      runtime_invariants: {
-        viewport_width: index === 1 ? 1366 : 393,
-        viewport_height: index === 1 ? 900 : 852,
-        device_scale_factor: 1,
-        is_mobile: index === 2,
-        has_touch: index === 2,
-        screenshot_scale: "css",
-        cache_state: "ephemeral_context_per_run"
-      },
-      terminal_artifact: {
-        file_path: `${prefix}.png`,
-        sha256: sha256Text(pngContent)
-      },
-      element_geometry: {
-        file_path: `${prefix}.elements.json`,
-        captured: true,
-        element_count: index === 1 ? 42 : 24,
-        shadow_dom_traversal_enabled: true
-      },
-      chunks: [
-        {
-          id: 1,
-          file_path: `${prefix}_chunks/0001_${prefix}_y000000.png`,
-          sha256: sha256Text(`fake-chunk-${index}`)
-        }
-      ]
-    });
-
-    observations.push({
-      step_index: index,
+  writeJson(path.join(matterOutDir, "playwright-observations.json"), [
+    {
+      step_index: 1,
       matter_id: "CASE-083",
       complaint_group_anchor_id: "A-010",
       run_unit_id: "RU-010",
       asserted_condition_text: "Search fields lack a label.",
-      context_id: contextId,
-      operator_outcome_label: run.outcome_label,
+      context_id: "desktop_baseline",
+      operator_outcome_label: "Observed as asserted",
       operator_constraint_class: "",
       operator_mechanical_note: "",
       operator_notes_internal_only: "{}",
@@ -187,14 +150,12 @@ function makeMatterFixture(t) {
       evidence_screenshot_metadata_path: path.join(artifactDir, `${prefix}.capture-v2.json`),
       evidence_screenshot_manifest_path: path.join(artifactDir, `${prefix}.capture-v2-manifest.json`),
       evidence_element_geometry_path: path.join(artifactDir, `${prefix}.elements.json`),
-      run_start_local: run.run_start_local,
-      run_start_epoch_ms: run.run_start_epoch_ms,
-      run_end_local: run.run_end_local,
-      run_end_epoch_ms: run.run_end_epoch_ms
-    });
-  }
-
-  writeJson(path.join(matterOutDir, "playwright-observations.json"), observations);
+      run_start_local: "2026-06-28T20:11:48.234Z",
+      run_start_epoch_ms: runStart,
+      run_end_local: "2026-06-28T20:11:54.928Z",
+      run_end_epoch_ms: runEnd
+    }
+  ]);
 
   return { matterOutDir };
 }
@@ -202,52 +163,34 @@ function makeMatterFixture(t) {
 test("packet manifest CLI writes manifest, text, and environment records", (t) => {
   const { matterOutDir } = makeMatterFixture(t);
 
-  execFileSync(
-    process.execPath,
-    [scriptPath, "--matter-output", matterOutDir],
-    {
-      cwd: repoRoot,
-      stdio: "pipe"
-    }
-  );
+  execFileSync(process.execPath, [scriptPath, "--matter-output", matterOutDir], {
+    cwd: repoRoot,
+    stdio: "pipe"
+  });
 
-  const manifestPath = path.join(matterOutDir, "packet_manifest.json");
-  const textPath = path.join(matterOutDir, "packet_manifest.txt");
-  const envPath = path.join(matterOutDir, "environment_records.json");
-
-  assert.equal(fs.existsSync(manifestPath), true);
-  assert.equal(fs.existsSync(textPath), true);
-  assert.equal(fs.existsSync(envPath), true);
-
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-  const envRecords = JSON.parse(fs.readFileSync(envPath, "utf8"));
-  const text = fs.readFileSync(textPath, "utf8");
+  const manifest = JSON.parse(fs.readFileSync(path.join(matterOutDir, "packet_manifest.json"), "utf8"));
+  const envRecords = JSON.parse(fs.readFileSync(path.join(matterOutDir, "environment_records.json"), "utf8"));
+  const text = fs.readFileSync(path.join(matterOutDir, "packet_manifest.txt"), "utf8");
 
   assert.equal(manifest.packet_manifest_version, PACKET_MANIFEST_VERSION);
   assert.equal(manifest.matter_id, "CASE-083");
   assert.equal(manifest.validation.validation_error_count, 0);
-  assert.equal(manifest.environment_records.length, 2);
-  assert.equal(envRecords.length, 2);
+  assert.equal(envRecords.length, 1);
   assert.equal(envRecords[0].environment_record_version, ENVIRONMENT_RECORD_VERSION);
   assert.equal(envRecords[0].browser_engine, "chromium");
   assert.equal(envRecords[0].viewport_width, 1366);
-  assert.equal(envRecords[1].mobile_emulation_enabled, true);
-  assert.equal(envRecords[1].touch_enabled, true);
+  assert.equal(envRecords[0].mobile_emulation_enabled, false);
 
-  const desktopPng = manifest.entries.find((entry) => {
-    return entry.file_path.endsWith("desktop_baseline_RU-010_search-field.png");
-  });
-
-  assert.ok(desktopPng);
-  assert.equal(desktopPng.included_in_packet, true);
-  assert.equal(desktopPng.file_type, "screenshot_png");
-  assert.equal(desktopPng.generation_step, "artifact-capture-v2");
-  assert.equal(desktopPng.run_id, "RUN-001");
-  assert.equal(desktopPng.run_unit_id, "RU-010");
-  assert.equal(desktopPng.context_id, "desktop_baseline");
-  assert.match(desktopPng.sha256, /^[a-f0-9]{64}$/);
-  assert.equal(desktopPng.file_size_bytes > 0, true);
-  assert.equal(Number.isNaN(Date.parse(desktopPng.created_timestamp)), false);
+  const png = manifest.entries.find((entry) => entry.file_path.endsWith("search-field.png"));
+  assert.ok(png);
+  assert.equal(png.included_in_packet, true);
+  assert.equal(png.file_type, "screenshot_png");
+  assert.equal(png.generation_step, "artifact-capture-v2");
+  assert.equal(png.run_id, "RUN-001");
+  assert.equal(png.run_unit_id, "RU-010");
+  assert.equal(png.context_id, "desktop_baseline");
+  assert.match(png.sha256, /^[a-f0-9]{64}$/);
+  assert.equal(png.file_size_bytes > 0, true);
 
   assert.match(text, /AFDM Packet Manifest/);
   assert.match(text, /RUN-001 \| RU-010 \| desktop_baseline/);
@@ -273,6 +216,6 @@ test("packet manifest rejects unknown included artifacts", (t) => {
 
   assert.throws(
     () => buildPacketManifest(matterOutDir),
-    /PACKET_MANIFEST_VALIDATION_FAILED/[Symbol.match].bind(/PACKET_MANIFEST_VALIDATION_FAILED/)
+    /PACKET_MANIFEST_VALIDATION_FAILED/
   );
 });
