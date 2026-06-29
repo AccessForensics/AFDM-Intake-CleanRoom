@@ -10,7 +10,8 @@
     "batch:intake": "node tools/run-intake-batch.js",
     "facts:new": "node tools/new-reviewed-facts.js",
     "pdfs:import": "node tools/import-lawsuit-pdfs.js",
-    "artifacts:index": "node tools/create-artifact-index.js"
+    "artifacts:index": "node tools/create-artifact-index.js",
+    "packet:manifest": "node tools/create-packet-manifest.js"
   },
   "dependencies": {
     "playwright": "^1.56.0",
